@@ -1,4 +1,4 @@
-import { Play, Pause, Square } from 'lucide-react';
+import { Play, Pause, Plus, Square } from 'lucide-react';
 import { useProjectStore } from '@/store/project-store';
 
 function formatTime(sec: number): string {
@@ -17,6 +17,7 @@ export function TransportBar() {
   const pause = useProjectStore((s) => s.pause);
   const stop = useProjectStore((s) => s.stop);
   const setMasterGain = useProjectStore((s) => s.setMasterGain);
+  const insertKeyframe = useProjectStore((s) => s.insertKeyframeAtCurrent);
 
   const disabled = !audioBuffer;
 
@@ -59,6 +60,16 @@ export function TransportBar() {
         aria-label="Volume"
         className="w-20 accent-[--accent] disabled:opacity-40"
       />
+      <button
+        type="button"
+        onClick={() => insertKeyframe()}
+        disabled={disabled}
+        title="Insert keyframe at current time"
+        className="ml-1 flex items-center gap-1 text-[11px] tracking-widest uppercase px-2 py-1 rounded-md bg-[--accent] text-white hover:bg-[--accent-hot] disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        <Plus size={12} strokeWidth={2.25} />
+        Keyframe
+      </button>
     </div>
   );
 }

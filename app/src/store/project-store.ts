@@ -1,7 +1,13 @@
 import { create } from 'zustand';
 import { nanoid } from 'nanoid';
-import type { Project, Projection, SpatialKeyframe, ViewState } from '@/types/project';
-import { DEFAULT_SETTINGS, DEFAULT_VIEW_STATES } from '@/types/project';
+import type {
+  Project,
+  Projection,
+  SpatialKeyframe,
+  ViewState,
+  AudioMeta,
+} from '@/types/project';
+import { DEFAULT_KF_AUDIO, DEFAULT_SETTINGS, DEFAULT_VIEW_STATES } from '@/types/project';
 import { AudioEngine } from '@/lib/audio-engine';
 import { interpolatePosition, type Vec3 } from '@/lib/math3d';
 
@@ -12,15 +18,21 @@ interface PlaybackState {
 
 interface ProjectStore {
   project: Project | null;
+  projectPath: string | null;
+  isDirty: boolean;
   audioBuffer: AudioBuffer | null;
   selectedKeyframeId: string | null;
   playback: PlaybackState;
   masterGain: number;
+  monitoring: 'binaural' | 'stereo';
   orbitEnabled: boolean;
   viewStates: Record<Projection, ViewState>;
   snapAngleDeg: number;
 
   loadAudioFile: (path: string, arrayBuffer: ArrayBuffer) => Promise<void>;
+  setLoadedProject: (project: Project, path: string | null, audioBuffer: AudioBuffer) => void;
+  setAudioMeta: (partial: Partial<AudioMeta>) => void;
+
   play: () => void;
   pause: () => void;
   stop: () => void;
@@ -28,8 +40,10 @@ interface ProjectStore {
   setCurrentTime: (timeSec: number) => void;
   setIsPlaying: (isPlaying: boolean) => void;
   setMasterGain: (linear: number) => void;
+  setMonitoring: (mode: 'binaural' | 'stereo') => void;
 
-  addKeyframe: (position: { x: number; y: number; z: number }, time?: number) => string;
+  addKeyframe: (position: Vec3, time?: number) => string;
+  insertKeyframeAtCurrent: () => string | null;
   updateKeyframe: (id: string, partial: Partial<SpatialKeyframe>) => void;
   removeKeyframe: (id: string) => void;
   selectKeyframe: (id: string | null) => void;
@@ -39,6 +53,16 @@ interface ProjectStore {
   setSnapAngle: (deg: number) => void;
   addKeyframeAtProjection: (proj: Projection, u: number, v: number) => void;
   moveKeyframe: (id: string, proj: Projection, u: number, v: number) => void;
+
+  markDirty: () => void;
+  markClean: () => void;
+}
+
+function inferName(path: string): string {
+  const slash = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'));
+  const base = slash >= 0 ? path.slice(slash + 1) : path;
+  const dot = base.lastIndexOf('.');
+  return dot > 0 ? base.slice(0, dot) : base;
 }
 
 function projectedToWorld(proj: Projection, u: number, v: number, fixed: Vec3): Vec3 {
@@ -52,19 +76,36 @@ function snapToSphereIfNeeded(p: Vec3, snapToSphere: boolean): Vec3 {
   return { x: p.x / len, y: p.y / len, z: p.z / len };
 }
 
-function inferName(path: string): string {
-  const slash = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'));
-  const base = slash >= 0 ? path.slice(slash + 1) : path;
-  const dot = base.lastIndexOf('.');
-  return dot > 0 ? base.slice(0, dot) : base;
+function makeKeyframe(time: number, position: Vec3, inherit?: SpatialKeyframe): SpatialKeyframe {
+  const base = inherit
+    ? {
+        curve: inherit.curve,
+        tension: inherit.tension,
+        gain: inherit.gain,
+        lpf: inherit.lpf,
+        hpf: inherit.hpf,
+        doppler: inherit.doppler,
+        airAbsorption: inherit.airAbsorption,
+        reverbSend: inherit.reverbSend,
+      }
+    : { ...DEFAULT_KF_AUDIO };
+  return {
+    id: nanoid(10),
+    time,
+    position,
+    ...base,
+  };
 }
 
 export const useProjectStore = create<ProjectStore>((set, get) => ({
   project: null,
+  projectPath: null,
+  isDirty: false,
   audioBuffer: null,
   selectedKeyframeId: null,
   playback: { isPlaying: false, currentTime: 0 },
   masterGain: 1,
+  monitoring: 'binaural',
   orbitEnabled: true,
   viewStates: DEFAULT_VIEW_STATES,
   snapAngleDeg: 0,
@@ -74,9 +115,10 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     AudioEngine.setBuffer(buffer);
     AudioEngine.setMasterGain(get().masterGain);
     AudioEngine.setKeyframes([]);
+    AudioEngine.setSettings(DEFAULT_SETTINGS);
     const now = new Date().toISOString();
     const project: Project = {
-      version: 1,
+      version: 2,
       audioFile: {
         originalPath: path,
         embeddedSampleRate: buffer.sampleRate,
@@ -85,13 +127,39 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
       },
       keyframes: [],
       settings: DEFAULT_SETTINGS,
+      audioMeta: { bpm: null, key: null },
       meta: { createdAt: now, updatedAt: now, name: inferName(path) },
     };
     set({
       project,
+      projectPath: null,
+      isDirty: false,
       audioBuffer: buffer,
       selectedKeyframeId: null,
       playback: { isPlaying: false, currentTime: 0 },
+    });
+  },
+
+  setLoadedProject: (project, path, audioBuffer) => {
+    AudioEngine.setBuffer(audioBuffer);
+    AudioEngine.setMasterGain(get().masterGain);
+    AudioEngine.setSettings(project.settings);
+    AudioEngine.setKeyframes(project.keyframes);
+    set({
+      project,
+      projectPath: path,
+      isDirty: false,
+      audioBuffer,
+      selectedKeyframeId: null,
+      playback: { isPlaying: false, currentTime: 0 },
+    });
+  },
+
+  setAudioMeta: (partial) => {
+    const project = get().project;
+    if (!project) return;
+    set({
+      project: { ...project, audioMeta: { ...project.audioMeta, ...partial } },
     });
   },
 
@@ -130,26 +198,41 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     set({ masterGain: linear });
   },
 
+  setMonitoring: (mode) => {
+    AudioEngine.setMonitoring(mode);
+    set({ monitoring: mode });
+  },
+
   addKeyframe: (position, time) => {
     const state = get();
     const project = state.project;
     if (!project) return '';
     const t = time ?? state.playback.currentTime;
-    const id = nanoid(10);
-    const kf: SpatialKeyframe = {
-      id,
-      time: t,
-      position,
-      curve: 'linear',
-      snap: project.settings.snapToSphere,
-    };
+    const sorted = [...project.keyframes].sort((a, b) => a.time - b.time);
+    const inherit = sorted.filter((k) => k.time <= t).pop();
+    const kf = makeKeyframe(t, position, inherit);
+    if (project.settings.snapToSphere) kf.snap = true;
     const keyframes = [...project.keyframes, kf].sort((a, b) => a.time - b.time);
     AudioEngine.setKeyframes(keyframes);
     set({
-      project: { ...project, keyframes, meta: { ...project.meta, updatedAt: new Date().toISOString() } },
-      selectedKeyframeId: id,
+      project: {
+        ...project,
+        keyframes,
+        meta: { ...project.meta, updatedAt: new Date().toISOString() },
+      },
+      isDirty: true,
+      selectedKeyframeId: kf.id,
     });
-    return id;
+    return kf.id;
+  },
+
+  insertKeyframeAtCurrent: () => {
+    const state = get();
+    const project = state.project;
+    if (!project || !state.audioBuffer) return null;
+    const t = state.playback.currentTime;
+    const pos = interpolatePosition(project.keyframes, t);
+    return state.addKeyframe(pos, t);
   },
 
   updateKeyframe: (id, partial) => {
@@ -160,7 +243,12 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
       .sort((a, b) => a.time - b.time);
     AudioEngine.setKeyframes(keyframes);
     set({
-      project: { ...project, keyframes, meta: { ...project.meta, updatedAt: new Date().toISOString() } },
+      project: {
+        ...project,
+        keyframes,
+        meta: { ...project.meta, updatedAt: new Date().toISOString() },
+      },
+      isDirty: true,
     });
   },
 
@@ -171,7 +259,12 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     const keyframes = project.keyframes.filter((k) => k.id !== id);
     AudioEngine.setKeyframes(keyframes);
     set({
-      project: { ...project, keyframes, meta: { ...project.meta, updatedAt: new Date().toISOString() } },
+      project: {
+        ...project,
+        keyframes,
+        meta: { ...project.meta, updatedAt: new Date().toISOString() },
+      },
+      isDirty: true,
       selectedKeyframeId: state.selectedKeyframeId === id ? null : state.selectedKeyframeId,
     });
   },
@@ -181,12 +274,15 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
   updateSettings: (partial) => {
     const project = get().project;
     if (!project) return;
+    const next = { ...project.settings, ...partial };
+    AudioEngine.setSettings(next);
     set({
       project: {
         ...project,
-        settings: { ...project.settings, ...partial },
+        settings: next,
         meta: { ...project.meta, updatedAt: new Date().toISOString() },
       },
+      isDirty: true,
     });
   },
 
@@ -219,4 +315,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     pos = snapToSphereIfNeeded(pos, project.settings.snapToSphere || (kf.snap ?? false));
     get().updateKeyframe(id, { position: pos });
   },
+
+  markDirty: () => set({ isDirty: true }),
+  markClean: () => set({ isDirty: false }),
 }));
