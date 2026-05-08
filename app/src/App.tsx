@@ -1,11 +1,16 @@
 import { Plus, Minus } from 'lucide-react';
 import { Topbar } from '@/components/layout/Topbar';
 import { TransportBar } from '@/components/transport/TransportBar';
+import { BpmDisplay } from '@/components/transport/BpmDisplay';
+import { BarBeatDisplay } from '@/components/transport/BarBeatDisplay';
+import { MonitoringToggle } from '@/components/transport/MonitoringToggle';
+import { MeterBar } from '@/components/transport/MeterBar';
 import { Readouts } from '@/components/timeline/Readouts';
 import { Waveform } from '@/components/timeline/Waveform';
 import { Ruler } from '@/components/timeline/Ruler';
 import { OrthographicView } from '@/components/scene/OrthographicView';
 import { Inspector } from '@/components/inspector/Inspector';
+import { AudioEngine } from '@/lib/audio-engine';
 import { useProjectStore } from '@/store/project-store';
 import { useTransportSync } from '@/lib/use-transport-sync';
 import { useKeyboardShortcuts } from '@/lib/use-keyboard-shortcuts';
@@ -41,12 +46,14 @@ export default function App() {
       </div>
 
       <div className="col-span-3 bg-[--bg-panel] border-t border-[--border-subtle] grid grid-cols-[auto_1fr_auto] gap-3 px-3 py-2 items-stretch">
-        <div className="flex flex-col gap-1.5 justify-between min-w-[180px]">
+        <div className="flex flex-col gap-1.5 justify-between min-w-[200px]">
           <TransportBar />
           {project && <Readouts />}
-          <span className="text-[10px] font-mono text-[--text-dim] tabular-nums">
-            Shift+clic = ajouter keyframe
-          </span>
+          <div className="flex items-center gap-3">
+            <BpmDisplay />
+            <BarBeatDisplay />
+            <MonitoringToggle />
+          </div>
         </div>
         <div className="flex flex-col gap-1 min-w-0">
           <div className="flex-1 min-h-0">
@@ -54,7 +61,17 @@ export default function App() {
           </div>
           <Ruler duration={duration} />
         </div>
-        <div className="flex flex-col items-end justify-between gap-1 min-w-[60px]">
+        <div className="flex flex-col items-end justify-between gap-1.5 min-w-[110px]">
+          <div className="flex flex-col gap-0.5">
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] tracking-widest uppercase font-mono text-[--text-dim]">L</span>
+              <MeterBar analyser={AudioEngine.getAnalyserL()} />
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] tracking-widest uppercase font-mono text-[--text-dim]">R</span>
+              <MeterBar analyser={AudioEngine.getAnalyserR()} />
+            </div>
+          </div>
           <div className="flex items-center gap-1 text-[--text-dim]">
             <button
               type="button"
@@ -70,10 +87,10 @@ export default function App() {
             >
               <Plus size={12} />
             </button>
+            <span className="font-mono text-[10px] text-[--text-dim] tabular-nums ml-1">
+              {project ? `${project.keyframes.length} kf` : ''}
+            </span>
           </div>
-          <span className="font-mono text-[10px] text-[--text-dim] tabular-nums">
-            {project ? `${project.keyframes.length} kf` : ''}
-          </span>
         </div>
       </div>
     </div>

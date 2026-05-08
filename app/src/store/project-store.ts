@@ -9,6 +9,7 @@ import type {
 } from '@/types/project';
 import { DEFAULT_KF_AUDIO, DEFAULT_SETTINGS, DEFAULT_VIEW_STATES } from '@/types/project';
 import { AudioEngine } from '@/lib/audio-engine';
+import { detectBpm } from '@/lib/audio-analysis';
 import { interpolatePosition, type Vec3 } from '@/lib/math3d';
 
 interface PlaybackState {
@@ -137,6 +138,12 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
       audioBuffer: buffer,
       selectedKeyframeId: null,
       playback: { isPlaying: false, currentTime: 0 },
+    });
+    void detectBpm(buffer).then((bpm) => {
+      if (bpm === null) return;
+      const cur = get().project;
+      if (!cur || cur.audioFile.originalPath !== path) return;
+      get().setAudioMeta({ bpm });
     });
   },
 

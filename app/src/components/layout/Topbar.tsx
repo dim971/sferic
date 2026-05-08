@@ -3,6 +3,7 @@ import { open } from '@tauri-apps/plugin-dialog';
 import { readFile } from '@tauri-apps/plugin-fs';
 import { useProjectStore } from '@/store/project-store';
 import { AudioEngine } from '@/lib/audio-engine';
+import { useCpuMonitor } from '@/lib/use-monitoring';
 import { VuMeter } from './VuMeter';
 
 const MENUS = ['File', 'Edit', 'Project', 'Render', 'View', 'Help'];
@@ -26,6 +27,7 @@ export function Topbar() {
   const sampleRateK = audioBuffer ? `${(audioBuffer.sampleRate / 1000).toFixed(1)}k` : '';
   const fileName = project?.audioFile.originalPath.split(/[/\\]/).pop() ?? '';
   const renderDisabled = !audioBuffer;
+  const { cpu, bufferSize } = useCpuMonitor();
 
   return (
     <header className="h-full px-3 flex items-center gap-3 bg-[--bg-base]">
@@ -52,10 +54,25 @@ export function Topbar() {
             <span className="text-[--accent] truncate max-w-[160px]">{project.meta.name}</span>
             <span className="font-mono text-[--text-secondary]">{sampleRateK}</span>
             <span className="text-[--text-dim]">·</span>
-            <span className="text-[--text-secondary] truncate max-w-[260px]">{fileName}</span>
+            <span className="text-[--text-secondary] truncate max-w-[220px]">{fileName}</span>
           </>
         ) : null}
       </div>
+
+      {audioBuffer && (
+        <div className="flex items-center gap-3 font-mono tabular-nums text-[10px] text-[--text-dim]">
+          <span>
+            <span className="tracking-widest uppercase">CPU</span>{' '}
+            <span className="text-[--text-secondary]">{cpu.toFixed(1)}%</span>
+          </span>
+          {bufferSize !== null && (
+            <span>
+              <span className="tracking-widest uppercase">BUF</span>{' '}
+              <span className="text-[--text-secondary]">{bufferSize}</span>
+            </span>
+          )}
+        </div>
+      )}
 
       <div className="flex items-center gap-2">
         <button
