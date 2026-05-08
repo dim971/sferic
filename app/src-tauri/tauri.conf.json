@@ -41,6 +41,9 @@
     "macOS": {
       "minimumSystemVersion": "11.0"
     },
+    "windows": {
+      "webviewInstallMode": { "type": "embedBootstrapper" }
+    },
     "linux": {
       "deb": {
         "depends": ["libwebkit2gtk-4.1-0", "libssl3"]
