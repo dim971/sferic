@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { FolderOpen, Save, Download } from 'lucide-react';
 import { open } from '@tauri-apps/plugin-dialog';
 import { readFile } from '@tauri-apps/plugin-fs';
 import { useProjectStore } from '@/store/project-store';
 import { AudioEngine } from '@/lib/audio-engine';
 import { useCpuMonitor } from '@/lib/use-monitoring';
+import { RenderModal } from '@/components/render/RenderModal';
 import { VuMeter } from './VuMeter';
 
 const MENUS = ['File', 'Edit', 'Project', 'Render', 'View', 'Help'];
@@ -28,6 +30,7 @@ export function Topbar() {
   const fileName = project?.audioFile.originalPath.split(/[/\\]/).pop() ?? '';
   const renderDisabled = !audioBuffer;
   const { cpu, bufferSize } = useCpuMonitor();
+  const [renderOpen, setRenderOpen] = useState(false);
 
   return (
     <header className="h-full px-3 flex items-center gap-3 bg-[--bg-base]">
@@ -97,6 +100,7 @@ export function Topbar() {
         </div>
         <button
           type="button"
+          onClick={() => setRenderOpen(true)}
           disabled={renderDisabled}
           className="text-[14px] px-4 py-1.5 rounded-md bg-[--accent] hover:bg-[--accent-hot] text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
         >
@@ -104,6 +108,7 @@ export function Topbar() {
           Render
         </button>
       </div>
+      {renderOpen && <RenderModal onClose={() => setRenderOpen(false)} />}
     </header>
   );
 }
