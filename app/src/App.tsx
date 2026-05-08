@@ -1,6 +1,7 @@
 import { Topbar } from '@/components/layout/Topbar';
 import { TransportBar } from '@/components/transport/TransportBar';
 import { Waveform } from '@/components/timeline/Waveform';
+import { DualScene } from '@/components/scene/DualScene';
 import { useProjectStore } from '@/store/project-store';
 import { useTransportSync } from '@/lib/use-transport-sync';
 
@@ -14,10 +15,14 @@ export default function App() {
         <Topbar />
       </div>
 
-      <div className="bg-[--bg-panel] border-r border-[--border-subtle] flex items-center justify-center text-[--text-dim] text-[12px]">
-        {audioBuffer
-          ? `${audioBuffer.duration.toFixed(2)}s · ${audioBuffer.numberOfChannels}ch · ${audioBuffer.sampleRate}Hz`
-          : 'Charge un fichier audio pour commencer'}
+      <div className="bg-[--bg-panel] border-r border-[--border-subtle] min-h-0 min-w-0">
+        {audioBuffer ? (
+          <DualScene />
+        ) : (
+          <div className="h-full w-full flex items-center justify-center text-[--text-dim] text-[12px]">
+            Charge un fichier audio pour commencer
+          </div>
+        )}
       </div>
 
       <div className="bg-[--bg-panel]" aria-label="Inspector placeholder" />

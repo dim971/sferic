@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import type { Project } from '@/types/project';
+import { nanoid } from 'nanoid';
+import type { Project, SpatialKeyframe } from '@/types/project';
 import { DEFAULT_SETTINGS } from '@/types/project';
 import { AudioEngine } from '@/lib/audio-engine';
 
@@ -23,6 +24,11 @@ interface ProjectStore {
   setCurrentTime: (timeSec: number) => void;
   setIsPlaying: (isPlaying: boolean) => void;
   setMasterGain: (linear: number) => void;
+
+  addKeyframe: (position: { x: number; y: number; z: number }, time?: number) => string;
+  updateKeyframe: (id: string, partial: Partial<SpatialKeyframe>) => void;
+  removeKeyframe: (id: string) => void;
+  selectKeyframe: (id: string | null) => void;
 }
 
 function inferName(path: string): string {
@@ -98,4 +104,49 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     AudioEngine.setMasterGain(linear);
     set({ masterGain: linear });
   },
+
+  addKeyframe: (position, time) => {
+    const state = get();
+    const project = state.project;
+    if (!project) return '';
+    const t = time ?? state.playback.currentTime;
+    const id = nanoid(10);
+    const kf: SpatialKeyframe = {
+      id,
+      time: t,
+      position,
+      curve: 'linear',
+      snap: project.settings.snapToSphere,
+    };
+    const keyframes = [...project.keyframes, kf].sort((a, b) => a.time - b.time);
+    set({
+      project: { ...project, keyframes, meta: { ...project.meta, updatedAt: new Date().toISOString() } },
+      selectedKeyframeId: id,
+    });
+    return id;
+  },
+
+  updateKeyframe: (id, partial) => {
+    const project = get().project;
+    if (!project) return;
+    const keyframes = project.keyframes
+      .map((k) => (k.id === id ? { ...k, ...partial } : k))
+      .sort((a, b) => a.time - b.time);
+    set({
+      project: { ...project, keyframes, meta: { ...project.meta, updatedAt: new Date().toISOString() } },
+    });
+  },
+
+  removeKeyframe: (id) => {
+    const state = get();
+    const project = state.project;
+    if (!project) return;
+    const keyframes = project.keyframes.filter((k) => k.id !== id);
+    set({
+      project: { ...project, keyframes, meta: { ...project.meta, updatedAt: new Date().toISOString() } },
+      selectedKeyframeId: state.selectedKeyframeId === id ? null : state.selectedKeyframeId,
+    });
+  },
+
+  selectKeyframe: (id) => set({ selectedKeyframeId: id }),
 }));
