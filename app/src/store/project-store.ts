@@ -1,8 +1,9 @@
 import { create } from 'zustand';
 import { nanoid } from 'nanoid';
-import type { Project, SpatialKeyframe } from '@/types/project';
-import { DEFAULT_SETTINGS } from '@/types/project';
+import type { Project, Projection, SpatialKeyframe, ViewState } from '@/types/project';
+import { DEFAULT_SETTINGS, DEFAULT_VIEW_STATES } from '@/types/project';
 import { AudioEngine } from '@/lib/audio-engine';
+import { interpolatePosition, type Vec3 } from '@/lib/math3d';
 
 interface PlaybackState {
   isPlaying: boolean;
@@ -16,6 +17,8 @@ interface ProjectStore {
   playback: PlaybackState;
   masterGain: number;
   orbitEnabled: boolean;
+  viewStates: Record<Projection, ViewState>;
+  snapAngleDeg: number;
 
   loadAudioFile: (path: string, arrayBuffer: ArrayBuffer) => Promise<void>;
   play: () => void;
@@ -32,6 +35,21 @@ interface ProjectStore {
   selectKeyframe: (id: string | null) => void;
   updateSettings: (partial: Partial<Project['settings']>) => void;
   setOrbitEnabled: (enabled: boolean) => void;
+  setViewState: (which: Projection, partial: Partial<ViewState>) => void;
+  setSnapAngle: (deg: number) => void;
+  addKeyframeAtProjection: (proj: Projection, u: number, v: number) => void;
+  moveKeyframe: (id: string, proj: Projection, u: number, v: number) => void;
+}
+
+function projectedToWorld(proj: Projection, u: number, v: number, fixed: Vec3): Vec3 {
+  if (proj === 'top') return { x: u, y: fixed.y, z: v };
+  return { x: fixed.x, y: -v, z: u };
+}
+
+function snapToSphereIfNeeded(p: Vec3, snapToSphere: boolean): Vec3 {
+  if (!snapToSphere) return p;
+  const len = Math.hypot(p.x, p.y, p.z) || 1;
+  return { x: p.x / len, y: p.y / len, z: p.z / len };
 }
 
 function inferName(path: string): string {
@@ -48,6 +66,8 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
   playback: { isPlaying: false, currentTime: 0 },
   masterGain: 1,
   orbitEnabled: true,
+  viewStates: DEFAULT_VIEW_STATES,
+  snapAngleDeg: 0,
 
   loadAudioFile: async (path, arrayBuffer) => {
     const buffer = await AudioEngine.decode(arrayBuffer);
@@ -171,4 +191,32 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
   },
 
   setOrbitEnabled: (enabled) => set({ orbitEnabled: enabled }),
+
+  setViewState: (which, partial) =>
+    set((s) => ({
+      viewStates: { ...s.viewStates, [which]: { ...s.viewStates[which], ...partial } },
+    })),
+
+  setSnapAngle: (deg) => set({ snapAngleDeg: deg }),
+
+  addKeyframeAtProjection: (proj, u, v) => {
+    const state = get();
+    const project = state.project;
+    if (!project) return;
+    const t = state.playback.currentTime;
+    const fixed = interpolatePosition(project.keyframes, t);
+    let pos = projectedToWorld(proj, u, v, fixed);
+    pos = snapToSphereIfNeeded(pos, project.settings.snapToSphere);
+    state.addKeyframe(pos, t);
+  },
+
+  moveKeyframe: (id, proj, u, v) => {
+    const project = get().project;
+    if (!project) return;
+    const kf = project.keyframes.find((k) => k.id === id);
+    if (!kf) return;
+    let pos = projectedToWorld(proj, u, v, kf.position);
+    pos = snapToSphereIfNeeded(pos, project.settings.snapToSphere || (kf.snap ?? false));
+    get().updateKeyframe(id, { position: pos });
+  },
 }));

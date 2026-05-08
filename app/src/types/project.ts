@@ -45,6 +45,18 @@ export interface Project {
   meta: { createdAt: string; updatedAt: string; name: string };
 }
 
+export type Projection = 'top' | 'side';
+
+export interface ViewState {
+  zoom: number;
+  locked: boolean;
+}
+
+export const DEFAULT_VIEW_STATES: Record<Projection, ViewState> = {
+  top: { zoom: 1, locked: false },
+  side: { zoom: 1, locked: false },
+};
+
 export const DEFAULT_SETTINGS: ProjectSettings = {
   panningModel: 'HRTF',
   distanceModel: 'inverse',

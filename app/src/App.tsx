@@ -4,7 +4,7 @@ import { TransportBar } from '@/components/transport/TransportBar';
 import { Readouts } from '@/components/timeline/Readouts';
 import { Waveform } from '@/components/timeline/Waveform';
 import { Ruler } from '@/components/timeline/Ruler';
-import { DualScene } from '@/components/scene/DualScene';
+import { OrthographicView } from '@/components/scene/OrthographicView';
 import { Inspector } from '@/components/inspector/Inspector';
 import { useProjectStore } from '@/store/project-store';
 import { useTransportSync } from '@/lib/use-transport-sync';
@@ -18,26 +18,29 @@ export default function App() {
   const duration = audioBuffer?.duration ?? 0;
 
   return (
-    <div className="h-screen w-screen grid grid-rows-[44px_1fr_180px] grid-cols-[1fr_320px] bg-[--bg-base] text-[--text-primary]">
-      <div className="col-span-2 border-b border-[--border-subtle]">
+    <div className="h-screen w-screen grid grid-rows-[44px_1fr_180px] grid-cols-[1fr_1fr_320px] bg-[--bg-base] text-[--text-primary]">
+      <div className="col-span-3 border-b border-[--border-subtle]">
         <Topbar />
       </div>
 
-      <div className="bg-[--bg-panel] border-r border-[--border-subtle] min-h-0 min-w-0">
-        {audioBuffer ? (
-          <DualScene />
-        ) : (
-          <div className="h-full w-full flex items-center justify-center text-[--text-dim] text-[12px]">
-            Charge un fichier audio pour commencer
+      {audioBuffer ? (
+        <>
+          <OrthographicView projection="top" />
+          <div className="border-l border-[--border-subtle] min-h-0 min-w-0">
+            <OrthographicView projection="side" />
           </div>
-        )}
-      </div>
+        </>
+      ) : (
+        <div className="col-span-2 bg-[--bg-panel] border-r border-[--border-subtle] flex items-center justify-center text-[--text-dim] text-[12px]">
+          Charge un fichier audio pour commencer
+        </div>
+      )}
 
       <div className="bg-[--bg-panel] border-l border-[--border-subtle] min-h-0">
         <Inspector />
       </div>
 
-      <div className="col-span-2 bg-[--bg-panel] border-t border-[--border-subtle] grid grid-cols-[auto_1fr_auto] gap-3 px-3 py-2 items-stretch">
+      <div className="col-span-3 bg-[--bg-panel] border-t border-[--border-subtle] grid grid-cols-[auto_1fr_auto] gap-3 px-3 py-2 items-stretch">
         <div className="flex flex-col gap-1.5 justify-between min-w-[180px]">
           <TransportBar />
           {project && <Readouts />}
