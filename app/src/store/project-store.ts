@@ -53,6 +53,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     const buffer = await AudioEngine.decode(arrayBuffer);
     AudioEngine.setBuffer(buffer);
     AudioEngine.setMasterGain(get().masterGain);
+    AudioEngine.setKeyframes([]);
     const now = new Date().toISOString();
     const project: Project = {
       version: 1,
@@ -123,6 +124,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
       snap: project.settings.snapToSphere,
     };
     const keyframes = [...project.keyframes, kf].sort((a, b) => a.time - b.time);
+    AudioEngine.setKeyframes(keyframes);
     set({
       project: { ...project, keyframes, meta: { ...project.meta, updatedAt: new Date().toISOString() } },
       selectedKeyframeId: id,
@@ -136,6 +138,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     const keyframes = project.keyframes
       .map((k) => (k.id === id ? { ...k, ...partial } : k))
       .sort((a, b) => a.time - b.time);
+    AudioEngine.setKeyframes(keyframes);
     set({
       project: { ...project, keyframes, meta: { ...project.meta, updatedAt: new Date().toISOString() } },
     });
@@ -146,6 +149,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     const project = state.project;
     if (!project) return;
     const keyframes = project.keyframes.filter((k) => k.id !== id);
+    AudioEngine.setKeyframes(keyframes);
     set({
       project: { ...project, keyframes, meta: { ...project.meta, updatedAt: new Date().toISOString() } },
       selectedKeyframeId: state.selectedKeyframeId === id ? null : state.selectedKeyframeId,

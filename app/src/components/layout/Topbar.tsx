@@ -2,6 +2,8 @@ import { FolderOpen, Save, Download } from 'lucide-react';
 import { open } from '@tauri-apps/plugin-dialog';
 import { readFile } from '@tauri-apps/plugin-fs';
 import { useProjectStore } from '@/store/project-store';
+import { AudioEngine } from '@/lib/audio-engine';
+import { VuMeter } from './VuMeter';
 
 const MENUS = ['File', 'Edit', 'Project', 'Render', 'View', 'Help'];
 
@@ -72,7 +74,10 @@ export function Topbar() {
           <FolderOpen size={14} strokeWidth={1.75} />
           Open
         </button>
-        <VuMeterPlaceholder />
+        <div className="flex items-end gap-0.5 h-7 px-1.5" aria-label="VU meters">
+          <VuMeter analyser={AudioEngine.getAnalyserL()} />
+          <VuMeter analyser={AudioEngine.getAnalyserR()} />
+        </div>
         <button
           type="button"
           disabled={renderDisabled}
@@ -83,26 +88,5 @@ export function Topbar() {
         </button>
       </div>
     </header>
-  );
-}
-
-function VuMeterPlaceholder() {
-  return (
-    <div className="flex items-end gap-0.5 h-7 px-1.5" aria-label="VU meters (phase 5)">
-      {(['L', 'R'] as const).map((ch) => (
-        <div key={ch} className="flex flex-col gap-0.5 justify-end h-full">
-          {Array.from({ length: 14 }).map((_, i) => {
-            const fromTop = 13 - i;
-            const color =
-              fromTop === 0
-                ? 'bg-[--vu-red]'
-                : fromTop < 4
-                  ? 'bg-[--vu-yellow]'
-                  : 'bg-[--vu-green]';
-            return <span key={i} className={`w-2 h-[1.5px] ${color} opacity-20`} />;
-          })}
-        </div>
-      ))}
-    </div>
   );
 }
