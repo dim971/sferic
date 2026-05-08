@@ -6,6 +6,7 @@ import { SceneContents } from './SceneContents';
 export function ScenePerspective() {
   const addKeyframe = useProjectStore((s) => s.addKeyframe);
   const audioBuffer = useProjectStore((s) => s.audioBuffer);
+  const orbitEnabled = useProjectStore((s) => s.orbitEnabled);
 
   const handleSphereClick = (e: ThreeEvent<PointerEvent>) => {
     if (!audioBuffer) return;
@@ -18,7 +19,7 @@ export function ScenePerspective() {
   return (
     <Canvas camera={{ position: [2.5, 2, 2.5], fov: 50 }} className="bg-[--bg-panel]">
       <SceneContents onSphereClick={handleSphereClick} />
-      <OrbitControls makeDefault enablePan={false} minDistance={2} maxDistance={8} />
+      <OrbitControls makeDefault enablePan={false} minDistance={2} maxDistance={8} enabled={orbitEnabled} />
     </Canvas>
   );
 }

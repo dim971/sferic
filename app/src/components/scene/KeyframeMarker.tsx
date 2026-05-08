@@ -1,5 +1,7 @@
 import { Html } from '@react-three/drei';
-import type { ThreeEvent } from '@react-three/fiber';
+import { useThree, type ThreeEvent } from '@react-three/fiber';
+import { Raycaster, Sphere, Vector2, Vector3 } from 'three';
+import { useMemo } from 'react';
 import type { SpatialKeyframe } from '@/types/project';
 import { useProjectStore } from '@/store/project-store';
 
@@ -10,13 +12,47 @@ interface KeyframeMarkerProps {
 
 export function KeyframeMarker({ keyframe, index }: KeyframeMarkerProps) {
   const selectKeyframe = useProjectStore((s) => s.selectKeyframe);
+  const updateKeyframe = useProjectStore((s) => s.updateKeyframe);
+  const setOrbitEnabled = useProjectStore((s) => s.setOrbitEnabled);
   const selected = useProjectStore((s) => s.selectedKeyframeId === keyframe.id);
+  const { camera, gl } = useThree();
 
   const radius = selected ? 0.08 : 0.05;
+
+  const tools = useMemo(
+    () => ({
+      raycaster: new Raycaster(),
+      sphere: new Sphere(new Vector3(0, 0, 0), 1),
+      pointer: new Vector2(),
+      target: new Vector3(),
+    }),
+    [],
+  );
 
   const handleDown = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
     selectKeyframe(keyframe.id);
+    setOrbitEnabled(false);
+
+    const onMove = (ev: PointerEvent) => {
+      const rect = gl.domElement.getBoundingClientRect();
+      tools.pointer.x = ((ev.clientX - rect.left) / rect.width) * 2 - 1;
+      tools.pointer.y = -((ev.clientY - rect.top) / rect.height) * 2 + 1;
+      tools.raycaster.setFromCamera(tools.pointer, camera);
+      if (tools.raycaster.ray.intersectSphere(tools.sphere, tools.target)) {
+        const len = tools.target.length() || 1;
+        updateKeyframe(keyframe.id, {
+          position: { x: tools.target.x / len, y: tools.target.y / len, z: tools.target.z / len },
+        });
+      }
+    };
+    const onUp = () => {
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      setOrbitEnabled(true);
+    };
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
   };
 
   return (

@@ -15,6 +15,7 @@ interface ProjectStore {
   selectedKeyframeId: string | null;
   playback: PlaybackState;
   masterGain: number;
+  orbitEnabled: boolean;
 
   loadAudioFile: (path: string, arrayBuffer: ArrayBuffer) => Promise<void>;
   play: () => void;
@@ -29,6 +30,7 @@ interface ProjectStore {
   updateKeyframe: (id: string, partial: Partial<SpatialKeyframe>) => void;
   removeKeyframe: (id: string) => void;
   selectKeyframe: (id: string | null) => void;
+  setOrbitEnabled: (enabled: boolean) => void;
 }
 
 function inferName(path: string): string {
@@ -44,6 +46,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
   selectedKeyframeId: null,
   playback: { isPlaying: false, currentTime: 0 },
   masterGain: 1,
+  orbitEnabled: true,
 
   loadAudioFile: async (path, arrayBuffer) => {
     const buffer = await AudioEngine.decode(arrayBuffer);
@@ -149,4 +152,6 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
   },
 
   selectKeyframe: (id) => set({ selectedKeyframeId: id }),
+
+  setOrbitEnabled: (enabled) => set({ orbitEnabled: enabled }),
 }));
