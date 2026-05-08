@@ -119,6 +119,10 @@ Produire des binaires natifs pour macOS, Windows et Linux et automatiser ce buil
    - Aucun warning d'antivirus / Gatekeeper bloquant.
    - **Note** : sur macOS, sans signature Developer ID, l'utilisateur doit clic-droit → Ouvrir la première fois. Documenter ça.
 
+## Design
+
+Avant de tagger `v0.1.0`, faire une **passe finale de QA visuel** : ouvrir `design/Screen Shot 2026-05-08 at 22.03.51.png` côte à côte avec l'app installée et lister les écarts. Tout écart non documenté dans `DESIGN.md §9` (stubs reconnus) doit être corrigé ou tracé en issue.
+
 ## Critère d'acceptation
 
 - Les trois bundles sont produits localement (au moins sur la machine de dev).

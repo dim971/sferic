@@ -69,23 +69,25 @@ Créer le squelette Tauri 2 + React + TypeScript + Tailwind dans un sous-dossier
    }
    ```
 
-9. **Remplacer le contenu de `src/App.tsx`** par un placeholder propre :
-   ```tsx
-   export default function App() {
-     return (
-       <div className="h-screen w-screen flex items-center justify-center bg-neutral-950 text-neutral-100">
-         <h1 className="text-3xl font-light tracking-tight">Spatialize</h1>
-       </div>
-     );
-   }
-   ```
+9. **Déclarer les color tokens** dans `src/index.css` (cf. `DESIGN.md §1.1`). Après `@import "tailwindcss";`, ajouter un bloc `@theme` Tailwind 4 (ou `:root`) avec **tous** les tokens listés (`--bg-base`, `--bg-panel`, `--accent`, `--listener`, etc.). Ces tokens sont utilisés dès cette phase et par toutes les suivantes — ne pas les redéfiniwr ailleurs.
 
-10. **Mettre à jour `tauri.conf.json`** :
+10. **Remplacer le contenu de `src/App.tsx`** par un placeholder propre qui utilise déjà les tokens :
+    ```tsx
+    export default function App() {
+      return (
+        <div className="h-screen w-screen flex items-center justify-center bg-[--bg-base] text-[--text-primary]">
+          <h1 className="text-3xl font-light tracking-tight">Spatialize</h1>
+        </div>
+      );
+    }
+    ```
+
+11. **Mettre à jour `tauri.conf.json`** :
     - `productName` : `Spatialize`
     - `version` : `0.1.0`
     - Window : `width: 1280, height: 800, minWidth: 1024, minHeight: 700, title: "Spatialize"`
 
-11. **Créer la structure de dossiers cible** dans `app/src/` :
+12. **Créer la structure de dossiers cible** dans `app/src/` :
     ```
     src/
     ├── components/
@@ -108,9 +110,14 @@ Créer le squelette Tauri 2 + React + TypeScript + Tailwind dans un sous-dossier
     ```
     Crée des fichiers vides à ce stade (juste le placeholder `// TODO`), ils seront remplis aux phases suivantes.
 
+## Design
+
+Le placeholder n'a presque rien à montrer, mais la **palette doit être en place dès cette phase** : tous les tokens de `DESIGN.md §1.1` sont déclarés dans `src/index.css`, et `App.tsx` utilise `bg-[--bg-base]` + `text-[--text-primary]`. Ouvrir `design/Screen Shot 2026-05-08 at 22.03.51.png` une fois pour calibrer l'œil sur le ton de noir attendu (très sombre, légèrement bleuté).
+
 ## Critère d'acceptation
 
 - `pnpm tauri dev` démarre une fenêtre native avec le titre "Spatialize" et le placeholder centré.
+- Le fond est `--bg-base` (≈ `#07080A`) et le texte `--text-primary` — pas de gris Tailwind par défaut.
 - Pas d'erreur dans la console (browser ni Rust).
 - `pnpm tsc --noEmit` passe.
 

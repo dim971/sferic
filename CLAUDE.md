@@ -10,8 +10,9 @@ Construire un outil desktop multiplateforme (macOS, Windows, Linux) qui permet d
 
 1. `README.md` — vue d'ensemble et choix techno
 2. `ARCHITECTURE.md` — modèle de données, graphe audio, composants
-3. `ROADMAP.md` — découpage en 9 phases
-4. `tasks/phase-0-bootstrap.md` — première tâche
+3. `DESIGN.md` — système visuel + image cible dans `design/` (source de vérité pour tout rendu)
+4. `ROADMAP.md` — découpage en 9 phases
+5. `tasks/phase-0-bootstrap.md` — première tâche
 
 ## Méthodologie
 
@@ -41,10 +42,11 @@ Construire un outil desktop multiplateforme (macOS, Windows, Linux) qui permet d
 
 ## Quand demander confirmation
 
-- Avant d'ajouter une dépendance non listée dans `ARCHITECTURE.md`.
+- Avant d'ajouter une dépendance non listée dans `ARCHITECTURE.md` ou `DESIGN.md`.
 - Avant de modifier le découpage de composants.
 - Avant de toucher à la configuration de Tauri (sécurité, allowlist).
-- Si une instruction d'une `tasks/phase-N` te semble contradictoire avec l'`ARCHITECTURE.md`.
+- Avant de t'écarter visiblement du screenshot dans `design/` (couleurs, layout, hiérarchie).
+- Si une instruction d'une `tasks/phase-N` te semble contradictoire avec l'`ARCHITECTURE.md` ou `DESIGN.md`.
 
 ## Quand NE PAS demander
 
@@ -54,6 +56,6 @@ Construire un outil desktop multiplateforme (macOS, Windows, Linux) qui permet d
 ## Premier message attendu de toi
 
 Quand tu commences :
-1. Confirme que tu as lu `README.md`, `ARCHITECTURE.md`, `ROADMAP.md`.
+1. Confirme que tu as lu `README.md`, `ARCHITECTURE.md`, `DESIGN.md`, `ROADMAP.md` et regardé l'image dans `design/`.
 2. Indique la version de Node, Rust et pnpm détectées.
 3. Annonce que tu attaques la **phase 0** et ouvre `tasks/phase-0-bootstrap.md`.

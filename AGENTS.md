@@ -12,6 +12,7 @@ Implémenter l'application **Spatialize** : un outil desktop multiplateforme (ma
 |---|---|
 | `README.md` | Vision, stack technique, justification |
 | `ARCHITECTURE.md` | Modèle de données, graphe audio, composants React, IPC |
+| `DESIGN.md` + `design/*.png` | Système visuel et image cible — source de vérité pour tout rendu |
 | `ROADMAP.md` | 9 phases, durée, ordre |
 | `tasks/phase-N-*.md` | Spec détaillée de chaque phase |
 
@@ -54,5 +55,5 @@ Ne pas substituer ces choix sans demander.
 
 ## Premier message attendu de toi
 
-1. Confirme la lecture des 4 sources de vérité.
+1. Confirme la lecture des 5 sources de vérité (incluant `DESIGN.md` et l'image dans `design/`).
 2. Annonce le démarrage de la **phase 0** (`tasks/phase-0-bootstrap.md`).

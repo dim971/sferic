@@ -9,8 +9,9 @@ Copie-colle le bloc ci-dessous dans ta session Claude Code (lancée à la racine
 > Lis dans cet ordre :
 > 1. `README.md`
 > 2. `ARCHITECTURE.md`
-> 3. `ROADMAP.md`
-> 4. `CLAUDE.md` (tes règles de fonctionnement)
+> 3. `DESIGN.md` + l'image dans `design/` (source de vérité visuelle)
+> 4. `ROADMAP.md`
+> 5. `CLAUDE.md` (tes règles de fonctionnement)
 >
 > Puis attaque la **phase 0** en suivant `tasks/phase-0-bootstrap.md`. Crée le projet dans un sous-dossier `app/`.
 >

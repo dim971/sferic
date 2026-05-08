@@ -80,9 +80,12 @@ Tu peux faire faire la **phase 0 à 2** par Claude (architecture solide, types s
 spatialize-kit/
 ├── README.md                  ← ce fichier
 ├── ARCHITECTURE.md            ← architecture technique détaillée
+├── DESIGN.md                  ← système visuel (couleurs, typographie, layout)
 ├── ROADMAP.md                 ← plan d'exécution en 9 phases
 ├── CLAUDE.md                  ← instructions pour Claude Code
 ├── AGENTS.md                  ← instructions pour Codex / OpenAI
+├── design/
+│   └── Screen Shot ....png    ← image cible : source de vérité visuelle
 ├── tasks/
 │   ├── phase-0-bootstrap.md
 │   ├── phase-1-audio-loading.md

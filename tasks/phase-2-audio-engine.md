@@ -161,13 +161,17 @@ Construire le moteur audio temps réel avec lecture stéréo simple (sans encore
      ```
    - Appeler ce hook une fois dans `App.tsx`.
 
-4. **Créer `src/components/transport/TransportBar.tsx`** :
-   - Boutons Play / Pause / Stop.
-   - Affichage `mm:ss.cc / mm:ss.cc` (current / total).
-   - Slider de seek.
-   - Slider de volume (gain master, 0..1.5).
+4. **Créer `src/components/transport/TransportBar.tsx`** (cf. `DESIGN.md §6.1`). Ce composant sera **composé à l'intérieur du `<Timeline />`** en phase 3 (bloc gauche de la timeline), pas placé sous la waveform :
+   - Trois boutons icônes `Play` / `Pause` / `Square` (stop) de `lucide-react`, 16px, couleur `--accent`. Bouton actif : fond `--accent-soft`.
+   - Affichage du temps `m:ss` en `text-[14px] font-mono text-[--text-primary]` (ex. `1:23` dans le screenshot).
+   - Slider de volume (gain master, 0..1.5) — peut rester discret en phase 2 (un petit slider horizontal `--accent`), plus tard remplacé par les VU mètres dans le Topbar (phase 5).
+   - Pas de slider de seek dans le TransportBar : le seek se fait en cliquant sur la waveform (phase 4). Si nécessaire pour debug en phase 2, garder un slider invisible ou un input numérique.
 
-5. **Mettre à jour `App.tsx`** pour intégrer la `TransportBar` sous la `Waveform` et appeler `useTransportSync()`.
+5. **Mettre à jour `App.tsx`** : à cette phase, la `TransportBar` est temporairement placée dans la cellule "Inspector" (320px droite) du layout grille existant, ou en bas à gauche de la zone Timeline si la grille est déjà en place. **L'objectif final** (phase 3) est qu'elle vive dans la rangée Timeline (cf. `DESIGN.md §2`). Appeler `useTransportSync()` une fois dans `App.tsx`.
+
+## Design
+
+Réf : `DESIGN.md §6.1` (TransportBar). Les icônes viennent de `lucide-react` (déjà installé en phase 1) — `Play`, `Pause`, `Square`. Le temps utilise la fonte mono déjà configurée. Pas de fioritures — la TransportBar est compacte (≈ 32px de haut, padding minimal).
 
 ## Critère d'acceptation
 
@@ -175,6 +179,7 @@ Construire le moteur audio temps réel avec lecture stéréo simple (sans encore
 - Pause / Stop / Seek fonctionnent.
 - Le compteur de temps avance en temps réel.
 - Le slider de volume modifie réellement le niveau.
+- Les icônes/couleurs des boutons transport correspondent à `DESIGN.md §6.1`.
 
 ## Notes pour l'agent
 

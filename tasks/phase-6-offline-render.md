@@ -110,29 +110,34 @@ Exporter le morceau spatialisé en fichier audio stéréo avec l'effet "bakké" 
    ```
    Créer `src/lib/mp3-encoder.ts` qui prend un `AudioBuffer` stéréo et retourne un `Uint8Array` MP3 128kbps.
 
-4. **Bouton "Exporter…"** dans la `Topbar` :
-   - Ouvre un modal :
-     - Format : WAV / MP3
-     - Si MP3 : bitrate (128 / 192 / 320 kbps)
-     - Bouton "Exporter".
-   - Au clic :
-     1. Affiche un spinner avec "Rendu en cours…"
+4. **Activer le bouton "Render"** déjà présent dans la `Topbar` depuis phase 1 (CTA orange plein, cf. `DESIGN.md §3` point 7). Au clic, ouvrir un modal centré (fond `--bg-panel`, bordure `--border-strong`, max-width 420px) :
+   - Format : WAV / MP3 (radio).
+   - Si MP3 : bitrate (128 / 192 / 320 kbps, segmented).
+   - Boutons en bas : `Cancel` outline + `Render` plein orange.
+   - Au clic Render :
+     1. Affiche un spinner avec "Rendu en cours…" dans le modal.
      2. Appelle `renderProject(project, audioBuffer)`.
      3. Encode (`encodeWav` ou `encodeMp3`).
      4. Ouvre `dialog.save({ defaultPath: ${name}.wav })`.
      5. Écrit avec `fs.writeFile(path, bytes)` (plugin Tauri).
-     6. Affiche une toast "Exporté ✓".
+     6. Ferme le modal et affiche une toast "Exporté ✓" (toast aux couleurs du design : fond `--bg-panel-elev`, accent `--accent` à gauche).
 
 5. **Gérer la performance** :
    - Pour des fichiers > 5 min, le rendu offline peut prendre plusieurs secondes mais doit rester < durée du morceau (les implémentations Chromium tournent à ~5–20× temps réel).
    - Afficher une barre de progression si possible (`OfflineAudioContext` n'expose pas de progression — on peut afficher un spinner indéterminé).
 
+## Design
+
+Réf : `DESIGN.md §3` (Render CTA). Le modal et la toast doivent reprendre la palette globale (jamais de blanc plein, jamais de couleurs étrangères). Le bouton Render est **le** CTA principal de l'app — il doit toujours être visible dans le Topbar, même quand aucun fichier n'est chargé (mais désactivé dans ce cas).
+
 ## Critère d'acceptation
 
-- Charger un fichier, ajouter quelques keyframes, exporter en WAV.
+- Le bouton Render est visible dans le Topbar dès phase 1, désactivé tant qu'aucun audio n'est chargé, actif sinon.
+- Charger un fichier, ajouter quelques keyframes, cliquer Render → modal s'ouvre, choisir WAV → fichier sauvé.
 - Le WAV joué dans un autre lecteur (VLC, QuickTime…) au casque reproduit l'effet spatial entendu en preview.
 - L'export MP3 fonctionne et donne un fichier lisible partout.
 - Pas de freeze de l'UI pendant le rendu (le rendu offline ne bloque pas le main thread, mais l'encodage WAV est synchrone — pour > 100 MB, le faire dans un Worker est un plus mais pas obligatoire à ce stade).
+- Le modal et la toast respectent la palette du design.
 
 ## Commit
 

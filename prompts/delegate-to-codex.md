@@ -6,7 +6,7 @@ Copie-colle dans ta session Codex (lancée à la racine du kit décompressé) :
 
 ---
 
-> Lis `AGENTS.md`, `README.md`, `ARCHITECTURE.md`, `ROADMAP.md`, puis `tasks/phase-0-bootstrap.md`.
+> Lis `AGENTS.md`, `README.md`, `ARCHITECTURE.md`, `DESIGN.md` (+ l'image dans `design/`), `ROADMAP.md`, puis `tasks/phase-0-bootstrap.md`.
 >
 > Implémente la phase 0 dans un sous-dossier `app/`. À la fin :
 > - Lance `pnpm tsc --noEmit` et `pnpm tauri dev`.
