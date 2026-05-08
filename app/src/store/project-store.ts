@@ -10,6 +10,12 @@ import type {
 import { DEFAULT_KF_AUDIO, DEFAULT_SETTINGS, DEFAULT_VIEW_STATES } from '@/types/project';
 import { AudioEngine } from '@/lib/audio-engine';
 import { detectBpm } from '@/lib/audio-analysis';
+import {
+  loadProjectFile,
+  pickProjectPathToOpen,
+  pickProjectPathToSave,
+  saveProjectFile,
+} from '@/lib/project-io';
 import { interpolatePosition, type Vec3 } from '@/lib/math3d';
 
 interface PlaybackState {
@@ -57,6 +63,10 @@ interface ProjectStore {
 
   markDirty: () => void;
   markClean: () => void;
+
+  saveCurrentProject: () => Promise<boolean>;
+  saveCurrentProjectAs: () => Promise<boolean>;
+  openProjectFromDialog: () => Promise<boolean>;
 }
 
 function inferName(path: string): string {
@@ -325,4 +335,37 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
 
   markDirty: () => set({ isDirty: true }),
   markClean: () => set({ isDirty: false }),
+
+  saveCurrentProject: async () => {
+    const state = get();
+    const project = state.project;
+    if (!project) return false;
+    let path = state.projectPath;
+    if (!path) {
+      path = await pickProjectPathToSave(project.meta.name || 'project');
+      if (!path) return false;
+    }
+    const stamped = await saveProjectFile(path, project);
+    set({ project: stamped, projectPath: path, isDirty: false });
+    return true;
+  },
+
+  saveCurrentProjectAs: async () => {
+    const state = get();
+    const project = state.project;
+    if (!project) return false;
+    const path = await pickProjectPathToSave(project.meta.name || 'project');
+    if (!path) return false;
+    const stamped = await saveProjectFile(path, project);
+    set({ project: stamped, projectPath: path, isDirty: false });
+    return true;
+  },
+
+  openProjectFromDialog: async () => {
+    const path = await pickProjectPathToOpen();
+    if (!path) return false;
+    const { project, audioBuffer } = await loadProjectFile(path);
+    get().setLoadedProject(project, path, audioBuffer);
+    return true;
+  },
 }));

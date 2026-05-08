@@ -38,7 +38,14 @@ export function useKeyboardShortcuts(): void {
 
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
         e.preventDefault();
-        // Phase 7 will implement save; hook placeholder.
+        if (e.shiftKey) void state.saveCurrentProjectAs();
+        else void state.saveCurrentProject();
+        return;
+      }
+
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'o') {
+        e.preventDefault();
+        void state.openProjectFromDialog();
         return;
       }
     };

@@ -13,9 +13,12 @@ const MENUS = ['File', 'Edit', 'Project', 'Render', 'View', 'Help'];
 export function Topbar() {
   const project = useProjectStore((s) => s.project);
   const audioBuffer = useProjectStore((s) => s.audioBuffer);
+  const isDirty = useProjectStore((s) => s.isDirty);
   const loadAudioFile = useProjectStore((s) => s.loadAudioFile);
+  const saveCurrentProject = useProjectStore((s) => s.saveCurrentProject);
+  const openProjectFromDialog = useProjectStore((s) => s.openProjectFromDialog);
 
-  const handleOpen = async () => {
+  const handleOpenAudio = async () => {
     const picked = await open({
       multiple: false,
       filters: [{ name: 'Audio', extensions: ['wav', 'mp3', 'flac', 'ogg', 'm4a', 'aac'] }],
@@ -24,6 +27,16 @@ export function Topbar() {
     const bytes = await readFile(picked);
     const arrayBuffer = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
     await loadAudioFile(picked, arrayBuffer);
+  };
+
+  const handleOpen = () => {
+    if (project) void openProjectFromDialog();
+    else void handleOpenAudio();
+  };
+
+  const handleSave = () => {
+    if (!project) return;
+    void saveCurrentProject();
   };
 
   const sampleRateK = audioBuffer ? `${(audioBuffer.sampleRate / 1000).toFixed(1)}k` : '';
@@ -58,6 +71,11 @@ export function Topbar() {
             <span className="font-mono text-[--text-secondary]">{sampleRateK}</span>
             <span className="text-[--text-dim]">·</span>
             <span className="text-[--text-secondary] truncate max-w-[220px]">{fileName}</span>
+            {isDirty && (
+              <span className="ml-1 text-[10px] tracking-widest uppercase px-2 py-0.5 rounded-md bg-[--accent-soft] text-[--accent]">
+                UNSAVED
+              </span>
+            )}
           </>
         ) : null}
       </div>
@@ -80,7 +98,9 @@ export function Topbar() {
       <div className="flex items-center gap-2">
         <button
           type="button"
-          disabled
+          onClick={handleSave}
+          disabled={!project}
+          title="Save (Cmd/Ctrl+S)"
           className="text-[14px] px-3 py-1 rounded-md border border-[--accent] text-[--accent] hover:bg-[--accent-soft] disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
         >
           <Save size={14} strokeWidth={1.75} />
@@ -88,11 +108,21 @@ export function Topbar() {
         </button>
         <button
           type="button"
-          onClick={handleOpen}
+          onClick={handleOpenAudio}
+          title="Open audio file"
           className="text-[14px] px-3 py-1 rounded-md border border-[--accent] text-[--accent] hover:bg-[--accent-soft] flex items-center gap-1.5"
         >
           <FolderOpen size={14} strokeWidth={1.75} />
-          Open
+          Audio
+        </button>
+        <button
+          type="button"
+          onClick={handleOpen}
+          title="Open project (.spatialize.json)"
+          className="text-[14px] px-3 py-1 rounded-md border border-[--border-strong] text-[--text-secondary] hover:text-[--text-primary] flex items-center gap-1.5"
+        >
+          <FolderOpen size={14} strokeWidth={1.75} />
+          Project
         </button>
         <div className="flex items-end gap-0.5 h-7 px-1.5" aria-label="VU meters">
           <VuMeter analyser={AudioEngine.getAnalyserL()} />
