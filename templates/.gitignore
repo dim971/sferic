@@ -1,0 +1,34 @@
+# dependencies
+node_modules/
+dist/
+dist-ssr/
+
+# tauri build
+src-tauri/target/
+src-tauri/gen/
+
+# logs
+*.log
+pnpm-debug.log*
+
+# env / secrets
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# tests
+coverage/
+
+# cache
+.pnpm-store/
+.eslintcache
