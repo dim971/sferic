@@ -30,6 +30,7 @@ interface ProjectStore {
   updateKeyframe: (id: string, partial: Partial<SpatialKeyframe>) => void;
   removeKeyframe: (id: string) => void;
   selectKeyframe: (id: string | null) => void;
+  updateSettings: (partial: Partial<Project['settings']>) => void;
   setOrbitEnabled: (enabled: boolean) => void;
 }
 
@@ -152,6 +153,18 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
   },
 
   selectKeyframe: (id) => set({ selectedKeyframeId: id }),
+
+  updateSettings: (partial) => {
+    const project = get().project;
+    if (!project) return;
+    set({
+      project: {
+        ...project,
+        settings: { ...project.settings, ...partial },
+        meta: { ...project.meta, updatedAt: new Date().toISOString() },
+      },
+    });
+  },
 
   setOrbitEnabled: (enabled) => set({ orbitEnabled: enabled }),
 }));
