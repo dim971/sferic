@@ -1,1 +1,35 @@
 @import "tailwindcss";
+
+:root {
+  /* Backgrounds */
+  --bg-base: #07080a;
+  --bg-panel: #0e0f13;
+  --bg-panel-elev: #15171c;
+  --bg-input: #1a1c22;
+
+  /* Borders */
+  --border-subtle: #1f222a;
+  --border-strong: #2a2e38;
+
+  /* Text */
+  --text-primary: #e8e8ea;
+  --text-secondary: #9ca0ab;
+  --text-dim: #5a5f6b;
+
+  /* Accent (orange Spatialize) */
+  --accent: #f87328;
+  --accent-hot: #ff8a3d;
+  --accent-soft: #3a1e12;
+
+  /* Listener (seul usage du bleu) */
+  --listener: #4f8ef7;
+
+  /* VU meter */
+  --vu-green: #22a858;
+  --vu-yellow: #e0b341;
+  --vu-red: #e0533c;
+
+  /* Waveform */
+  --waveform: #f87328;
+  --waveform-bg: #1a0e08;
+}
