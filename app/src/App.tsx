@@ -1,8 +1,11 @@
 import { Topbar } from '@/components/layout/Topbar';
+import { TransportBar } from '@/components/transport/TransportBar';
 import { Waveform } from '@/components/timeline/Waveform';
 import { useProjectStore } from '@/store/project-store';
+import { useTransportSync } from '@/lib/use-transport-sync';
 
 export default function App() {
+  useTransportSync();
   const audioBuffer = useProjectStore((s) => s.audioBuffer);
 
   return (
@@ -19,8 +22,10 @@ export default function App() {
 
       <div className="bg-[--bg-panel]" aria-label="Inspector placeholder" />
 
-      <div className="col-span-2 bg-[--bg-panel] border-t border-[--border-subtle] p-3">
+      <div className="col-span-2 bg-[--bg-panel] border-t border-[--border-subtle] grid grid-cols-[auto_1fr_auto] gap-3 px-3 py-2 items-center">
+        <TransportBar />
         <Waveform audioBuffer={audioBuffer} />
+        <div aria-label="Zoom controls placeholder" className="w-12" />
       </div>
     </div>
   );

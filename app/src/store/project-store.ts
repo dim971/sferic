@@ -13,8 +13,16 @@ interface ProjectStore {
   audioBuffer: AudioBuffer | null;
   selectedKeyframeId: string | null;
   playback: PlaybackState;
+  masterGain: number;
 
   loadAudioFile: (path: string, arrayBuffer: ArrayBuffer) => Promise<void>;
+  play: () => void;
+  pause: () => void;
+  stop: () => void;
+  seek: (timeSec: number) => void;
+  setCurrentTime: (timeSec: number) => void;
+  setIsPlaying: (isPlaying: boolean) => void;
+  setMasterGain: (linear: number) => void;
 }
 
 function inferName(path: string): string {
@@ -24,14 +32,17 @@ function inferName(path: string): string {
   return dot > 0 ? base.slice(0, dot) : base;
 }
 
-export const useProjectStore = create<ProjectStore>((set) => ({
+export const useProjectStore = create<ProjectStore>((set, get) => ({
   project: null,
   audioBuffer: null,
   selectedKeyframeId: null,
   playback: { isPlaying: false, currentTime: 0 },
+  masterGain: 1,
 
   loadAudioFile: async (path, arrayBuffer) => {
     const buffer = await AudioEngine.decode(arrayBuffer);
+    AudioEngine.setBuffer(buffer);
+    AudioEngine.setMasterGain(get().masterGain);
     const now = new Date().toISOString();
     const project: Project = {
       version: 1,
@@ -51,5 +62,40 @@ export const useProjectStore = create<ProjectStore>((set) => ({
       selectedKeyframeId: null,
       playback: { isPlaying: false, currentTime: 0 },
     });
+  },
+
+  play: () => {
+    if (!get().audioBuffer) return;
+    AudioEngine.play();
+    set({ playback: { isPlaying: true, currentTime: AudioEngine.getCurrentTime() } });
+  },
+
+  pause: () => {
+    AudioEngine.pause();
+    set({ playback: { isPlaying: false, currentTime: AudioEngine.getCurrentTime() } });
+  },
+
+  stop: () => {
+    AudioEngine.stop();
+    set({ playback: { isPlaying: false, currentTime: 0 } });
+  },
+
+  seek: (timeSec) => {
+    AudioEngine.seek(timeSec);
+    set({
+      playback: {
+        isPlaying: AudioEngine.isPlaying(),
+        currentTime: AudioEngine.getCurrentTime(),
+      },
+    });
+  },
+
+  setCurrentTime: (timeSec) => set((s) => ({ playback: { ...s.playback, currentTime: timeSec } })),
+
+  setIsPlaying: (isPlaying) => set((s) => ({ playback: { ...s.playback, isPlaying } })),
+
+  setMasterGain: (linear) => {
+    AudioEngine.setMasterGain(linear);
+    set({ masterGain: linear });
   },
 }));
