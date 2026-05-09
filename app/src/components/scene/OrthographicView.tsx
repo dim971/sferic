@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { Crosshair, Lock, LockOpen, Magnet, Maximize } from 'lucide-react';
 import type { Projection, SpatialKeyframe } from '@/types/project';
 import { useProjectStore } from '@/store/project-store';
@@ -156,8 +156,46 @@ export function OrthographicView({ projection }: OrthographicViewProps) {
     addKeyframeAtProjection(projection, snapped.sx, snapped.sy);
   };
 
-  const recenter = () => setViewState(projection, { zoom: 1 });
+  const ZOOM_MIN = 0.5;
+  const ZOOM_MAX = 8;
+
+  const fitToContent = () => {
+    if (sortedKfs.length === 0) {
+      setViewState(projection, { zoom: 1 });
+      return;
+    }
+    let maxAbs = 0;
+    for (const k of sortedKfs) {
+      const p = project(k.position, projection);
+      maxAbs = Math.max(maxAbs, Math.abs(p.sx), Math.abs(p.sy));
+    }
+    if (maxAbs === 0) {
+      setViewState(projection, { zoom: 1 });
+      return;
+    }
+    // half = 1.2 / zoom; we want maxAbs ~= half / 1.2 (20% margin),
+    // so zoom = 1 / maxAbs.
+    const next = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, 1 / maxAbs));
+    setViewState(projection, { zoom: next });
+  };
+  const resetZoom = () => setViewState(projection, { zoom: 1 });
   const toggleLock = () => setViewState(projection, { locked: !view.locked });
+
+  // Wheel zoom — must be a non-passive listener to call preventDefault,
+  // which React's synthetic onWheel forbids.
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const cur = useProjectStore.getState().viewStates[projection].zoom;
+      const factor = Math.exp(-e.deltaY * 0.0015);
+      const next = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, cur * factor));
+      if (next !== cur) setViewState(projection, { zoom: next });
+    };
+    svg.addEventListener('wheel', onWheel, { passive: false });
+    return () => svg.removeEventListener('wheel', onWheel);
+  }, [projection, setViewState]);
   const cycleSnap = () => {
     const cycle = [0, 5, 15, 30, 45, 90];
     const idx = cycle.indexOf(snapAngleDeg);
@@ -319,10 +357,10 @@ export function OrthographicView({ projection }: OrthographicViewProps) {
 
         {/* Floating controls */}
         <div className="absolute bottom-2 right-2 flex gap-1">
-          <ViewControl onClick={recenter} title="Auto-fit (1.0×)">
+          <ViewControl onClick={fitToContent} title="Fit keyframes to view">
             <Maximize size={12} strokeWidth={1.75} />
           </ViewControl>
-          <ViewControl onClick={() => setViewState(projection, { zoom: 1 })} title="Recenter">
+          <ViewControl onClick={resetZoom} title="Reset zoom (1.0×)">
             <Crosshair size={12} strokeWidth={1.75} />
           </ViewControl>
           <ViewControl
