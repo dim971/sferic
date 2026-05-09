@@ -12,7 +12,9 @@ import { DEFAULT_KF_AUDIO, DEFAULT_SETTINGS, DEFAULT_VIEW_STATES } from '@/types
 import { AudioEngine } from '@/lib/audio-engine';
 import { detectBpm } from '@/lib/audio-analysis';
 import {
+  isProjectPath,
   loadProjectFile,
+  pickAnyPath,
   pickAudioPath,
   pickProjectPathToOpen,
   pickProjectPathToSave,
@@ -80,6 +82,7 @@ interface ProjectStore {
   saveCurrentProjectAs: () => Promise<boolean>;
   openProjectFromDialog: () => Promise<boolean>;
   loadAudioFromDialog: () => Promise<boolean>;
+  openAnyFromDialog: () => Promise<boolean>;
 
   renderModalOpen: boolean;
   shortcutsOpen: boolean;
@@ -429,6 +432,19 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     if (!path) return false;
     const arrayBuffer = await readAudioBytes(path);
     await get().loadAudioFile(path, arrayBuffer);
+    return true;
+  },
+
+  openAnyFromDialog: async () => {
+    const path = await pickAnyPath();
+    if (!path) return false;
+    if (isProjectPath(path)) {
+      const { project, audioBuffer } = await loadProjectFile(path);
+      get().setLoadedProject(project, path, audioBuffer);
+    } else {
+      const arrayBuffer = await readAudioBytes(path);
+      await get().loadAudioFile(path, arrayBuffer);
+    }
     return true;
   },
 

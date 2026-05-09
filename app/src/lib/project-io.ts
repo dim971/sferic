@@ -10,6 +10,7 @@ export async function readAudioBytes(path: string): Promise<ArrayBuffer> {
 }
 
 const PROJECT_EXT = 'spatialize.json';
+const AUDIO_EXTS = ['wav', 'mp3', 'flac', 'ogg', 'm4a', 'aac'];
 
 export async function pickProjectPathToOpen(): Promise<string | null> {
   const picked = await open({
@@ -26,13 +27,29 @@ export async function pickProjectPathToSave(defaultName: string): Promise<string
   });
 }
 
-export async function pickAudioPath(title = 'Localiser le fichier audio'): Promise<string | null> {
+export async function pickAudioPath(title = 'Locate audio file'): Promise<string | null> {
   const picked = await open({
     title,
     multiple: false,
-    filters: [{ name: 'Audio', extensions: ['wav', 'mp3', 'flac', 'ogg', 'm4a', 'aac'] }],
+    filters: [{ name: 'Audio', extensions: AUDIO_EXTS }],
   });
   return typeof picked === 'string' ? picked : null;
+}
+
+export async function pickAnyPath(): Promise<string | null> {
+  const picked = await open({
+    multiple: false,
+    filters: [
+      { name: 'All supported', extensions: [PROJECT_EXT, 'json', ...AUDIO_EXTS] },
+      { name: 'Audio', extensions: AUDIO_EXTS },
+      { name: 'Spatialize project', extensions: [PROJECT_EXT, 'json'] },
+    ],
+  });
+  return typeof picked === 'string' ? picked : null;
+}
+
+export function isProjectPath(path: string): boolean {
+  return path.endsWith(`.${PROJECT_EXT}`) || path.endsWith('.json');
 }
 
 export async function saveProjectFile(path: string, project: Project): Promise<Project> {

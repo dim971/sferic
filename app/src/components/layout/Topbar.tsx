@@ -12,8 +12,7 @@ export function Topbar() {
   const project = useProjectStore((s) => s.project);
   const audioBuffer = useProjectStore((s) => s.audioBuffer);
   const isDirty = useProjectStore((s) => s.isDirty);
-  const loadAudioFromDialog = useProjectStore((s) => s.loadAudioFromDialog);
-  const openProjectFromDialog = useProjectStore((s) => s.openProjectFromDialog);
+  const openAnyFromDialog = useProjectStore((s) => s.openAnyFromDialog);
   const saveCurrentProject = useProjectStore((s) => s.saveCurrentProject);
   const setRenderModalOpen = useProjectStore((s) => s.setRenderModalOpen);
   const renderModalOpen = useProjectStore((s) => s.renderModalOpen);
@@ -25,8 +24,7 @@ export function Topbar() {
   const { cpu, bufferSize } = useCpuMonitor();
 
   const handleOpen = () => {
-    if (project) void openProjectFromDialog();
-    else void loadAudioFromDialog();
+    void openAnyFromDialog();
   };
 
   const handleSave = () => {
