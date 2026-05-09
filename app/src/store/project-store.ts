@@ -425,17 +425,33 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
   openProjectFromDialog: async () => {
     const path = await pickProjectPathToOpen();
     if (!path) return false;
-    const { project, audioBuffer } = await loadProjectFile(path);
-    get().setLoadedProject(project, path, audioBuffer);
-    return true;
+    try {
+      const { project, audioBuffer } = await loadProjectFile(path);
+      get().setLoadedProject(project, path, audioBuffer);
+      return true;
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error('Open project failed:', path, msg);
+      // eslint-disable-next-line no-alert
+      alert(`Couldn't open this project file:\n${msg}`);
+      throw e;
+    }
   },
 
   loadAudioFromDialog: async () => {
     const path = await pickAudioPath('Open audio file');
     if (!path) return false;
-    const arrayBuffer = await readAudioBytes(path);
-    await get().loadAudioFile(path, arrayBuffer);
-    return true;
+    try {
+      const arrayBuffer = await readAudioBytes(path);
+      await get().loadAudioFile(path, arrayBuffer);
+      return true;
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error('Open audio failed:', path, msg);
+      // eslint-disable-next-line no-alert
+      alert(`Couldn't open this audio file:\n${msg}`);
+      throw e;
+    }
   },
 
   openAnyFromDialog: async () => {
