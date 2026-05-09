@@ -67,24 +67,24 @@ export function Topbar() {
         ) : null}
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5">
         <button
           type="button"
           onClick={handleSave}
           disabled={!project}
           title="Save (⌘S)"
-          className="text-[14px] px-3 py-1 rounded-md border border-[--accent] text-[--accent] hover:bg-[--accent-soft] disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
+          className="text-[12px] px-2.5 py-1 rounded-md bg-[--bg-panel-elev] border border-[--border-strong] text-[--text-secondary] hover:text-[--text-primary] hover:bg-[--bg-input] disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
         >
-          <Save size={14} strokeWidth={1.75} />
+          <Save size={12} strokeWidth={1.75} />
           Save
         </button>
         <button
           type="button"
           onClick={handleOpen}
           title={project ? 'Open project (⌘O)' : 'Open audio (⌘I)'}
-          className="text-[14px] px-3 py-1 rounded-md border border-[--accent] text-[--accent] hover:bg-[--accent-soft] flex items-center gap-1.5"
+          className="text-[12px] px-2.5 py-1 rounded-md bg-[--bg-panel-elev] border border-[--border-strong] text-[--text-secondary] hover:text-[--text-primary] hover:bg-[--bg-input] flex items-center gap-1.5"
         >
-          <FolderOpen size={14} strokeWidth={1.75} />
+          <FolderOpen size={12} strokeWidth={1.75} />
           Open
         </button>
         <div className="flex items-end gap-0.5 h-7 px-1.5" aria-label="VU meters L / R">
@@ -96,9 +96,9 @@ export function Topbar() {
           onClick={() => setRenderModalOpen(true)}
           disabled={renderDisabled}
           title="Render (⌘R)"
-          className="text-[14px] px-4 py-1.5 rounded-md bg-[--accent] hover:bg-[--accent-hot] text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
+          className="text-[12px] px-3 py-1 rounded-md bg-[--accent] hover:bg-[--accent-hot] text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
         >
-          <Download size={14} strokeWidth={2} />
+          <Download size={12} strokeWidth={2} />
           Render
         </button>
       </div>
