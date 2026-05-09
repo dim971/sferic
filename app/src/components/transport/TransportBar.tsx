@@ -58,7 +58,8 @@ export function TransportBar() {
         onChange={(e) => setMasterGain(parseFloat(e.currentTarget.value))}
         disabled={disabled}
         aria-label="Volume"
-        className="w-20 accent-[--accent] disabled:opacity-40"
+        style={{ accentColor: '#F87328' }}
+        className="w-20 disabled:opacity-40"
       />
       <button
         type="button"

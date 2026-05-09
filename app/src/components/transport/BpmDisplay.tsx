@@ -14,6 +14,7 @@ export function BpmDisplay() {
   }, [bpm, editing]);
 
   if (!project) return null;
+  const detecting = bpm === null && !editing;
 
   const commit = () => {
     const n = parseFloat(draft);
@@ -45,9 +46,10 @@ export function BpmDisplay() {
         <button
           type="button"
           onClick={() => setEditing(true)}
-          className="text-[--text-secondary] hover:text-[--text-primary]"
+          className={`hover:text-[--text-primary] ${detecting ? 'text-[--text-dim] italic' : 'text-[--text-secondary]'}`}
+          title={detecting ? 'Détection BPM en cours… clic pour saisir manuellement' : 'Clic pour modifier'}
         >
-          {bpm !== null ? bpm : '—'}
+          {bpm !== null ? bpm : '…'}
         </button>
       )}
     </div>
