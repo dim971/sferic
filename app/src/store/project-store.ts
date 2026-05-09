@@ -441,14 +441,20 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
   openAnyFromDialog: async () => {
     const path = await pickAnyPath();
     if (!path) return false;
-    if (isProjectPath(path)) {
-      const { project, audioBuffer } = await loadProjectFile(path);
-      get().setLoadedProject(project, path, audioBuffer);
-    } else {
-      const arrayBuffer = await readAudioBytes(path);
-      await get().loadAudioFile(path, arrayBuffer);
+    try {
+      if (isProjectPath(path)) {
+        const { project, audioBuffer } = await loadProjectFile(path);
+        get().setLoadedProject(project, path, audioBuffer);
+      } else {
+        const arrayBuffer = await readAudioBytes(path);
+        await get().loadAudioFile(path, arrayBuffer);
+      }
+      return true;
+    } catch (e) {
+      // Surface the failure so the user knows what happened instead of silently failing.
+      console.error('Open failed', e);
+      throw e;
     }
-    return true;
   },
 
   setRenderModalOpen: (open) => set({ renderModalOpen: open }),

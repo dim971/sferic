@@ -23,21 +23,28 @@ export function detectWavBitDepth(arrayBuffer: ArrayBuffer): number | null {
   return view.getUint16(34, true);
 }
 
-const PROJECT_EXT = 'spatialize.json';
+// macOS dialog filters reject dot-containing extensions in some Tauri builds —
+// they cause the whole filter to silently match nothing (audio greyed out).
+// We use only single-part extensions ('json') and rely on isProjectPath()
+// to disambiguate `*.spatialize.json` from a generic `.json` after the pick.
+const PROJECT_FULL_SUFFIX = '.spatialize.json';
+const PROJECT_DEFAULT_EXT = 'spatialize.json';
+const PROJECT_FILTER_EXTS = ['json'];
 const AUDIO_EXTS = ['wav', 'mp3', 'flac', 'ogg', 'm4a', 'aac'];
+const ALL_EXTS = [...PROJECT_FILTER_EXTS, ...AUDIO_EXTS];
 
 export async function pickProjectPathToOpen(): Promise<string | null> {
   const picked = await open({
     multiple: false,
-    filters: [{ name: 'Spatialize project', extensions: [PROJECT_EXT, 'json'] }],
+    filters: [{ name: 'Spatialize project', extensions: PROJECT_FILTER_EXTS }],
   });
   return typeof picked === 'string' ? picked : null;
 }
 
 export async function pickProjectPathToSave(defaultName: string): Promise<string | null> {
   return save({
-    defaultPath: `${defaultName}.${PROJECT_EXT}`,
-    filters: [{ name: 'Spatialize project', extensions: [PROJECT_EXT, 'json'] }],
+    defaultPath: `${defaultName}.${PROJECT_DEFAULT_EXT}`,
+    filters: [{ name: 'Spatialize project', extensions: PROJECT_FILTER_EXTS }],
   });
 }
 
@@ -51,19 +58,18 @@ export async function pickAudioPath(title = 'Locate audio file'): Promise<string
 }
 
 export async function pickAnyPath(): Promise<string | null> {
+  // Single combined filter so macOS doesn't gray out audio when the wrong
+  // tab is selected. Type detection happens after the pick.
   const picked = await open({
     multiple: false,
-    filters: [
-      { name: 'All supported', extensions: [PROJECT_EXT, 'json', ...AUDIO_EXTS] },
-      { name: 'Audio', extensions: AUDIO_EXTS },
-      { name: 'Spatialize project', extensions: [PROJECT_EXT, 'json'] },
-    ],
+    filters: [{ name: 'Audio or Spatialize project', extensions: ALL_EXTS }],
   });
   return typeof picked === 'string' ? picked : null;
 }
 
 export function isProjectPath(path: string): boolean {
-  return path.endsWith(`.${PROJECT_EXT}`) || path.endsWith('.json');
+  const lower = path.toLowerCase();
+  return lower.endsWith(PROJECT_FULL_SUFFIX) || lower.endsWith('.json');
 }
 
 export function isAudioPath(path: string): boolean {
