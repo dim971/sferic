@@ -239,6 +239,74 @@ export function OrthographicView({ projection }: OrthographicViewProps) {
           style={{ cursor: view.locked ? 'not-allowed' : 'crosshair' }}
           onPointerDown={handlePointerDown}
         >
+          <defs>
+            {/* Subtle background grid — fine cells at 0.1 world units */}
+            <pattern
+              id={`grid-${projection}`}
+              x={0}
+              y={0}
+              width={0.1}
+              height={0.1}
+              patternUnits="userSpaceOnUse"
+            >
+              <path
+                d="M 0.1 0 L 0 0 0 0.1"
+                fill="none"
+                stroke="#2a2e38"
+                strokeWidth={0.0015}
+                opacity={0.45}
+              />
+            </pattern>
+            {/* Coarser major grid every 4 minor cells */}
+            <pattern
+              id={`grid-major-${projection}`}
+              x={0}
+              y={0}
+              width={0.4}
+              height={0.4}
+              patternUnits="userSpaceOnUse"
+            >
+              <path
+                d="M 0.4 0 L 0 0 0 0.4"
+                fill="none"
+                stroke="#2a2e38"
+                strokeWidth={0.003}
+                opacity={0.7}
+              />
+            </pattern>
+            {/* Radial depth gradient — warm glow at the listener centre,
+                fades to dark vignette at the corners */}
+            <radialGradient id={`depth-${projection}`} cx="50%" cy="50%" r="65%">
+              <stop offset="0%" stopColor="#f87328" stopOpacity={0.08} />
+              <stop offset="35%" stopColor="#1a1c22" stopOpacity={0.0} />
+              <stop offset="100%" stopColor="#000000" stopOpacity={0.55} />
+            </radialGradient>
+          </defs>
+
+          {/* Background grids (minor + major) */}
+          <rect
+            x={-half}
+            y={-half}
+            width={half * 2}
+            height={half * 2}
+            fill={`url(#grid-${projection})`}
+          />
+          <rect
+            x={-half}
+            y={-half}
+            width={half * 2}
+            height={half * 2}
+            fill={`url(#grid-major-${projection})`}
+          />
+          {/* Radial depth gradient on top of the grids */}
+          <rect
+            x={-half}
+            y={-half}
+            width={half * 2}
+            height={half * 2}
+            fill={`url(#depth-${projection})`}
+          />
+
           {/* Reference circles */}
           {[0.25, 0.5, 0.75, 1].map((r) => (
             <circle
