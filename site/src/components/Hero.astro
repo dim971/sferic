@@ -1,0 +1,69 @@
+---
+const repoUrl = "https://github.com/dim971/sferic";
+---
+
+<section class="relative overflow-hidden hero-glow">
+  <div class="absolute inset-0 dot-grid opacity-30 pointer-events-none" aria-hidden></div>
+
+  <div class="max-w-6xl mx-auto px-6 pt-20 pb-24 md:pt-28 md:pb-32 relative">
+    <div class="flex flex-col items-center text-center">
+      <span class="inline-flex items-center gap-2 text-[11px] font-mono tracking-widest uppercase text-[var(--text-dim)] mb-6">
+        <span class="w-1.5 h-1.5 rounded-full bg-[var(--accent)]"></span>
+        Desktop · macOS · Windows · Linux
+      </span>
+
+      <h1 class="text-5xl md:text-7xl font-light tracking-tight leading-[1.05] mb-6 max-w-4xl">
+        Spatialize sound
+        <span class="block">
+          <span class="bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hot)] bg-clip-text text-transparent">through time.</span>
+        </span>
+      </h1>
+
+      <p class="text-[16px] md:text-[18px] text-[var(--text-secondary)] max-w-2xl leading-relaxed mb-10">
+        A desktop tool to place a sound source anywhere around a listener and animate it
+        in 3D over time. Visual keyframing, HRTF binaural panning, and a realtime audio
+        engine — built on the Web Audio API.
+      </p>
+
+      <div class="flex flex-wrap items-center justify-center gap-3 mb-16">
+        <a
+          href="#download"
+          class="px-5 py-2.5 rounded-md bg-[var(--accent)] hover:bg-[var(--accent-hot)] text-white font-medium text-[14px] transition-colors flex items-center gap-2 shadow-lg shadow-[var(--accent-glow)]"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          Download v0.1
+        </a>
+        <a
+          href={repoUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="px-5 py-2.5 rounded-md bg-[var(--bg-panel-elev)] border border-[var(--border-strong)] hover:border-[var(--text-secondary)] text-[var(--text-primary)] text-[14px] transition-colors flex items-center gap-2"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.4 3-.405 1.02.005 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+          </svg>
+          View source
+        </a>
+      </div>
+
+      <div class="relative w-full max-w-5xl">
+        <div class="absolute -inset-4 bg-gradient-to-tr from-[var(--accent-soft)]/40 via-transparent to-[var(--listener)]/20 blur-2xl opacity-60" aria-hidden></div>
+        <div class="relative rounded-xl border border-[var(--border-strong)] overflow-hidden shadow-2xl bg-[var(--bg-panel)]">
+          <div class="absolute top-0 left-0 right-0 h-7 bg-[var(--bg-panel-elev)] border-b border-[var(--border-subtle)] flex items-center gap-1.5 px-3 z-10">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#ff5f57]"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-[#febc2e]"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-[#28c840]"></span>
+          </div>
+          <img
+            src={`${import.meta.env.BASE_URL}sferic-screenshot.png`}
+            alt="Sferic application screenshot showing 2D top/side views, perspective scene, inspector panel, and waveform timeline"
+            class="w-full block pt-7"
+            loading="eager"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

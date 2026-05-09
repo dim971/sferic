@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+:root {
+  --bg-base: #07080a;
+  --bg-panel: #0e0f13;
+  --bg-panel-elev: #15171c;
+  --bg-input: #1a1c22;
+
+  --border-subtle: #1f222a;
+  --border-strong: #2a2e38;
+
+  --text-primary: #e8e8ea;
+  --text-secondary: #9ca0ab;
+  --text-dim: #5a5f6b;
+
+  --accent: #f87328;
+  --accent-hot: #ff8a3d;
+  --accent-soft: #3a1e12;
+  --accent-glow: rgba(248, 115, 40, 0.25);
+
+  --listener: #4f8ef7;
+}
+
+html,
+body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-mono,
+[class*="font-mono"] {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Subtle radial accent glow used behind the hero */
+.hero-glow {
+  background:
+    radial-gradient(800px circle at 30% 20%, rgba(248, 115, 40, 0.12), transparent 60%),
+    radial-gradient(600px circle at 80% 60%, rgba(79, 142, 247, 0.08), transparent 65%);
+}
+
+/* Dotted grid backdrop reminiscent of the app's spatial scenes */
+.dot-grid {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+@keyframes orbit {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin-slow {
+  animation: orbit 60s linear infinite;
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--accent-hot);
+}

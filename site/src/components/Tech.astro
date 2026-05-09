@@ -1,0 +1,64 @@
+---
+const stack = [
+  { name: "Tauri 2", role: "Native desktop shell, ~10MB binaries, OS menu integration" },
+  { name: "React 19", role: "UI components, hooks, strict TypeScript" },
+  { name: "Three.js + R3F", role: "WebGL 3D scene with orbit controls and GLTF head model" },
+  { name: "Web Audio API", role: "PannerNode HRTF, AudioWorklet-ready, BiquadFilters per voice" },
+  { name: "Tailwind v4", role: "Utility-first styling tied to a small token palette" },
+  { name: "Zustand", role: "Single immutable store + 50-deep undo/redo with gesture coalescing" },
+  { name: "Vite", role: "Sub-second HMR; tsc strict in CI" },
+  { name: "Rust (Tauri)", role: "Filesystem & dialog plugins, native menu, code-signed bundles" },
+];
+
+const numbers = [
+  { value: "<1s", label: "Cold boot to ready" },
+  { value: "<10MB", label: "Installed binary" },
+  { value: "60 fps", label: "RAF-driven scene + waveform" },
+  { value: "0", label: "Telemetry, ads, accounts" },
+];
+---
+
+<section id="tech" class="border-t border-[var(--border-subtle)]">
+  <div class="max-w-6xl mx-auto px-6 py-20 md:py-28">
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-12 lg:gap-20">
+      <div>
+        <span class="text-[11px] font-mono tracking-widest uppercase text-[var(--accent)]">Under the hood</span>
+        <h2 class="text-3xl md:text-4xl font-light tracking-tight mt-3 mb-6">
+          Native-feeling, web-built.
+        </h2>
+        <p class="text-[14px] text-[var(--text-secondary)] leading-relaxed mb-8">
+          Sferic is a Tauri 2 app: a Rust shell wrapping a Vite + React + TypeScript
+          frontend. The audio graph runs in the browser's audio thread; the UI is
+          insulated by a Zustand store with undo, gesture coalescing, and live
+          AudioEngine sync. Strict TS, zero warnings, no telemetry.
+        </p>
+
+        <div class="grid grid-cols-2 gap-6">
+          {numbers.map((n) => (
+            <div>
+              <div class="text-[28px] font-light tracking-tight text-[var(--accent)]">{n.value}</div>
+              <div class="text-[11px] font-mono tracking-widest uppercase text-[var(--text-dim)] mt-1">
+                {n.label}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div class="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-panel)] overflow-hidden">
+        <div class="px-5 py-3 border-b border-[var(--border-subtle)] flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-[var(--accent)]"></span>
+          <span class="text-[11px] font-mono tracking-widest uppercase text-[var(--text-dim)]">Stack</span>
+        </div>
+        <ul class="divide-y divide-[var(--border-subtle)]">
+          {stack.map((s) => (
+            <li class="px-5 py-3.5 flex items-center justify-between gap-6 hover:bg-[var(--bg-panel-elev)] transition-colors">
+              <span class="text-[13px] font-medium text-[var(--text-primary)] flex-shrink-0">{s.name}</span>
+              <span class="text-[12px] text-[var(--text-secondary)] text-right">{s.role}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>

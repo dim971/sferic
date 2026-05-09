@@ -1,0 +1,26 @@
+---
+const repoUrl = "https://github.com/dim971/sferic";
+const year = new Date().getFullYear();
+---
+
+<footer class="border-t border-[var(--border-subtle)] mt-auto">
+  <div class="max-w-6xl mx-auto px-6 py-10 flex flex-col md:flex-row items-center justify-between gap-6">
+    <div class="flex items-center gap-2.5">
+      <span class="w-6 h-6 rounded bg-[var(--accent)] flex items-center justify-center">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 10v3" /><path d="M6 6v11" /><path d="M10 3v18" /><path d="M14 8v7" /><path d="M18 5v13" /><path d="M22 10v3" />
+        </svg>
+      </span>
+      <span class="text-[13px] text-[var(--text-secondary)]">
+        Sferic · MIT licensed · &copy; {year}
+      </span>
+    </div>
+
+    <nav class="flex items-center gap-6 text-[12px] text-[var(--text-dim)]">
+      <a href={repoUrl} target="_blank" rel="noopener noreferrer" class="hover:text-[var(--text-primary)] transition-colors">Source</a>
+      <a href={`${repoUrl}/issues`} target="_blank" rel="noopener noreferrer" class="hover:text-[var(--text-primary)] transition-colors">Issues</a>
+      <a href={`${repoUrl}/releases`} target="_blank" rel="noopener noreferrer" class="hover:text-[var(--text-primary)] transition-colors">Releases</a>
+      <a href={`${repoUrl}/blob/main/README.md`} target="_blank" rel="noopener noreferrer" class="hover:text-[var(--text-primary)] transition-colors">README</a>
+    </nav>
+  </div>
+</footer>

@@ -1,0 +1,49 @@
+---
+const callouts = [
+  {
+    label: "01",
+    title: "Top + side projections",
+    body: "Place keyframes from above and from the side. Each view drives the same world position; numbered nodes stay in sync.",
+  },
+  {
+    label: "02",
+    title: "Realtime listener head",
+    body: "A 3D head model anchors the origin. The HRTF sphere visualizes the unit radius where binaural panning happens.",
+  },
+  {
+    label: "03",
+    title: "Inspector everything",
+    body: "Routing, distance model, reverb, snap, per-keyframe gain & filters. Numeric inputs and sliders, no dialogs.",
+  },
+  {
+    label: "04",
+    title: "Waveform timeline",
+    body: "Keyframes anchor on the waveform with diamond markers. Loop region, BPM grid, monitoring toggle binaural / stereo.",
+  },
+];
+---
+
+<section id="showcase" class="border-t border-[var(--border-subtle)] bg-[var(--bg-panel)]">
+  <div class="max-w-6xl mx-auto px-6 py-20 md:py-28">
+    <div class="mb-14">
+      <span class="text-[11px] font-mono tracking-widest uppercase text-[var(--accent)]">Showcase</span>
+      <h2 class="text-3xl md:text-4xl font-light tracking-tight mt-3 max-w-2xl">
+        Designed like a tool you'd actually want to use.
+      </h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+      {callouts.map((c) => (
+        <div class="flex gap-5">
+          <div class="flex-shrink-0 w-10 h-10 rounded-md border border-[var(--border-strong)] bg-[var(--bg-panel-elev)] flex items-center justify-center font-mono text-[11px] text-[var(--accent)]">
+            {c.label}
+          </div>
+          <div>
+            <h3 class="text-[15px] font-medium mb-1.5 text-[var(--text-primary)]">{c.title}</h3>
+            <p class="text-[13px] text-[var(--text-secondary)] leading-relaxed">{c.body}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
