@@ -45,22 +45,19 @@ export default function App() {
       </div>
 
       {audioBuffer ? (
-        viewMode === '2d' ? (
-          <>
-            <div className="relative">
+        <div className="col-span-2 relative min-h-0 min-w-0">
+          {viewMode === '2d' ? (
+            <div className="grid grid-cols-2 h-full">
               <OrthographicView projection="top" />
-              <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
+              <div className="border-l border-[var(--border-subtle)] min-h-0 min-w-0">
+                <OrthographicView projection="side" />
+              </div>
             </div>
-            <div className="border-l border-[var(--border-subtle)] min-h-0 min-w-0">
-              <OrthographicView projection="side" />
-            </div>
-          </>
-        ) : (
-          <div className="col-span-2 relative min-h-0 min-w-0">
+          ) : (
             <PerspectiveScene />
-            <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
-          </div>
-        )
+          )}
+          <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
+        </div>
       ) : (
         <div className="col-span-2 bg-[var(--bg-panel)] border-r border-[var(--border-subtle)] flex items-center justify-center text-[var(--text-dim)] text-[12px]">
           Open an audio file to begin — File ▸ Open audio…  (⌘I)
@@ -171,7 +168,7 @@ function ViewModeToggle({
   setViewMode: (mode: '2d' | '3d') => void;
 }) {
   return (
-    <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 flex items-center gap-0.5 rounded-md border border-[var(--border-strong)] bg-[var(--bg-panel-elev)]/90 backdrop-blur p-0.5 text-[10px] tracking-widest uppercase font-mono">
+    <div className="absolute top-10 left-1/2 -translate-x-1/2 z-20 flex items-center gap-0.5 rounded-md border border-[var(--border-strong)] bg-[var(--bg-panel-elev)]/90 backdrop-blur p-0.5 text-[10px] tracking-widest uppercase font-mono shadow-md">
       <button
         type="button"
         onClick={() => setViewMode('2d')}
