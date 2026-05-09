@@ -24,6 +24,10 @@ export interface ProjectSettings {
   reverb: { enabled: boolean; wet: number };
   snapToSphere: boolean;
   doppler: { enabled: boolean; intensity: number };
+  // Accentuates perceptual cues for sources located behind, above, or below
+  // the listener: rolls off the highs and lifts the reverb send the more
+  // off-axis the source is. amount=0 disables; 1 = full effect.
+  spatialEnhancement: { enabled: boolean; amount: number };
 }
 
 export interface AudioFileMeta {
@@ -70,6 +74,7 @@ export const DEFAULT_SETTINGS: ProjectSettings = {
   reverb: { enabled: false, wet: 0.3 },
   snapToSphere: true,
   doppler: { enabled: false, intensity: 0.5 },
+  spatialEnhancement: { enabled: true, amount: 0.6 },
 };
 
 export const DEFAULT_KF_AUDIO = {

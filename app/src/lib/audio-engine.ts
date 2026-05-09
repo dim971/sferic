@@ -11,6 +11,28 @@ function distanceOf(p: { x: number; y: number; z: number }): number {
 
 const SOUND_SPEED = 343; // m/s, our world units ≈ metres
 
+// 0 when source is at front-equator (-Z axis), 1 when fully behind, above,
+// or below. Used to drive the spatial-enhancement processing so off-axis
+// positions read more clearly on headphones.
+function offAxisness(p: { x: number; y: number; z: number }): number {
+  const r = Math.hypot(p.x, p.y, p.z);
+  if (r < 1e-6) return 0;
+  // Front direction is -Z. Rear factor: 0 when source faces -Z, 1 when +Z.
+  const front = -p.z / r; // 1 = front, -1 = back
+  const back = (1 - front) / 2;
+  // Vertical factor: 0 at equator, 1 at the poles.
+  const elev = Math.abs(p.y) / r;
+  return Math.max(back, elev);
+}
+
+function directionalCutoff(p: { x: number; y: number; z: number }, amount: number): number {
+  if (amount <= 0) return 22050;
+  // 22 050 Hz at front-equator, ~2 500 Hz when fully off-axis with amount=1.
+  const o = offAxisness(p);
+  const cut = 22050 - o * amount * (22050 - 2500);
+  return Math.max(2500, cut);
+}
+
 function dopplerFactor(kf: SpatialKeyframe, sortedAll: SpatialKeyframe[]): number {
   if (!kf.doppler) return 1;
   const idx = sortedAll.findIndex((k) => k.id === kf.id);
@@ -154,6 +176,7 @@ class AudioEngineImpl {
   private hpf: BiquadFilterNode | null = null;
   private lpf: BiquadFilterNode | null = null;
   private airLpf: BiquadFilterNode | null = null;
+  private dirLpf: BiquadFilterNode | null = null;
   private panner: PannerNode | null = null;
   private bypassPanner: GainNode | null = null;
   private dry: GainNode | null = null;
@@ -303,6 +326,14 @@ class AudioEngineImpl {
     airLpf.frequency.value = 22050;
     airLpf.Q.value = 0.7;
 
+    // Directional darkening: cuts highs progressively the further the source
+    // moves from front-equator (behind / above / below). Driven per-keyframe
+    // by spatialEnhancement settings + position.
+    const dirLpf = ctx.createBiquadFilter();
+    dirLpf.type = 'lowpass';
+    dirLpf.frequency.value = 22050;
+    dirLpf.Q.value = 0.7;
+
     const panner = ctx.createPanner();
     panner.panningModel = this.settings?.panningModel ?? 'HRTF';
     panner.distanceModel = this.settings?.distanceModel ?? 'inverse';
@@ -336,11 +367,11 @@ class AudioEngineImpl {
 
     const { mixOut } = this.ensurePersistent();
 
-    // source → master → kfGain → hpf → lpf → airLpf
-    source.connect(masterNode).connect(kfGain).connect(hpf).connect(lpf).connect(airLpf);
-    // airLpf splits into the binaural panner path AND the stereo bypass path
-    airLpf.connect(panner);
-    airLpf.connect(bypassPanner);
+    // source → master → kfGain → hpf → lpf → airLpf → dirLpf
+    source.connect(masterNode).connect(kfGain).connect(hpf).connect(lpf).connect(airLpf).connect(dirLpf);
+    // dirLpf splits into the binaural panner path AND the stereo bypass path
+    dirLpf.connect(panner);
+    dirLpf.connect(bypassPanner);
     // both feed dry + wet
     panner.connect(dry);
     panner.connect(wet);
@@ -362,6 +393,7 @@ class AudioEngineImpl {
     this.hpf = hpf;
     this.lpf = lpf;
     this.airLpf = airLpf;
+    this.dirLpf = dirLpf;
     this.panner = panner;
     this.bypassPanner = bypassPanner;
     this.dry = dry;
@@ -414,6 +446,7 @@ class AudioEngineImpl {
       !this.hpf ||
       !this.lpf ||
       !this.airLpf ||
+      !this.dirLpf ||
       !this.wet ||
       !this.ctx
     ) {
@@ -430,6 +463,7 @@ class AudioEngineImpl {
       this.hpf.frequency,
       this.lpf.frequency,
       this.airLpf.frequency,
+      this.dirLpf.frequency,
       this.wet.gain,
     ];
     for (const p of params) p.cancelScheduledValues(t0);
@@ -440,6 +474,10 @@ class AudioEngineImpl {
     const sorted = [...keyframes].sort((a, b) => a.time - b.time);
     const reverbEnabled = this.settings?.reverb.enabled ?? false;
     const reverbDefaultWet = this.settings?.reverb.wet ?? 0;
+    const enhEnabled = this.settings?.spatialEnhancement.enabled ?? false;
+    const enhAmount = enhEnabled
+      ? Math.max(0, Math.min(1, this.settings?.spatialEnhancement.amount ?? 0))
+      : 0;
 
     const specs: Array<{ param: AudioParam; read: (kf: SpatialKeyframe) => number }> = [
       { param: this.panner.positionX, read: (kf) => kf.position.x },
@@ -453,8 +491,19 @@ class AudioEngineImpl {
         read: (kf) => airAbsorptionCutoff(distanceOf(kf.position), kf.airAbsorption),
       },
       {
+        param: this.dirLpf.frequency,
+        read: (kf) => directionalCutoff(kf.position, enhAmount),
+      },
+      {
         param: this.wet.gain,
-        read: (kf) => (reverbEnabled ? (kf.reverbSend ?? reverbDefaultWet) : 0),
+        read: (kf) => {
+          const base = reverbEnabled ? (kf.reverbSend ?? reverbDefaultWet) : 0;
+          if (enhAmount === 0) return base;
+          // Lift reverb send for off-axis sources to add a sense of "room"
+          // around them. Capped at 1.0 to stay within sane mixing bounds.
+          const lift = offAxisness(kf.position) * enhAmount * 0.4;
+          return Math.min(1, base + lift);
+        },
       },
     ];
     if (this.source) {
@@ -610,6 +659,7 @@ class AudioEngineImpl {
       this.hpf,
       this.lpf,
       this.airLpf,
+      this.dirLpf,
       this.panner,
       this.bypassPanner,
       this.dry,
@@ -622,6 +672,7 @@ class AudioEngineImpl {
     this.hpf = null;
     this.lpf = null;
     this.airLpf = null;
+    this.dirLpf = null;
     this.panner = null;
     this.bypassPanner = null;
     this.dry = null;

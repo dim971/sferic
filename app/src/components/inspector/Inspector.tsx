@@ -142,6 +142,35 @@ function ProjectPanel({
       </section>
 
       <section className="space-y-2">
+        <SectionHeader>Spatial enhance</SectionHeader>
+        <Field label="Enabled">
+          <Toggle
+            checked={s.spatialEnhancement.enabled}
+            onChange={(v) =>
+              updateSettings({ spatialEnhancement: { ...s.spatialEnhancement, enabled: v } })
+            }
+          />
+        </Field>
+        <Field label="Amount">
+          <SliderInput
+            value={s.spatialEnhancement.amount}
+            min={0}
+            max={1}
+            step={0.01}
+            disabled={!s.spatialEnhancement.enabled}
+            onChange={(v) =>
+              updateSettings({
+                spatialEnhancement: {
+                  ...s.spatialEnhancement,
+                  amount: Math.max(0, Math.min(1, v)),
+                },
+              })
+            }
+          />
+        </Field>
+      </section>
+
+      <section className="space-y-2">
         <SectionHeader>Defaults</SectionHeader>
         <Field label="Snap to ⊙">
           <Toggle checked={s.snapToSphere} onChange={(v) => updateSettings({ snapToSphere: v })} />
