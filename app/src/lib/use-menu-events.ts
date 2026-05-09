@@ -9,6 +9,12 @@ export function useMenuEvents(): void {
       const id = event.payload;
       const state = useProjectStore.getState();
       switch (id) {
+        case 'undo':
+          state.undo();
+          return;
+        case 'redo':
+          state.redo();
+          return;
         case 'open_audio':
           void state.loadAudioFromDialog();
           return;

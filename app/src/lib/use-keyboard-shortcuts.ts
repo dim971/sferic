@@ -36,6 +36,13 @@ export function useKeyboardShortcuts(): void {
         return;
       }
 
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) state.redo();
+        else state.undo();
+        return;
+      }
+
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
         e.preventDefault();
         if (e.shiftKey) void state.saveCurrentProjectAs();

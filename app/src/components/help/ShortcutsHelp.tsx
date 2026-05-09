@@ -6,6 +6,8 @@ interface ShortcutsHelpProps {
 
 const SHORTCUTS: { label: string; keys: string }[] = [
   { label: 'Play / Pause', keys: 'Space' },
+  { label: 'Undo', keys: '⌘Z' },
+  { label: 'Redo', keys: '⌘⇧Z' },
   { label: 'Insert keyframe', keys: '⌘K' },
   { label: 'Delete selected keyframe', keys: 'Delete' },
   { label: 'Deselect', keys: 'Esc' },

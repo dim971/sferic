@@ -46,6 +46,11 @@ interface ProjectStore {
   loopRegion: { start: number; end: number } | null;
   waveformZoom: number;
 
+  historyPast: Project[];
+  historyFuture: Project[];
+  undo: () => void;
+  redo: () => void;
+
   loadAudioFile: (path: string, arrayBuffer: ArrayBuffer) => Promise<void>;
   setLoadedProject: (project: Project, path: string | null, audioBuffer: AudioBuffer) => void;
   setAudioMeta: (partial: Partial<AudioMeta>) => void;
@@ -134,7 +139,30 @@ function makeKeyframe(time: number, position: Vec3, inherit?: SpatialKeyframe): 
   };
 }
 
-export const useProjectStore = create<ProjectStore>((set, get) => ({
+const HISTORY_LIMIT = 50;
+const HISTORY_COALESCE_MS = 250;
+
+export const useProjectStore = create<ProjectStore>((set, get) => {
+  // Mutable closure-private state — used to coalesce rapid mutations
+  // (drag-move, slider drags) into a single history entry.
+  let lastSnapshotAt = 0;
+
+  const recordSnapshot = () => {
+    const project = get().project;
+    if (!project) return;
+    const now = Date.now();
+    if (now - lastSnapshotAt < HISTORY_COALESCE_MS) return;
+    const past = [...get().historyPast, project].slice(-HISTORY_LIMIT);
+    set({ historyPast: past, historyFuture: [] });
+    lastSnapshotAt = now;
+  };
+
+  const resetHistory = () => {
+    lastSnapshotAt = 0;
+    set({ historyPast: [], historyFuture: [] });
+  };
+
+  return {
   project: null,
   projectPath: null,
   isDirty: false,
@@ -153,6 +181,49 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
   renderModalOpen: false,
   shortcutsOpen: false,
   toast: null,
+
+  historyPast: [],
+  historyFuture: [],
+
+  undo: () => {
+    const state = get();
+    const past = state.historyPast;
+    const project = state.project;
+    if (past.length === 0 || !project) return;
+    const prev = past[past.length - 1];
+    AudioEngine.setKeyframes(prev.keyframes);
+    AudioEngine.setSettings(prev.settings);
+    set({
+      project: prev,
+      historyPast: past.slice(0, -1),
+      historyFuture: [project, ...state.historyFuture].slice(0, HISTORY_LIMIT),
+      isDirty: true,
+      selectedKeyframeId: prev.keyframes.some((k) => k.id === state.selectedKeyframeId)
+        ? state.selectedKeyframeId
+        : null,
+    });
+    lastSnapshotAt = 0;
+  },
+
+  redo: () => {
+    const state = get();
+    const future = state.historyFuture;
+    const project = state.project;
+    if (future.length === 0 || !project) return;
+    const next = future[0];
+    AudioEngine.setKeyframes(next.keyframes);
+    AudioEngine.setSettings(next.settings);
+    set({
+      project: next,
+      historyPast: [...state.historyPast, project].slice(-HISTORY_LIMIT),
+      historyFuture: future.slice(1),
+      isDirty: true,
+      selectedKeyframeId: next.keyframes.some((k) => k.id === state.selectedKeyframeId)
+        ? state.selectedKeyframeId
+        : null,
+    });
+    lastSnapshotAt = 0;
+  },
 
   loadAudioFile: async (path, arrayBuffer) => {
     const buffer = await AudioEngine.decode(arrayBuffer);
@@ -184,6 +255,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
       selectedKeyframeId: null,
       playback: { isPlaying: false, currentTime: 0 },
     });
+    resetHistory();
     void detectBpm(buffer).then((bpm) => {
       if (bpm === null) return;
       const cur = get().project;
@@ -205,6 +277,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
       selectedKeyframeId: null,
       playback: { isPlaying: false, currentTime: 0 },
     });
+    resetHistory();
   },
 
   setAudioMeta: (partial) => {
@@ -259,6 +332,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     const state = get();
     const project = state.project;
     if (!project) return '';
+    recordSnapshot();
     const t = time ?? state.playback.currentTime;
     const sorted = [...project.keyframes].sort((a, b) => a.time - b.time);
     const inherit = sorted.filter((k) => k.time <= t).pop();
@@ -290,6 +364,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
   updateKeyframe: (id, partial) => {
     const project = get().project;
     if (!project) return;
+    recordSnapshot();
     const keyframes = project.keyframes
       .map((k) => (k.id === id ? { ...k, ...partial } : k))
       .sort((a, b) => a.time - b.time);
@@ -308,6 +383,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     const state = get();
     const project = state.project;
     if (!project) return;
+    recordSnapshot();
     const keyframes = project.keyframes.filter((k) => k.id !== id);
     AudioEngine.setKeyframes(keyframes);
     set({
@@ -326,6 +402,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
   updateSettings: (partial) => {
     const project = get().project;
     if (!project) return;
+    recordSnapshot();
     const next = { ...project.settings, ...partial };
     AudioEngine.setSettings(next);
     set({
@@ -369,6 +446,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
   setProjectName: (name) => {
     const project = get().project;
     if (!project) return;
+    recordSnapshot();
     set({
       project: {
         ...project,
@@ -510,4 +588,5 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
 
   showToast: (kind, message) => set({ toast: { kind, message } }),
   dismissToast: () => set({ toast: null }),
-}));
+  };
+});

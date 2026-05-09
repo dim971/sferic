@@ -53,8 +53,16 @@ pub fn run() {
                 .build()?;
 
             let edit = SubmenuBuilder::new(handle, "Edit")
-                .item(&PredefinedMenuItem::undo(handle, None)?)
-                .item(&PredefinedMenuItem::redo(handle, None)?)
+                .item(
+                    &MenuItemBuilder::with_id("undo", "Undo")
+                        .accelerator("CmdOrCtrl+Z")
+                        .build(handle)?,
+                )
+                .item(
+                    &MenuItemBuilder::with_id("redo", "Redo")
+                        .accelerator("CmdOrCtrl+Shift+Z")
+                        .build(handle)?,
+                )
                 .separator()
                 .item(&PredefinedMenuItem::cut(handle, None)?)
                 .item(&PredefinedMenuItem::copy(handle, None)?)

@@ -38,6 +38,10 @@ export function MenuBar() {
   const setLoopEnabled = useProjectStore((s) => s.setLoopEnabled);
   const setMonitoring = useProjectStore((s) => s.setMonitoring);
   const setShortcutsOpen = useProjectStore((s) => s.setShortcutsOpen);
+  const undo = useProjectStore((s) => s.undo);
+  const redo = useProjectStore((s) => s.redo);
+  const canUndo = useProjectStore((s) => s.historyPast.length > 0);
+  const canRedo = useProjectStore((s) => s.historyFuture.length > 0);
 
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const rootRef = useRef<HTMLElement | null>(null);
@@ -81,6 +85,21 @@ export function MenuBar() {
       {
         label: 'Edit',
         items: [
+          {
+            kind: 'item',
+            label: 'Undo',
+            accel: '⌘Z',
+            disabled: !canUndo,
+            onClick: fire(undo),
+          },
+          {
+            kind: 'item',
+            label: 'Redo',
+            accel: '⇧⌘Z',
+            disabled: !canRedo,
+            onClick: fire(redo),
+          },
+          { kind: 'separator' },
           {
             kind: 'item',
             label: 'Delete keyframe',
@@ -224,6 +243,10 @@ export function MenuBar() {
     setLoopEnabled,
     setMonitoring,
     setShortcutsOpen,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
   ]);
 
   return (
