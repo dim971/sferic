@@ -1,7 +1,12 @@
-import { Download, FolderOpen, Save } from 'lucide-react';
+import { useState } from 'react';
+import { AudioLines, Download, FileAudio, FolderOpen, Save } from 'lucide-react';
 import { useProjectStore } from '@/store/project-store';
 import { AudioEngine } from '@/lib/audio-engine';
-import { VuMeter } from './VuMeter';
+import { useCpuMonitor } from '@/lib/use-monitoring';
+import { RenderModal } from '@/components/render/RenderModal';
+import { HorizontalVuMeter } from './HorizontalVuMeter';
+
+const MENUS = ['File', 'Edit', 'Project', 'Render', 'View', 'Help'] as const;
 
 export function Topbar() {
   const project = useProjectStore((s) => s.project);
@@ -11,10 +16,13 @@ export function Topbar() {
   const openProjectFromDialog = useProjectStore((s) => s.openProjectFromDialog);
   const saveCurrentProject = useProjectStore((s) => s.saveCurrentProject);
   const setRenderModalOpen = useProjectStore((s) => s.setRenderModalOpen);
+  const renderModalOpen = useProjectStore((s) => s.renderModalOpen);
+  const [hoveredMenu, setHoveredMenu] = useState<string | null>(null);
 
-  const sampleRateK = audioBuffer ? `${(audioBuffer.sampleRate / 1000).toFixed(1)}k` : '';
+  const sampleRateK = audioBuffer ? Math.round(audioBuffer.sampleRate / 1000) : 0;
   const fileName = project?.audioFile.originalPath.split(/[/\\]/).pop() ?? '';
   const renderDisabled = !audioBuffer;
+  const { cpu, bufferSize } = useCpuMonitor();
 
   const handleOpen = () => {
     if (project) void openProjectFromDialog();
@@ -27,39 +35,52 @@ export function Topbar() {
   };
 
   return (
-    <header className="h-full px-3 flex items-center gap-3 bg-[--bg-base]">
-      <div className="flex items-center gap-2 min-w-0">
-        <span className="w-2 h-2 rounded-full bg-[--accent]" aria-hidden />
-        <span className="text-[16px] font-medium text-[--text-primary]">Spatialize</span>
-        <span className="text-[10px] tracking-widest text-[--text-dim] font-mono">v1.4</span>
+    <header className="h-full px-2 flex items-stretch gap-1 bg-[--bg-base]">
+      {/* Orange square logo */}
+      <div className="flex items-center gap-2 pr-2">
+        <div className="w-7 h-7 rounded-md bg-[--accent] flex items-center justify-center">
+          <AudioLines size={14} strokeWidth={2.5} className="text-white" />
+        </div>
+        <span className="text-[14px] font-medium text-[--text-primary]">Spatialize</span>
+        <span className="text-[11px] text-[--text-dim] font-mono">1.4.2</span>
       </div>
 
-      <nav className="flex items-center gap-3" aria-hidden>
-        {(['File', 'Edit', 'Project', 'Render', 'View', 'Help'] as const).map((m) => (
-          <span
+      {/* Menus */}
+      <nav className="flex items-center" aria-hidden>
+        {MENUS.map((m) => (
+          <button
             key={m}
-            className="text-[12px] text-[--text-secondary] hover:text-[--text-primary] cursor-default select-none"
+            type="button"
+            onMouseEnter={() => setHoveredMenu(m)}
+            onMouseLeave={() => setHoveredMenu(null)}
+            className={`text-[12px] px-2.5 py-1 rounded transition-colors ${
+              hoveredMenu === m
+                ? 'bg-[--bg-panel-elev] text-[--text-primary]'
+                : 'text-[--text-secondary]'
+            }`}
           >
             {m}
-          </span>
+          </button>
         ))}
       </nav>
 
-      <div className="flex-1 min-w-0 flex items-center justify-center gap-2.5 text-[12px]">
+      {/* Project metadata */}
+      <div className="flex items-center gap-2 text-[12px] flex-1 min-w-0 ml-2">
         {project ? (
           <>
-            <span className="text-[10px] tracking-widest uppercase px-2 py-0.5 rounded-md bg-[--accent-soft] text-[--accent] flex-shrink-0">
-              {project.settings.panningModel}
+            <FileAudio size={12} className="text-[--text-dim] flex-shrink-0" />
+            <span className="text-[--text-secondary] truncate max-w-[280px]">
+              {project.meta.name}
             </span>
-            <span className="text-[--text-secondary] truncate max-w-[420px]">{fileName}</span>
-            <span className="font-mono text-[--text-dim] flex-shrink-0">{sampleRateK}</span>
-            <span className="text-[--text-dim] flex-shrink-0">/</span>
-            <span className="font-mono text-[--text-dim] flex-shrink-0">float32</span>
+            <span className="text-[--text-dim] flex-shrink-0">·</span>
+            <span className="font-mono text-[--text-dim] truncate max-w-[280px]">{fileName}</span>
+            <span className="text-[--text-dim] flex-shrink-0">·</span>
+            <span className="font-mono text-[--text-dim] flex-shrink-0">{sampleRateK}kHz</span>
+            <span className="text-[--text-dim] flex-shrink-0">·</span>
+            <span className="font-mono text-[--text-dim] flex-shrink-0">24-bit</span>
             {isDirty && (
-              <span
-                className="ml-1 text-[10px] tracking-widest uppercase px-2 py-0.5 rounded-md text-[--accent] border border-[--accent] flex-shrink-0"
-                style={{ backgroundColor: 'rgba(248, 115, 40, 0.08)' }}
-              >
+              <span className="ml-1 flex items-center gap-1.5 text-[10px] tracking-widest uppercase px-2 py-0.5 rounded-md text-[--accent] border border-[--border-strong] flex-shrink-0">
+                <span className="w-1.5 h-1.5 rounded-full bg-[--accent]" aria-hidden />
                 UNSAVED
               </span>
             )}
@@ -67,6 +88,7 @@ export function Topbar() {
         ) : null}
       </div>
 
+      {/* Right cluster: Save, Open, CPU/BUF, VU, Render */}
       <div className="flex items-center gap-1.5">
         <button
           type="button"
@@ -76,7 +98,8 @@ export function Topbar() {
           className="text-[12px] px-2.5 py-1 rounded-md bg-[--bg-panel-elev] border border-[--border-strong] text-[--text-secondary] hover:text-[--text-primary] hover:bg-[--bg-input] disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
         >
           <Save size={12} strokeWidth={1.75} />
-          Save
+          <span>Save</span>
+          <span className="text-[10px] text-[--text-dim] font-mono ml-0.5">⌘S</span>
         </button>
         <button
           type="button"
@@ -85,12 +108,37 @@ export function Topbar() {
           className="text-[12px] px-2.5 py-1 rounded-md bg-[--bg-panel-elev] border border-[--border-strong] text-[--text-secondary] hover:text-[--text-primary] hover:bg-[--bg-input] flex items-center gap-1.5"
         >
           <FolderOpen size={12} strokeWidth={1.75} />
-          Open
+          <span>Open</span>
+          <span className="text-[10px] text-[--text-dim] font-mono ml-0.5">⌘O</span>
         </button>
-        <div className="flex items-end gap-0.5 h-7 px-1.5" aria-label="VU meters L / R">
-          <VuMeter analyser={AudioEngine.getAnalyserL()} />
-          <VuMeter analyser={AudioEngine.getAnalyserR()} />
+
+        {audioBuffer && (
+          <div className="flex flex-col text-[10px] font-mono tabular-nums leading-[1.15] px-1.5">
+            <div className="text-[--text-dim]">
+              CPU{' '}
+              <span
+                className={cpu > 75 ? 'text-[--vu-red]' : cpu > 50 ? 'text-[--vu-yellow]' : 'text-[--vu-green]'}
+              >
+                {cpu.toFixed(1)}%
+              </span>
+            </div>
+            <div className="text-[--text-dim]">
+              BUF <span className="text-[--text-secondary]">{bufferSize ?? '—'}</span>
+            </div>
+          </div>
+        )}
+
+        <div className="flex flex-col gap-0.5 px-1">
+          <div className="flex items-center gap-1">
+            <span className="text-[9px] text-[--text-dim] font-mono w-2">L</span>
+            <HorizontalVuMeter analyser={AudioEngine.getAnalyserL()} />
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="text-[9px] text-[--text-dim] font-mono w-2">R</span>
+            <HorizontalVuMeter analyser={AudioEngine.getAnalyserR()} />
+          </div>
         </div>
+
         <button
           type="button"
           onClick={() => setRenderModalOpen(true)}
@@ -102,6 +150,10 @@ export function Topbar() {
           Render
         </button>
       </div>
+
+      {renderModalOpen && audioBuffer && project && (
+        <RenderModal onClose={() => setRenderModalOpen(false)} />
+      )}
     </header>
   );
 }
