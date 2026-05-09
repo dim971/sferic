@@ -3,6 +3,7 @@ import { Crosshair, Lock, LockOpen, Magnet, Maximize } from 'lucide-react';
 import type { Projection, SpatialKeyframe } from '@/types/project';
 import { useProjectStore } from '@/store/project-store';
 import { interpolatePosition, cartesianToSpherical, type Vec3 } from '@/lib/math3d';
+import { ListenerCanvasOverlay } from './ListenerCanvasOverlay';
 
 interface OrthographicViewProps {
   projection: Projection;
@@ -292,8 +293,6 @@ export function OrthographicView({ projection }: OrthographicViewProps) {
             );
           })}
 
-          {/* Listener at center */}
-          <ListenerIcon projection={projection} />
           {/* Selected keyframe label */}
           {selectedKf && (
             <SelectedLabel
@@ -346,6 +345,9 @@ export function OrthographicView({ projection }: OrthographicViewProps) {
             )}
           </ViewControl>
         </div>
+
+        {/* 3D head model overlay at the listener position */}
+        <ListenerCanvasOverlay projection={projection} />
       </div>
 
       <div className="flex items-center justify-between px-3 py-1.5 text-[11px] font-mono tabular-nums text-[--text-dim] border-t border-[--border-subtle]">
@@ -400,30 +402,6 @@ function KeyframeNode({ keyframe, num, sx, sy, selected }: KeyframeNodeProps) {
   );
 }
 
-function ListenerIcon({ projection }: { projection: Projection }) {
-  if (projection === 'top') {
-    // Top-down view: head as a small circle with a forward triangle pointing -Z (top of screen).
-    return (
-      <g aria-hidden>
-        <circle cx={0} cy={0} r={0.045} fill="#4F8EF7" />
-        <polygon points="0,-0.085 0.025,-0.04 -0.025,-0.04" fill="#4F8EF7" opacity={0.7} />
-      </g>
-    );
-  }
-  // Side view (Z / Y): head profile facing -Z (left of screen since +Z is right).
-  // Drawn with a slight beveled face and a tiny nose jutting to the left.
-  return (
-    <g aria-hidden>
-      <ellipse cx={0} cy={-0.005} rx={0.05} ry={0.06} fill="#4F8EF7" />
-      <polygon
-        points="-0.05,0 -0.075,0.005 -0.05,0.025"
-        fill="#4F8EF7"
-        opacity={0.85}
-      />
-      <circle cx={-0.025} cy={-0.015} r={0.008} fill="#0F1014" />
-    </g>
-  );
-}
 
 function SelectedLabel({ num, x, y }: { num: number; x: number; y: number }) {
   return (

@@ -51,8 +51,14 @@ export function PerspectiveScene() {
         className="h-full w-full"
         style={{ background: 'transparent' }}
       >
-        <ambientLight intensity={0.6} />
-        <pointLight position={[3, 5, 3]} intensity={0.6} />
+        {/* 3-point lighting setup gives the model real form */}
+        <ambientLight intensity={0.18} color="#ffffff" />
+        {/* Key — warm and bright from upper-right */}
+        <directionalLight position={[3, 4, 2]} intensity={2.2} color="#fff1e6" />
+        {/* Fill — cool and softer from upper-left */}
+        <directionalLight position={[-3, 2, 1]} intensity={0.9} color="#a8c8ff" />
+        {/* Rim — defines silhouette from behind */}
+        <directionalLight position={[0, 1, -4]} intensity={1.4} color="#ffb273" />
 
         {/* Wireframe sphere — mesh has handler so it catches click-to-add */}
         <mesh onPointerDown={handleSphereClick}>
