@@ -54,23 +54,26 @@ export function ListenerCanvasOverlay({ projection }: ListenerCanvasOverlayProps
 
 function HeadModel() {
   const gltf = useGLTF(LISTENER_MODEL_URL);
+  // Clone per instance: drei's useGLTF returns a shared scene reference,
+  // so two simultaneous <primitive>s steal it from each other via Three.js
+  // reparenting. The TOP and SIDE 2D views both mount at once.
+  const scene = useMemo(() => gltf.scene.clone(true), [gltf.scene]);
   const { scale, offsetY } = useMemo(() => {
-    const box = new Box3().setFromObject(gltf.scene);
+    const box = new Box3().setFromObject(scene);
     const size = new Vector3();
     box.getSize(size);
     const longest = Math.max(size.x, size.y, size.z) || 1;
-    // Slightly larger than in the 3D scene since the inset canvas
-    // gets only a small viewport.
-    const target = 0.7;
+    // Camera fov=28° at dist=1.2 → visible ~0.6 world units; keep margin.
+    const target = 0.45;
     const s = target / longest;
     const center = new Vector3();
     box.getCenter(center);
     return { scale: s, offsetY: -center.y * s };
-  }, [gltf.scene]);
+  }, [scene]);
 
   return (
     <group rotation={[0, Math.PI, 0]} position={[0, offsetY, 0]} scale={scale}>
-      <primitive object={gltf.scene} />
+      <primitive object={scene} />
     </group>
   );
 }
