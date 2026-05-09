@@ -104,7 +104,7 @@ export function RenderModal({ onClose }: RenderModalProps) {
       }}
     >
       <div
-        className="bg-[--bg-panel] border border-[--border-strong] rounded-lg w-[480px] p-4 shadow-xl"
+        className="bg-[var(--bg-panel)] border border-[var(--border-strong)] rounded-lg w-[480px] p-4 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
@@ -113,7 +113,7 @@ export function RenderModal({ onClose }: RenderModalProps) {
             type="button"
             onClick={onClose}
             disabled={busy}
-            className="text-[--text-dim] hover:text-[--text-primary] disabled:opacity-30"
+            className="text-[var(--text-dim)] hover:text-[var(--text-primary)] disabled:opacity-30"
             aria-label="Close"
           >
             <X size={14} />
@@ -122,7 +122,7 @@ export function RenderModal({ onClose }: RenderModalProps) {
 
         <div className="space-y-3 text-[12px]">
           <Row label="Project">
-            <span className="text-[--text-secondary]">{project.meta.name}</span>
+            <span className="text-[var(--text-secondary)]">{project.meta.name}</span>
           </Row>
           <Row label="Format">
             <div className="flex gap-1">
@@ -147,13 +147,13 @@ export function RenderModal({ onClose }: RenderModalProps) {
                       {bitDepthLabel(b)}
                     </Chip>
                   ))}
-                  <span className="self-center text-[10px] text-[--text-dim] ml-1">bit</span>
+                  <span className="self-center text-[10px] text-[var(--text-dim)] ml-1">bit</span>
                 </div>
               </Row>
               {bitDepth === 16 && (
                 <Row label="Dither">
                   <Toggle checked={dither} onChange={setDither} disabled={busy} />
-                  <span className="ml-2 text-[10px] text-[--text-dim]">TPDF, 1 LSB</span>
+                  <span className="ml-2 text-[10px] text-[var(--text-dim)]">TPDF, 1 LSB</span>
                 </Row>
               )}
             </>
@@ -166,7 +166,7 @@ export function RenderModal({ onClose }: RenderModalProps) {
                     {b}
                   </Chip>
                 ))}
-                <span className="self-center text-[10px] text-[--text-dim] ml-1">kbps</span>
+                <span className="self-center text-[10px] text-[var(--text-dim)] ml-1">kbps</span>
               </div>
             </Row>
           )}
@@ -181,7 +181,7 @@ export function RenderModal({ onClose }: RenderModalProps) {
                 ))}
               </div>
               {range === 'custom' && (
-                <div className="flex items-center gap-2 text-[11px] text-[--text-dim]">
+                <div className="flex items-center gap-2 text-[11px] text-[var(--text-dim)]">
                   <span>start</span>
                   <input
                     type="number"
@@ -191,7 +191,7 @@ export function RenderModal({ onClose }: RenderModalProps) {
                     value={start}
                     onChange={(e) => setStart(Math.max(0, parseFloat(e.currentTarget.value) || 0))}
                     disabled={busy}
-                    className="bg-[--bg-input] text-[--text-primary] font-mono px-2 py-1 rounded-md w-24"
+                    className="bg-[var(--bg-input)] text-[var(--text-primary)] font-mono px-2 py-1 rounded-md w-24"
                   />
                   <span>end</span>
                   <input
@@ -202,9 +202,9 @@ export function RenderModal({ onClose }: RenderModalProps) {
                     value={end || duration}
                     onChange={(e) => setEnd(parseFloat(e.currentTarget.value) || duration)}
                     disabled={busy}
-                    className="bg-[--bg-input] text-[--text-primary] font-mono px-2 py-1 rounded-md w-24"
+                    className="bg-[var(--bg-input)] text-[var(--text-primary)] font-mono px-2 py-1 rounded-md w-24"
                   />
-                  <span className="ml-auto text-[--text-secondary] font-mono">
+                  <span className="ml-auto text-[var(--text-secondary)] font-mono">
                     {formatTime(effectiveEnd - effectiveStart)}
                   </span>
                 </div>
@@ -213,13 +213,13 @@ export function RenderModal({ onClose }: RenderModalProps) {
           </Row>
 
           <Row label="Sample rate">
-            <span className="font-mono text-[--text-secondary]">{audioBuffer.sampleRate} Hz</span>
+            <span className="font-mono text-[var(--text-secondary)]">{audioBuffer.sampleRate} Hz</span>
           </Row>
           <Row label="Channels">
-            <span className="text-[--text-secondary]">2 (stéréo HRTF)</span>
+            <span className="text-[var(--text-secondary)]">2 (stéréo HRTF)</span>
           </Row>
           <Row label="Keyframes">
-            <span className="font-mono text-[--text-secondary]">
+            <span className="font-mono text-[var(--text-secondary)]">
               {project.keyframes.length}
             </span>
           </Row>
@@ -229,10 +229,10 @@ export function RenderModal({ onClose }: RenderModalProps) {
           <span
             className={`text-[12px] ${
               stage === 'error'
-                ? 'text-[--vu-red]'
+                ? 'text-[var(--vu-red)]'
                 : stage === 'done'
-                  ? 'text-[--vu-green]'
-                  : 'text-[--text-secondary]'
+                  ? 'text-[var(--vu-green)]'
+                  : 'text-[var(--text-secondary)]'
             }`}
           >
             {error ?? stageLabel[stage]}
@@ -242,7 +242,7 @@ export function RenderModal({ onClose }: RenderModalProps) {
               type="button"
               onClick={onClose}
               disabled={busy}
-              className="text-[14px] px-3 py-1 rounded-md border border-[--border-strong] text-[--text-secondary] hover:text-[--text-primary] disabled:opacity-30"
+              className="text-[14px] px-3 py-1 rounded-md border border-[var(--border-strong)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:opacity-30"
             >
               {stage === 'done' ? 'Close' : 'Cancel'}
             </button>
@@ -250,7 +250,7 @@ export function RenderModal({ onClose }: RenderModalProps) {
               type="button"
               onClick={handleRender}
               disabled={busy}
-              className="text-[14px] px-4 py-1.5 rounded-md bg-[--accent] hover:bg-[--accent-hot] text-white font-medium disabled:opacity-40 flex items-center gap-2"
+              className="text-[14px] px-4 py-1.5 rounded-md bg-[var(--accent)] hover:bg-[var(--accent-hot)] text-white font-medium disabled:opacity-40 flex items-center gap-2"
             >
               {busy && <Spinner />}
               Render
@@ -265,7 +265,7 @@ export function RenderModal({ onClose }: RenderModalProps) {
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="grid grid-cols-[100px_1fr] gap-2 items-center">
-      <span className="text-[11px] text-[--text-dim]">{label}</span>
+      <span className="text-[11px] text-[var(--text-dim)]">{label}</span>
       <div className="flex items-center">{children}</div>
     </div>
   );
@@ -286,8 +286,8 @@ function Chip({ active, onClick, disabled, children }: ChipProps) {
       disabled={disabled}
       className={`px-2 py-1 text-[11px] rounded-md transition-colors disabled:opacity-30 ${
         active
-          ? 'bg-[--accent-soft] border border-[--accent] text-[--accent]'
-          : 'border border-[--border-strong] text-[--text-secondary] hover:text-[--text-primary]'
+          ? 'bg-[var(--accent-soft)] border border-[var(--accent)] text-[var(--accent)]'
+          : 'border border-[var(--border-strong)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
       }`}
     >
       {children}
@@ -310,7 +310,7 @@ function Toggle({ checked, onChange, disabled }: ToggleProps) {
       disabled={disabled}
       onClick={() => onChange(!checked)}
       className={`relative inline-flex h-3 w-6 rounded-full transition-colors disabled:opacity-40 ${
-        checked ? 'bg-[--accent]' : 'bg-[--bg-input]'
+        checked ? 'bg-[var(--accent)]' : 'bg-[var(--bg-input)]'
       }`}
     >
       <span

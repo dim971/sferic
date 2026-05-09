@@ -28,7 +28,7 @@ export function ShortcutsHelp({ onClose }: ShortcutsHelpProps) {
       }}
     >
       <div
-        className="bg-[--bg-panel] border border-[--border-strong] rounded-lg w-[440px] p-4 shadow-xl"
+        className="bg-[var(--bg-panel)] border border-[var(--border-strong)] rounded-lg w-[440px] p-4 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
@@ -36,7 +36,7 @@ export function ShortcutsHelp({ onClose }: ShortcutsHelpProps) {
           <button
             type="button"
             onClick={onClose}
-            className="text-[--text-dim] hover:text-[--text-primary]"
+            className="text-[var(--text-dim)] hover:text-[var(--text-primary)]"
             aria-label="Close"
           >
             <X size={14} />
@@ -45,8 +45,8 @@ export function ShortcutsHelp({ onClose }: ShortcutsHelpProps) {
         <dl className="text-[12px] grid grid-cols-[1fr_auto] gap-x-6 gap-y-1.5">
           {SHORTCUTS.map((s) => (
             <div key={s.label} className="contents">
-              <dt className="text-[--text-secondary]">{s.label}</dt>
-              <dd className="font-mono text-[--text-primary] text-right">{s.keys}</dd>
+              <dt className="text-[var(--text-secondary)]">{s.label}</dt>
+              <dd className="font-mono text-[var(--text-primary)] text-right">{s.keys}</dd>
             </div>
           ))}
         </dl>

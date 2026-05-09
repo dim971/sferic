@@ -10,8 +10,8 @@ export function BarBeatDisplay() {
 
   return (
     <div className="flex items-center gap-1 text-[11px] font-mono tabular-nums">
-      <span className="text-[--text-dim] tracking-widest uppercase">BAR</span>
-      <span className={display ? 'text-[--text-secondary]' : 'text-[--text-dim]'}>
+      <span className="text-[var(--text-dim)] tracking-widest uppercase">BAR</span>
+      <span className={display ? 'text-[var(--text-secondary)]' : 'text-[var(--text-dim)]'}>
         {display ? `${display.bar}.${display.beat}.${display.sixteenth}` : '—.—.—'}
       </span>
     </div>

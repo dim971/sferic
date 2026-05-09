@@ -38,12 +38,12 @@ export function PerspectiveScene() {
   };
 
   return (
-    <div className="relative h-full w-full bg-[--bg-panel]">
-      <div className="absolute top-2 left-3 z-10 text-[11px] font-mono tabular-nums text-[--text-secondary] pointer-events-none">
-        <span className="tracking-widest uppercase text-[--text-dim]">PERSPECTIVE</span>
-        <span className="text-[--text-dim] ml-2">3D</span>
+    <div className="relative h-full w-full bg-[var(--bg-panel)]">
+      <div className="absolute top-2 left-3 z-10 text-[11px] font-mono tabular-nums text-[var(--text-secondary)] pointer-events-none">
+        <span className="tracking-widest uppercase text-[var(--text-dim)]">PERSPECTIVE</span>
+        <span className="text-[var(--text-dim)] ml-2">3D</span>
       </div>
-      <div className="absolute top-2 right-3 z-10 text-[11px] font-mono text-[--text-secondary] pointer-events-none">
+      <div className="absolute top-2 right-3 z-10 text-[11px] font-mono text-[var(--text-secondary)] pointer-events-none">
         {formatTimecode(currentTime)}
       </div>
       <Canvas
@@ -109,7 +109,7 @@ export function PerspectiveScene() {
           enabled={orbitEnabled}
         />
       </Canvas>
-      <div className="absolute bottom-2 left-3 z-10 font-mono text-[10px] tabular-nums text-[--text-dim] pointer-events-none">
+      <div className="absolute bottom-2 left-3 z-10 font-mono text-[10px] tabular-nums text-[var(--text-dim)] pointer-events-none">
         cur az {sph.az >= 0 ? '+' : ''}
         {sph.az.toFixed(0)}° · el {sph.el >= 0 ? '+' : ''}
         {sph.el.toFixed(0)}° · r {sph.r.toFixed(2)}

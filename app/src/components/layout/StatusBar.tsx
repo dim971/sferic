@@ -27,53 +27,53 @@ export function StatusBar() {
   const ready = audioBuffer !== null;
 
   return (
-    <div className="h-full px-3 flex items-center gap-4 text-[10px] font-mono uppercase tracking-widest text-[--text-dim] bg-[--bg-base] border-t border-[--border-subtle]">
+    <div className="h-full px-3 flex items-center gap-4 text-[10px] font-mono uppercase tracking-widest text-[var(--text-dim)] bg-[var(--bg-base)] border-t border-[var(--border-subtle)]">
       <span className="flex items-center gap-1.5">
         <span
-          className={`size-1.5 rounded-full ${ready ? 'bg-[--vu-green]' : 'bg-[--text-dim]'}`}
+          className={`size-1.5 rounded-full ${ready ? 'bg-[var(--vu-green)]' : 'bg-[var(--text-dim)]'}`}
         />
         engine {ready ? 'ready' : 'idle'}
       </span>
       <span>
         <span>kf </span>
-        <span className="text-[--text-secondary]">{project?.keyframes.length ?? 0}</span>
+        <span className="text-[var(--text-secondary)]">{project?.keyframes.length ?? 0}</span>
       </span>
       <span>
         <span>sel </span>
-        <span className="text-[--text-secondary]">{selectedLabel}</span>
+        <span className="text-[var(--text-secondary)]">{selectedLabel}</span>
       </span>
       {project && (
         <span>
           <span>panning </span>
-          <span className="text-[--text-secondary]">{project.settings.panningModel}</span>
+          <span className="text-[var(--text-secondary)]">{project.settings.panningModel}</span>
         </span>
       )}
       <span>
         <span>monitor </span>
-        <span className="text-[--text-secondary]">{monitoring}</span>
+        <span className="text-[var(--text-secondary)]">{monitoring}</span>
       </span>
       {audioBuffer && (
         <>
           <span>
             <span>sr </span>
-            <span className="text-[--text-secondary]">
+            <span className="text-[var(--text-secondary)]">
               {(audioBuffer.sampleRate / 1000).toFixed(1)}k
             </span>
           </span>
           <span>
             <span>cpu </span>
-            <span className="text-[--text-secondary]">{cpu.toFixed(1)}%</span>
+            <span className="text-[var(--text-secondary)]">{cpu.toFixed(1)}%</span>
           </span>
           {bufferSize !== null && (
             <span>
               <span>buf </span>
-              <span className="text-[--text-secondary]">{bufferSize}</span>
+              <span className="text-[var(--text-secondary)]">{bufferSize}</span>
             </span>
           )}
         </>
       )}
       <span className="ml-auto">
-        <span className="text-[--text-secondary]">{formatTime(currentTime)}</span>
+        <span className="text-[var(--text-secondary)]">{formatTime(currentTime)}</span>
       </span>
     </div>
   );

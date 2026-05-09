@@ -28,7 +28,7 @@ export function Inspector() {
 
   if (!project) {
     return (
-      <div className="h-full p-3 flex flex-col gap-2 items-center justify-center text-[--text-dim] text-[12px]">
+      <div className="h-full p-3 flex flex-col gap-2 items-center justify-center text-[var(--text-dim)] text-[12px]">
         <span className="text-[10px] tracking-widest uppercase">Inspector</span>
         <span>No project loaded</span>
       </div>
@@ -67,7 +67,7 @@ function SectionHeader({
 }) {
   return (
     <div className="flex items-center justify-between">
-      <h3 className="text-[10px] tracking-widest uppercase text-[--text-dim]">{children}</h3>
+      <h3 className="text-[10px] tracking-widest uppercase text-[var(--text-dim)]">{children}</h3>
       {trailing}
     </div>
   );
@@ -82,9 +82,9 @@ function ProjectPanel({
   const s = project.settings;
   return (
     <div className="space-y-5">
-      <p className="text-[11px] text-[--text-dim] leading-snug -mt-2">
+      <p className="text-[11px] text-[var(--text-dim)] leading-snug -mt-2">
         No keyframe selected. Click in a scene or use{' '}
-        <kbd className="font-mono text-[--text-secondary]">⌘K</kbd> to insert one at the
+        <kbd className="font-mono text-[var(--text-secondary)]">⌘K</kbd> to insert one at the
         current time.
       </p>
 
@@ -175,17 +175,17 @@ function KeyframePanel({ keyframe: kf, index, total, prevId, nextId, allKeyframe
       <div className="space-y-1.5">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
-            <span className="w-6 h-6 flex items-center justify-center rounded-md bg-[--accent-soft]">
-              <Diamond size={11} className="text-[--accent]" fill="currentColor" />
+            <span className="w-6 h-6 flex items-center justify-center rounded-md bg-[var(--accent-soft)]">
+              <Diamond size={11} className="text-[var(--accent)]" fill="currentColor" />
             </span>
             <div className="flex flex-col">
-              <span className="text-[13px] text-[--text-primary] font-medium leading-tight">
+              <span className="text-[13px] text-[var(--text-primary)] font-medium leading-tight">
                 Keyframe {(index + 1).toString().padStart(2, '0')}
                 {kf.label && (
-                  <span className="ml-2 text-[--text-secondary] font-normal">— {kf.label}</span>
+                  <span className="ml-2 text-[var(--text-secondary)] font-normal">— {kf.label}</span>
                 )}
               </span>
-              <span className="font-mono text-[11px] text-[--text-dim] tabular-nums leading-tight">
+              <span className="font-mono text-[11px] text-[var(--text-dim)] tabular-nums leading-tight">
                 {formatTime(kf.time)}
               </span>
             </div>
@@ -210,8 +210,8 @@ function KeyframePanel({ keyframe: kf, index, total, prevId, nextId, allKeyframe
                   onClick={() => setPosMode(m)}
                   className={`text-[10px] px-1.5 py-0.5 rounded ${
                     posMode === m
-                      ? 'text-[--accent] bg-[--accent-soft]'
-                      : 'text-[--text-dim] hover:text-[--text-secondary]'
+                      ? 'text-[var(--accent)] bg-[var(--accent-soft)]'
+                      : 'text-[var(--text-dim)] hover:text-[var(--text-secondary)]'
                   }`}
                 >
                   {m}
@@ -365,8 +365,8 @@ function KeyframePanel({ keyframe: kf, index, total, prevId, nextId, allKeyframe
               title="Use project setting"
               className={`text-[10px] uppercase tracking-widest px-1.5 py-0.5 rounded ${
                 kf.reverbSend === null
-                  ? 'text-[--accent] bg-[--accent-soft]'
-                  : 'text-[--text-dim] hover:text-[--text-secondary]'
+                  ? 'text-[var(--accent)] bg-[var(--accent-soft)]'
+                  : 'text-[var(--text-dim)] hover:text-[var(--text-secondary)]'
               }`}
             >
               <RotateCcw size={10} className="inline mr-1" />
@@ -387,7 +387,7 @@ function KeyframePanel({ keyframe: kf, index, total, prevId, nextId, allKeyframe
       <button
         type="button"
         onClick={() => removeKeyframe(kf.id)}
-        className="mt-2 flex items-center gap-1.5 self-start text-[11px] text-[--text-dim] hover:text-[--vu-red] px-2 py-1 rounded-md transition-colors"
+        className="mt-2 flex items-center gap-1.5 self-start text-[11px] text-[var(--text-dim)] hover:text-[var(--vu-red)] px-2 py-1 rounded-md transition-colors"
       >
         <Trash2 size={11} strokeWidth={1.75} />
         Delete keyframe
@@ -414,7 +414,7 @@ function FilterField({ label, value, step, fallback, onChange }: FilterFieldProp
             type="button"
             onClick={() => onChange(null)}
             title="Bypass"
-            className="text-[10px] text-[--text-dim] hover:text-[--text-secondary] uppercase tracking-widest opacity-0 group-hover:opacity-100"
+            className="text-[10px] text-[var(--text-dim)] hover:text-[var(--text-secondary)] uppercase tracking-widest opacity-0 group-hover:opacity-100"
           >
             bypass
           </button>
@@ -430,7 +430,7 @@ function FilterField({ label, value, step, fallback, onChange }: FilterFieldProp
         <button
           type="button"
           onClick={() => onChange(fallback)}
-          className="text-[12px] text-[--text-dim] hover:text-[--text-primary] w-full text-right pr-1.5"
+          className="text-[12px] text-[var(--text-dim)] hover:text-[var(--text-primary)] w-full text-right pr-1.5"
         >
           bypass
         </button>
@@ -454,12 +454,12 @@ function Field({ label, children }: FieldProps) {
 }
 
 function Label({ children }: { children: React.ReactNode }) {
-  return <span className="text-[11px] text-[--text-secondary]">{children}</span>;
+  return <span className="text-[11px] text-[var(--text-secondary)]">{children}</span>;
 }
 
 function Readout({ children }: { children: React.ReactNode }) {
   return (
-    <span className="font-mono text-[12px] text-[--text-secondary] tabular-nums">{children}</span>
+    <span className="font-mono text-[12px] text-[var(--text-secondary)] tabular-nums">{children}</span>
   );
 }
 
@@ -486,10 +486,10 @@ function NumInput({ value, step = 0.01, precision = 2, onChange, suffix, disable
           const n = parseFloat(e.currentTarget.value);
           if (Number.isFinite(n)) onChange(n);
         }}
-        className="bg-transparent text-[12px] font-mono tabular-nums px-1.5 py-0.5 rounded outline-none w-full text-right text-[--text-primary] hover:bg-[--bg-input]/40 focus:bg-[--bg-input] focus:outline focus:outline-1 focus:outline-[--accent] disabled:opacity-40"
+        className="bg-transparent text-[12px] font-mono tabular-nums px-1.5 py-0.5 rounded outline-none w-full text-right text-[var(--text-primary)] hover:bg-[var(--bg-input)]/40 focus:bg-[var(--bg-input)] focus:outline focus:outline-1 focus:outline-[var(--accent)] disabled:opacity-40"
       />
       {suffix && (
-        <span className="text-[10px] text-[--text-dim] flex-shrink-0 select-none">
+        <span className="text-[10px] text-[var(--text-dim)] flex-shrink-0 select-none">
           {suffix}
         </span>
       )}
@@ -520,7 +520,7 @@ function SliderInput({ value, min = 0, max = 1, step = 0.01, onChange, disabled 
         style={{ accentColor: '#F87328' }}
         className="flex-1 disabled:opacity-40"
       />
-      <span className="font-mono text-[11px] text-[--text-secondary] tabular-nums w-10 text-right">
+      <span className="font-mono text-[11px] text-[var(--text-secondary)] tabular-nums w-10 text-right">
         {value.toFixed(2)}
       </span>
     </div>
@@ -540,7 +540,7 @@ function Toggle({ checked, onChange }: ToggleProps) {
       aria-checked={checked}
       onClick={() => onChange(!checked)}
       className={`relative inline-flex h-3 w-6 rounded-full transition-colors ${
-        checked ? 'bg-[--accent]' : 'bg-[--bg-input]'
+        checked ? 'bg-[var(--accent)]' : 'bg-[var(--bg-input)]'
       }`}
     >
       <span
@@ -565,8 +565,8 @@ function Chip({ active, onClick, children }: ChipProps) {
       onClick={onClick}
       className={`flex-1 px-2 py-1 text-[11px] rounded-md transition-colors ${
         active
-          ? 'bg-[--accent-soft] border border-[--accent] text-[--accent]'
-          : 'border border-[--border-strong] text-[--text-secondary] hover:text-[--text-primary]'
+          ? 'bg-[var(--accent-soft)] border border-[var(--accent)] text-[var(--accent)]'
+          : 'border border-[var(--border-strong)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
       }`}
     >
       {children}
@@ -583,12 +583,12 @@ interface PaginatorProps {
 
 function Paginator({ index, total, onPrev, onNext }: PaginatorProps) {
   return (
-    <div className="flex items-center gap-1 text-[11px] font-mono tabular-nums text-[--accent]">
+    <div className="flex items-center gap-1 text-[11px] font-mono tabular-nums text-[var(--accent)]">
       <button
         type="button"
         onClick={onPrev ?? undefined}
         disabled={!onPrev}
-        className="hover:text-[--accent-hot] disabled:opacity-30"
+        className="hover:text-[var(--accent-hot)] disabled:opacity-30"
         aria-label="Previous keyframe"
       >
         <ChevronLeft size={12} />
@@ -600,7 +600,7 @@ function Paginator({ index, total, onPrev, onNext }: PaginatorProps) {
         type="button"
         onClick={onNext ?? undefined}
         disabled={!onNext}
-        className="hover:text-[--accent-hot] disabled:opacity-30"
+        className="hover:text-[var(--accent-hot)] disabled:opacity-30"
         aria-label="Next keyframe"
       >
         <ChevronRight size={12} />

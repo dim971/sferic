@@ -42,10 +42,10 @@ export function MeterBar({ analyser, segments = 12, className = '' }: MeterBarPr
         const isOn = i < lit;
         const color =
           i >= segments - 1
-            ? 'bg-[--vu-red]'
+            ? 'bg-[var(--vu-red)]'
             : i >= segments - 4
-              ? 'bg-[--vu-yellow]'
-              : 'bg-[--vu-green]';
+              ? 'bg-[var(--vu-yellow)]'
+              : 'bg-[var(--vu-green)]';
         return (
           <span
             key={i}

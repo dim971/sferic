@@ -172,23 +172,23 @@ export function OrthographicView({ projection }: OrthographicViewProps) {
     : { sx: 0, sy: 0 };
 
   return (
-    <div className="flex flex-col h-full bg-[--bg-panel] min-h-0 min-w-0">
-      <div className="flex items-center justify-between px-3 py-1.5 text-[11px] font-mono tabular-nums text-[--text-secondary] border-b border-[--border-subtle]">
+    <div className="flex flex-col h-full bg-[var(--bg-panel)] min-h-0 min-w-0">
+      <div className="flex items-center justify-between px-3 py-1.5 text-[11px] font-mono tabular-nums text-[var(--text-secondary)] border-b border-[var(--border-subtle)]">
         <span>
-          <span className="tracking-widest uppercase text-[--text-dim]">{meta.label}</span>
-          <span className="text-[--text-dim] ml-2">{meta.plane}</span>
+          <span className="tracking-widest uppercase text-[var(--text-dim)]">{meta.label}</span>
+          <span className="text-[var(--text-dim)] ml-2">{meta.plane}</span>
         </span>
         <span className="flex items-center gap-3">
           <button
             type="button"
             onClick={cycleSnap}
-            className="text-[--text-dim] hover:text-[--text-secondary]"
+            className="text-[var(--text-dim)] hover:text-[var(--text-secondary)]"
             title={`Snap angle: ${snapAngleDeg}° — click to cycle`}
           >
             Snap {snapAngleDeg}°
           </button>
-          <span className="text-[--text-dim]">{view.zoom.toFixed(1)}×</span>
-          <span className="text-[--text-secondary]">{tc}</span>
+          <span className="text-[var(--text-dim)]">{view.zoom.toFixed(1)}×</span>
+          <span className="text-[var(--text-secondary)]">{tc}</span>
         </span>
       </div>
 
@@ -350,7 +350,7 @@ export function OrthographicView({ projection }: OrthographicViewProps) {
         <ListenerCanvasOverlay projection={projection} />
       </div>
 
-      <div className="flex items-center justify-between px-3 py-1.5 text-[11px] font-mono tabular-nums text-[--text-dim] border-t border-[--border-subtle]">
+      <div className="flex items-center justify-between px-3 py-1.5 text-[11px] font-mono tabular-nums text-[var(--text-dim)] border-t border-[var(--border-subtle)]">
         <span>
           cur {meta.axisU} {fmt(cur.sx)}
           <span className="ml-3">
@@ -446,8 +446,8 @@ function ViewControl({ onClick, title, active, label, children }: ViewControlPro
       title={title}
       className={`h-6 px-1.5 flex items-center gap-1 rounded-md transition-colors ${
         active
-          ? 'bg-[--accent-soft] text-[--accent]'
-          : 'bg-[--bg-panel-elev] text-[--text-secondary] hover:text-[--text-primary]'
+          ? 'bg-[var(--accent-soft)] text-[var(--accent)]'
+          : 'bg-[var(--bg-panel-elev)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
       }`}
     >
       {children}

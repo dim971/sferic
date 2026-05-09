@@ -25,15 +25,15 @@ export function Toast() {
   return (
     <div className="fixed bottom-8 right-4 z-50 max-w-md">
       <div
-        className="flex items-start gap-2 px-3 py-2 rounded-md bg-[--bg-panel-elev] border shadow-xl text-[12px]"
+        className="flex items-start gap-2 px-3 py-2 rounded-md bg-[var(--bg-panel-elev)] border shadow-xl text-[12px]"
         style={{ borderColor: color }}
       >
         <Icon size={14} style={{ color, flexShrink: 0, marginTop: 2 }} />
-        <div className="flex-1 text-[--text-primary] whitespace-pre-line">{toast.message}</div>
+        <div className="flex-1 text-[var(--text-primary)] whitespace-pre-line">{toast.message}</div>
         <button
           type="button"
           onClick={dismissToast}
-          className="text-[--text-dim] hover:text-[--text-primary] flex-shrink-0"
+          className="text-[var(--text-dim)] hover:text-[var(--text-primary)] flex-shrink-0"
           aria-label="Dismiss"
         >
           <X size={12} />

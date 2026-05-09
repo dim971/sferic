@@ -24,8 +24,8 @@ export function Readouts() {
     <div className="flex items-center gap-3 text-[11px] font-mono tabular-nums">
       {cells.map((c) => (
         <span key={c.label} className="flex items-baseline gap-1">
-          <span className="text-[--text-dim] tracking-widest uppercase text-[10px]">{c.label}</span>
-          <span className="text-[--text-secondary]">{c.value}</span>
+          <span className="text-[var(--text-dim)] tracking-widest uppercase text-[10px]">{c.label}</span>
+          <span className="text-[var(--text-secondary)]">{c.value}</span>
         </span>
       ))}
     </div>

@@ -25,7 +25,7 @@ export function BpmDisplay() {
 
   return (
     <div className="flex items-center gap-1 text-[11px] font-mono tabular-nums">
-      <span className="text-[--text-dim] tracking-widest uppercase">BPM</span>
+      <span className="text-[var(--text-dim)] tracking-widest uppercase">BPM</span>
       {editing ? (
         <input
           autoFocus
@@ -40,13 +40,13 @@ export function BpmDisplay() {
               setDraft(bpm !== null ? String(bpm) : '');
             }
           }}
-          className="bg-[--bg-input] w-12 text-[--text-primary] px-1 rounded outline-none focus:ring-1 focus:ring-[--accent]"
+          className="bg-[var(--bg-input)] w-12 text-[var(--text-primary)] px-1 rounded outline-none focus:ring-1 focus:ring-[var(--accent)]"
         />
       ) : (
         <button
           type="button"
           onClick={() => setEditing(true)}
-          className={`hover:text-[--text-primary] ${detecting ? 'text-[--text-dim] italic' : 'text-[--text-secondary]'}`}
+          className={`hover:text-[var(--text-primary)] ${detecting ? 'text-[var(--text-dim)] italic' : 'text-[var(--text-secondary)]'}`}
           title={detecting ? 'Détection BPM en cours… clic pour saisir manuellement' : 'Clic pour modifier'}
         >
           {bpm !== null ? bpm : '…'}

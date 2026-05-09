@@ -39,8 +39,8 @@ export default function App() {
   const duration = audioBuffer?.duration ?? 0;
 
   return (
-    <div className="h-screen w-screen grid grid-rows-[44px_1fr_220px_22px] grid-cols-[1fr_1fr_320px] bg-[--bg-base] text-[--text-primary]">
-      <div className="col-span-3 border-b border-[--border-subtle]">
+    <div className="h-screen w-screen grid grid-rows-[44px_1fr_220px_22px] grid-cols-[1fr_1fr_320px] bg-[var(--bg-base)] text-[var(--text-primary)]">
+      <div className="col-span-3 border-b border-[var(--border-subtle)] relative z-30">
         <Topbar />
       </div>
 
@@ -51,7 +51,7 @@ export default function App() {
               <OrthographicView projection="top" />
               <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
             </div>
-            <div className="border-l border-[--border-subtle] min-h-0 min-w-0">
+            <div className="border-l border-[var(--border-subtle)] min-h-0 min-w-0">
               <OrthographicView projection="side" />
             </div>
           </>
@@ -62,25 +62,25 @@ export default function App() {
           </div>
         )
       ) : (
-        <div className="col-span-2 bg-[--bg-panel] border-r border-[--border-subtle] flex items-center justify-center text-[--text-dim] text-[12px]">
+        <div className="col-span-2 bg-[var(--bg-panel)] border-r border-[var(--border-subtle)] flex items-center justify-center text-[var(--text-dim)] text-[12px]">
           Open an audio file to begin — File ▸ Open audio…  (⌘I)
         </div>
       )}
 
-      <div className="bg-[--bg-panel] border-l border-[--border-subtle] min-h-0">
+      <div className="bg-[var(--bg-panel)] border-l border-[var(--border-subtle)] min-h-0">
         <Inspector />
       </div>
 
-      <div className="col-span-3 bg-[--bg-panel] border-t border-[--border-subtle] flex flex-col gap-2 px-3 py-2 min-h-0">
+      <div className="col-span-3 bg-[var(--bg-panel)] border-t border-[var(--border-subtle)] flex flex-col gap-2 px-3 py-2 min-h-0">
         {/* Top control row — all on one horizontal line per design */}
         <div className="flex items-center gap-4 flex-wrap">
           <TransportBar />
-          <span className="w-px h-6 bg-[--border-subtle]" aria-hidden />
+          <span className="w-px h-6 bg-[var(--border-subtle)]" aria-hidden />
           {project && <Readouts />}
-          <span className="w-px h-6 bg-[--border-subtle]" aria-hidden />
+          <span className="w-px h-6 bg-[var(--border-subtle)]" aria-hidden />
           <BpmDisplay />
           <BarBeatDisplay />
-          <span className="w-px h-6 bg-[--border-subtle]" aria-hidden />
+          <span className="w-px h-6 bg-[var(--border-subtle)]" aria-hidden />
           <MonitoringToggle />
           <InsertKeyframeButton />
         </div>
@@ -96,16 +96,16 @@ export default function App() {
           <div className="flex flex-col items-end justify-between gap-1.5 min-w-[110px]">
             <div className="flex flex-col gap-0.5">
               <div className="flex items-center gap-1.5">
-                <span className="text-[10px] tracking-widest uppercase font-mono text-[--text-dim]">L</span>
+                <span className="text-[10px] tracking-widest uppercase font-mono text-[var(--text-dim)]">L</span>
                 <MeterBar analyser={AudioEngine.getAnalyserL()} />
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="text-[10px] tracking-widest uppercase font-mono text-[--text-dim]">R</span>
+                <span className="text-[10px] tracking-widest uppercase font-mono text-[var(--text-dim)]">R</span>
                 <MeterBar analyser={AudioEngine.getAnalyserR()} />
               </div>
             </div>
             <ZoomControls />
-            <span className="font-mono text-[10px] text-[--text-dim] tabular-nums">
+            <span className="font-mono text-[10px] text-[var(--text-dim)] tabular-nums">
               {project ? `${project.keyframes.length} kf` : '0 kf'}
             </span>
           </div>
@@ -123,8 +123,8 @@ export default function App() {
 
       {dragOver && (
         <div className="fixed inset-0 z-50 pointer-events-none flex items-center justify-center">
-          <div className="absolute inset-2 rounded-lg border-2 border-dashed border-[--accent] bg-[--accent-soft]/20" />
-          <div className="relative px-6 py-3 rounded-md bg-[--bg-panel] border border-[--accent] text-[--accent] text-[14px] font-medium">
+          <div className="absolute inset-2 rounded-lg border-2 border-dashed border-[var(--accent)] bg-[var(--accent-soft)]/20" />
+          <div className="relative px-6 py-3 rounded-md bg-[var(--bg-panel)] border border-[var(--accent)] text-[var(--accent)] text-[14px] font-medium">
             Drop to load · audio or .spatialize.json
           </div>
         </div>
@@ -139,11 +139,11 @@ function ZoomControls() {
   const zoom = useProjectStore((s) => s.waveformZoom);
   const setZoom = useProjectStore((s) => s.setWaveformZoom);
   return (
-    <div className="flex items-center gap-1 text-[--text-dim]">
+    <div className="flex items-center gap-1 text-[var(--text-dim)]">
       <button
         type="button"
         onClick={() => setZoom(zoom / 1.5)}
-        className="w-5 h-5 flex items-center justify-center rounded-md hover:bg-[--bg-panel-elev]"
+        className="w-5 h-5 flex items-center justify-center rounded-md hover:bg-[var(--bg-panel-elev)]"
         aria-label="Zoom out"
         title="Zoom out"
       >
@@ -153,7 +153,7 @@ function ZoomControls() {
       <button
         type="button"
         onClick={() => setZoom(zoom * 1.5)}
-        className="w-5 h-5 flex items-center justify-center rounded-md hover:bg-[--bg-panel-elev]"
+        className="w-5 h-5 flex items-center justify-center rounded-md hover:bg-[var(--bg-panel-elev)]"
         aria-label="Zoom in"
         title="Zoom in"
       >
@@ -171,14 +171,14 @@ function ViewModeToggle({
   setViewMode: (mode: '2d' | '3d') => void;
 }) {
   return (
-    <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 flex items-center gap-0.5 rounded-md border border-[--border-strong] bg-[--bg-panel-elev]/90 backdrop-blur p-0.5 text-[10px] tracking-widest uppercase font-mono">
+    <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 flex items-center gap-0.5 rounded-md border border-[var(--border-strong)] bg-[var(--bg-panel-elev)]/90 backdrop-blur p-0.5 text-[10px] tracking-widest uppercase font-mono">
       <button
         type="button"
         onClick={() => setViewMode('2d')}
         className={`flex items-center gap-1 px-2 py-0.5 rounded transition-colors ${
           viewMode === '2d'
-            ? 'bg-[--accent] text-white'
-            : 'text-[--text-dim] hover:text-[--text-secondary]'
+            ? 'bg-[var(--accent)] text-white'
+            : 'text-[var(--text-dim)] hover:text-[var(--text-secondary)]'
         }`}
       >
         <Square size={10} strokeWidth={2} />
@@ -189,8 +189,8 @@ function ViewModeToggle({
         onClick={() => setViewMode('3d')}
         className={`flex items-center gap-1 px-2 py-0.5 rounded transition-colors ${
           viewMode === '3d'
-            ? 'bg-[--accent] text-white'
-            : 'text-[--text-dim] hover:text-[--text-secondary]'
+            ? 'bg-[var(--accent)] text-white'
+            : 'text-[var(--text-dim)] hover:text-[var(--text-secondary)]'
         }`}
       >
         <Box size={10} strokeWidth={2} />

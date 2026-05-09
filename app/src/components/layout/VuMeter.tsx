@@ -40,10 +40,10 @@ export function VuMeter({ analyser }: VuMeterProps) {
         const isOn = fromTop < lit;
         const color =
           fromTop === 0
-            ? 'bg-[--vu-red]'
+            ? 'bg-[var(--vu-red)]'
             : fromTop < 3
-              ? 'bg-[--vu-yellow]'
-              : 'bg-[--vu-green]';
+              ? 'bg-[var(--vu-yellow)]'
+              : 'bg-[var(--vu-green)]';
         return (
           <span
             key={i}

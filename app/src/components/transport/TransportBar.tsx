@@ -31,7 +31,7 @@ export function TransportBar() {
         onClick={skipToStart}
         disabled={disabled}
         aria-label="Skip to start"
-        className="w-7 h-7 flex items-center justify-center rounded-md text-[--accent] hover:bg-[--accent-soft] disabled:opacity-40 disabled:cursor-not-allowed"
+        className="w-7 h-7 flex items-center justify-center rounded-md text-[var(--accent)] hover:bg-[var(--accent-soft)] disabled:opacity-40 disabled:cursor-not-allowed"
       >
         <SkipBack size={14} fill="currentColor" strokeWidth={0} />
       </button>
@@ -40,7 +40,7 @@ export function TransportBar() {
         onClick={isPlaying ? pause : play}
         disabled={disabled}
         aria-label={isPlaying ? 'Pause' : 'Play'}
-        className="w-7 h-7 flex items-center justify-center rounded-md text-[--accent] hover:bg-[--accent-soft] disabled:opacity-40 disabled:cursor-not-allowed data-[active=true]:bg-[--accent-soft]"
+        className="w-7 h-7 flex items-center justify-center rounded-md text-[var(--accent)] hover:bg-[var(--accent-soft)] disabled:opacity-40 disabled:cursor-not-allowed data-[active=true]:bg-[var(--accent-soft)]"
         data-active={isPlaying}
       >
         {isPlaying ? (
@@ -54,7 +54,7 @@ export function TransportBar() {
         onClick={stop}
         disabled={disabled}
         aria-label="Stop"
-        className="w-7 h-7 flex items-center justify-center rounded-md text-[--accent] hover:bg-[--accent-soft] disabled:opacity-40 disabled:cursor-not-allowed"
+        className="w-7 h-7 flex items-center justify-center rounded-md text-[var(--accent)] hover:bg-[var(--accent-soft)] disabled:opacity-40 disabled:cursor-not-allowed"
       >
         <Square size={14} fill="currentColor" strokeWidth={0} />
       </button>
@@ -65,12 +65,12 @@ export function TransportBar() {
         aria-label={loopEnabled ? 'Loop on' : 'Loop off'}
         title={loopEnabled ? 'Disable loop' : 'Enable loop region'}
         className={`w-7 h-7 flex items-center justify-center rounded-md disabled:opacity-40 disabled:cursor-not-allowed ${
-          loopEnabled ? 'bg-[--accent-soft] text-[--accent]' : 'text-[--text-dim] hover:text-[--text-primary]'
+          loopEnabled ? 'bg-[var(--accent-soft)] text-[var(--accent)]' : 'text-[var(--text-dim)] hover:text-[var(--text-primary)]'
         }`}
       >
         <Repeat size={14} strokeWidth={1.75} />
       </button>
-      <span className="font-mono text-[14px] text-[--text-primary] tabular-nums min-w-[44px] pl-1">
+      <span className="font-mono text-[14px] text-[var(--text-primary)] tabular-nums min-w-[44px] pl-1">
         {formatTime(currentTime)}
       </span>
       <input
@@ -99,7 +99,7 @@ export function InsertKeyframeButton() {
       onClick={() => insertKeyframe()}
       disabled={disabled}
       title="Insert keyframe at current time (⌘K)"
-      className="flex items-center gap-1 text-[11px] tracking-widest uppercase px-2.5 py-1 rounded-md bg-[--accent] text-white hover:bg-[--accent-hot] disabled:opacity-40 disabled:cursor-not-allowed"
+      className="flex items-center gap-1 text-[11px] tracking-widest uppercase px-2.5 py-1 rounded-md bg-[var(--accent)] text-white hover:bg-[var(--accent-hot)] disabled:opacity-40 disabled:cursor-not-allowed"
     >
       <Plus size={12} strokeWidth={2.25} />
       Keyframe

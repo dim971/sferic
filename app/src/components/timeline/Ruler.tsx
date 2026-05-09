@@ -28,11 +28,11 @@ export function Ruler({ duration }: RulerProps) {
   for (let t = 0; t <= duration + 0.001; t += interval) ticks.push(t);
 
   return (
-    <div className="relative h-4 border-t border-[--border-subtle]">
+    <div className="relative h-4 border-t border-[var(--border-subtle)]">
       {ticks.map((t) => (
         <span
           key={t}
-          className="absolute top-0.5 -translate-x-1/2 font-mono text-[10px] text-[--text-dim] tabular-nums"
+          className="absolute top-0.5 -translate-x-1/2 font-mono text-[10px] text-[var(--text-dim)] tabular-nums"
           style={{ left: `${(t / duration) * 100}%` }}
         >
           {format(t)}
@@ -40,7 +40,7 @@ export function Ruler({ duration }: RulerProps) {
       ))}
       {selected && (
         <span
-          className="absolute top-0.5 -translate-x-1/2 font-mono text-[10px] text-[--accent] tabular-nums"
+          className="absolute top-0.5 -translate-x-1/2 font-mono text-[10px] text-[var(--accent)] tabular-nums"
           style={{ left: `${(selected.time / duration) * 100}%` }}
         >
           {format(selected.time)}

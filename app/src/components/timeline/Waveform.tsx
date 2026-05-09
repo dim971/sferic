@@ -82,7 +82,7 @@ export function Waveform({ audioBuffer }: WaveformProps) {
 
   if (!audioBuffer) {
     return (
-      <div className="h-24 flex items-center justify-center text-[--text-dim] text-[10px] tracking-widest uppercase">
+      <div className="h-24 flex items-center justify-center text-[var(--text-dim)] text-[10px] tracking-widest uppercase">
         no waveform
       </div>
     );
@@ -138,7 +138,7 @@ export function Waveform({ audioBuffer }: WaveformProps) {
         onRemove={removeKeyframe}
       />
       <div
-        className="relative bg-[--waveform-bg] rounded-md cursor-crosshair flex-1 min-h-0 overflow-hidden"
+        className="relative bg-[var(--waveform-bg)] rounded-md cursor-crosshair flex-1 min-h-0 overflow-hidden"
         onPointerDown={handlePointerDown}
       >
         <div ref={containerRef} className="h-full" />
@@ -163,7 +163,7 @@ export function Waveform({ audioBuffer }: WaveformProps) {
               >
                 <span
                   className={`absolute top-0 bottom-0 -translate-x-1/2 w-px ${
-                    isSel ? 'bg-[--accent] opacity-90' : 'bg-[--accent] opacity-30'
+                    isSel ? 'bg-[var(--accent)] opacity-90' : 'bg-[var(--accent)] opacity-30'
                   }`}
                 />
               </div>
@@ -198,15 +198,15 @@ function LoopRegionOverlay({ start, end, duration, enabled }: LoopRegionOverlayP
       />
       {/* Left bracket */}
       <div className="absolute top-0 bottom-0 left-0 flex flex-col">
-        <span className="w-2 h-1 bg-[--accent]" />
-        <span className="w-px h-full bg-[--accent]" />
-        <span className="w-2 h-1 bg-[--accent]" />
+        <span className="w-2 h-1 bg-[var(--accent)]" />
+        <span className="w-px h-full bg-[var(--accent)]" />
+        <span className="w-2 h-1 bg-[var(--accent)]" />
       </div>
       {/* Right bracket */}
       <div className="absolute top-0 bottom-0 right-0 flex flex-col items-end">
-        <span className="w-2 h-1 bg-[--accent]" />
-        <span className="w-px h-full bg-[--accent]" />
-        <span className="w-2 h-1 bg-[--accent]" />
+        <span className="w-2 h-1 bg-[var(--accent)]" />
+        <span className="w-px h-full bg-[var(--accent)]" />
+        <span className="w-2 h-1 bg-[var(--accent)]" />
       </div>
     </div>
   );
@@ -299,8 +299,8 @@ function KeyframeDiamond({
         title={`${keyframe.time.toFixed(2)}s — drag to move`}
         className={`block w-2.5 h-2.5 rotate-45 transition-colors cursor-grab active:cursor-grabbing ${
           selected
-            ? 'bg-[--accent] outline outline-1 outline-offset-1 outline-[--accent]'
-            : 'bg-[--accent] opacity-70 hover:opacity-100'
+            ? 'bg-[var(--accent)] outline outline-1 outline-offset-1 outline-[var(--accent)]'
+            : 'bg-[var(--accent)] opacity-70 hover:opacity-100'
         }`}
       />
       {selected && (
@@ -311,7 +311,7 @@ function KeyframeDiamond({
             onRemove(keyframe.id);
           }}
           aria-label="Remove keyframe"
-          className="absolute -top-4 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-[--bg-panel-elev] text-[--vu-red] flex items-center justify-center opacity-0 group-hover:opacity-100"
+          className="absolute -top-4 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-[var(--bg-panel-elev)] text-[var(--vu-red)] flex items-center justify-center opacity-0 group-hover:opacity-100"
         >
           <X size={10} strokeWidth={2.5} />
         </button>
