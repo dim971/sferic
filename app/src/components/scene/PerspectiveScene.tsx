@@ -29,12 +29,30 @@ export function PerspectiveScene() {
   const sourcePos = interpolatePosition(sortedKfs, currentTime);
   const sph = cartesianToSpherical(sourcePos);
 
-  const handleSphereClick = (e: ThreeEvent<PointerEvent>) => {
+  const handleSpherePointerDown = (e: ThreeEvent<PointerEvent>) => {
     if (!audioBuffer) return;
     e.stopPropagation();
-    const p = e.point;
-    const len = Math.hypot(p.x, p.y, p.z) || 1;
-    addKeyframe({ x: p.x / len, y: p.y / len, z: p.z / len });
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const point = e.point.clone();
+    const THRESHOLD_PX = 5;
+    let moved = false;
+
+    const onMove = (ev: PointerEvent) => {
+      if (moved) return;
+      const dx = ev.clientX - startX;
+      const dy = ev.clientY - startY;
+      if (dx * dx + dy * dy > THRESHOLD_PX * THRESHOLD_PX) moved = true;
+    };
+    const onUp = () => {
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      if (moved) return;
+      const len = Math.hypot(point.x, point.y, point.z) || 1;
+      addKeyframe({ x: point.x / len, y: point.y / len, z: point.z / len });
+    };
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
   };
 
   return (
@@ -61,7 +79,7 @@ export function PerspectiveScene() {
         <directionalLight position={[0, 1, -4]} intensity={1.4} color="#ffb273" />
 
         {/* Wireframe sphere — mesh has handler so it catches click-to-add */}
-        <mesh onPointerDown={handleSphereClick}>
+        <mesh onPointerDown={handleSpherePointerDown}>
           <sphereGeometry args={[1, 24, 18]} />
           <meshBasicMaterial color="#F87328" wireframe transparent opacity={0.18} />
         </mesh>
