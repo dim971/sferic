@@ -1,4 +1,6 @@
 ---
+import { asset } from "@/lib/url";
+
 const views = [
   {
     label: "Perspective 3D",
@@ -50,7 +52,7 @@ const views = [
                 <span class="w-2 h-2 rounded-full bg-[#28c840]"></span>
               </div>
               <img
-                src={`${import.meta.env.BASE_URL}${v.image}`}
+                src={asset(v.image)}
                 alt={v.alt}
                 class="w-full block pt-6"
                 loading="lazy"
