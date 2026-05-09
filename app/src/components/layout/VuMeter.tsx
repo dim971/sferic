@@ -4,7 +4,7 @@ interface VuMeterProps {
   analyser: AnalyserNode | null;
 }
 
-const SEGMENTS = 14;
+const SEGMENTS = 12;
 
 export function VuMeter({ analyser }: VuMeterProps) {
   const [lit, setLit] = useState(0);
@@ -24,7 +24,6 @@ export function VuMeter({ analyser }: VuMeterProps) {
         const v = Math.abs(data[i] - 128) / 128;
         if (v > max) max = v;
       }
-      // Soft decay so the bar doesn't snap to zero between buffer chunks.
       peakRef.current = Math.max(max, peakRef.current * 0.92);
       const segs = Math.min(SEGMENTS, Math.round(peakRef.current * SEGMENTS * 1.2));
       setLit(segs);
@@ -35,20 +34,20 @@ export function VuMeter({ analyser }: VuMeterProps) {
   }, [analyser]);
 
   return (
-    <div className="flex flex-col gap-0.5 justify-end h-7" aria-hidden>
+    <div className="flex flex-col gap-[1px] justify-end h-7" aria-hidden>
       {Array.from({ length: SEGMENTS }).map((_, i) => {
         const fromTop = SEGMENTS - 1 - i;
         const isOn = fromTop < lit;
         const color =
           fromTop === 0
             ? 'bg-[--vu-red]'
-            : fromTop < 4
+            : fromTop < 3
               ? 'bg-[--vu-yellow]'
               : 'bg-[--vu-green]';
         return (
           <span
             key={i}
-            className={`w-2 h-[1.5px] ${color} ${isOn ? 'opacity-100' : 'opacity-20'}`}
+            className={`w-2.5 h-[2px] rounded-[1px] ${color} ${isOn ? 'opacity-100' : 'opacity-25'}`}
           />
         );
       })}

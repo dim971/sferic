@@ -231,32 +231,42 @@ function KeyframePanel({ keyframe: kf, index, total, prevId, nextId, allKeyframe
           Position
         </SectionHeader>
         {posMode === 'cart' ? (
-          <div className="grid grid-cols-[20px_1fr] gap-x-2 gap-y-1.5 items-center">
+          <div className="grid grid-cols-[20px_1fr] gap-x-2 gap-y-1 items-center">
             <Label>X</Label>
             <NumInput
               value={kf.position.x}
               step={0.01}
+              precision={3}
               onChange={(v) => updateKeyframe(kf.id, { position: { ...kf.position, x: v } })}
             />
             <Label>Y</Label>
             <NumInput
               value={kf.position.y}
               step={0.01}
+              precision={3}
               onChange={(v) => updateKeyframe(kf.id, { position: { ...kf.position, y: v } })}
             />
             <Label>Z</Label>
             <NumInput
               value={kf.position.z}
               step={0.01}
+              precision={3}
               onChange={(v) => updateKeyframe(kf.id, { position: { ...kf.position, z: v } })}
             />
+            <Label>Az</Label>
+            <Readout>{`${sph.az >= 0 ? '+' : ''}${sph.az.toFixed(1)}°`}</Readout>
+            <Label>El</Label>
+            <Readout>{`${sph.el >= 0 ? '+' : ''}${sph.el.toFixed(1)}°`}</Readout>
+            <Label>R</Label>
+            <Readout>{sph.r.toFixed(2)}</Readout>
           </div>
         ) : (
-          <div className="grid grid-cols-[28px_1fr] gap-x-2 gap-y-1.5 items-center">
+          <div className="grid grid-cols-[28px_1fr] gap-x-2 gap-y-1 items-center">
             <Label>Az</Label>
             <NumInput
               value={sph.az}
               step={1}
+              precision={1}
               suffix="°"
               onChange={(v) => updateKeyframe(kf.id, { position: sphericalToCartesian({ ...sph, az: v }) })}
             />
@@ -264,6 +274,7 @@ function KeyframePanel({ keyframe: kf, index, total, prevId, nextId, allKeyframe
             <NumInput
               value={sph.el}
               step={1}
+              precision={1}
               suffix="°"
               onChange={(v) =>
                 updateKeyframe(kf.id, {
@@ -275,6 +286,7 @@ function KeyframePanel({ keyframe: kf, index, total, prevId, nextId, allKeyframe
             <NumInput
               value={sph.r}
               step={0.05}
+              precision={2}
               onChange={(v) =>
                 updateKeyframe(kf.id, { position: sphericalToCartesian({ ...sph, r: Math.max(0, v) }) })
               }
@@ -298,12 +310,17 @@ function KeyframePanel({ keyframe: kf, index, total, prevId, nextId, allKeyframe
           <NumInput
             value={kf.time}
             step={0.01}
+            precision={3}
             suffix="s"
             onChange={(v) => updateKeyframe(kf.id, { time: Math.max(0, v) })}
           />
         </Field>
         <Field label="Duration">
-          <Readout>{dur !== null ? `+${dur.toFixed(3)} s → k${(index + 2).toString().padStart(2, '0')}` : '— (last)'}</Readout>
+          <Readout>
+            {dur !== null
+              ? `+${dur.toFixed(3)} s → k${(index + 2).toString().padStart(2, '0')}`
+              : '— (last)'}
+          </Readout>
         </Field>
         <Field label="Tension">
           <SliderInput
@@ -323,6 +340,7 @@ function KeyframePanel({ keyframe: kf, index, total, prevId, nextId, allKeyframe
           <NumInput
             value={kf.gain}
             step={0.5}
+            precision={1}
             suffix="dB"
             onChange={(v) => updateKeyframe(kf.id, { gain: Math.max(-60, Math.min(12, v)) })}
           />
@@ -450,17 +468,20 @@ function Readout({ children }: { children: React.ReactNode }) {
 interface NumInputProps {
   value: number;
   step?: number;
+  precision?: number;
   onChange: (v: number) => void;
   suffix?: string;
   disabled?: boolean;
 }
 
-function NumInput({ value, step = 0.01, onChange, suffix, disabled }: NumInputProps) {
+function NumInput({ value, step = 0.01, precision = 2, onChange, suffix, disabled }: NumInputProps) {
+  const safe = Number.isFinite(value) ? value : 0;
+  const display = parseFloat(safe.toFixed(precision));
   return (
-    <div className="relative group">
+    <div className="flex items-center justify-end gap-1 group">
       <input
         type="number"
-        value={Number.isFinite(value) ? value : 0}
+        value={display}
         step={step}
         disabled={disabled}
         onChange={(e) => {
@@ -468,10 +489,9 @@ function NumInput({ value, step = 0.01, onChange, suffix, disabled }: NumInputPr
           if (Number.isFinite(n)) onChange(n);
         }}
         className="bg-transparent text-[12px] font-mono tabular-nums px-1.5 py-0.5 rounded outline-none w-full text-right text-[--text-primary] hover:bg-[--bg-input]/40 focus:bg-[--bg-input] focus:outline focus:outline-1 focus:outline-[--accent] disabled:opacity-40"
-        style={{ MozAppearance: 'textfield' }}
       />
       {suffix && (
-        <span className="absolute right-1 top-1/2 -translate-y-1/2 text-[10px] text-[--text-dim] pointer-events-none pl-1">
+        <span className="text-[10px] text-[--text-dim] flex-shrink-0 select-none">
           {suffix}
         </span>
       )}
