@@ -23,47 +23,34 @@ export function detectWavBitDepth(arrayBuffer: ArrayBuffer): number | null {
   return view.getUint16(34, true);
 }
 
-// macOS dialog filters reject dot-containing extensions in some Tauri builds —
-// they cause the whole filter to silently match nothing (audio greyed out).
-// We use only single-part extensions ('json') and rely on isProjectPath()
-// to disambiguate `*.spatialize.json` from a generic `.json` after the pick.
+// Tauri 2 dialog filters on macOS have several edge cases (multi-part
+// extensions, AllowedFileTypes interactions, plugin version mismatches) that
+// can silently cause file selection to be blocked. The only fully reliable
+// behaviour is to pass NO filter at all. Type detection happens after the
+// user has picked.
 const PROJECT_FULL_SUFFIX = '.spatialize.json';
 const PROJECT_DEFAULT_EXT = 'spatialize.json';
-const PROJECT_FILTER_EXTS = ['json'];
 const AUDIO_EXTS = ['wav', 'mp3', 'flac', 'ogg', 'm4a', 'aac'];
-const ALL_EXTS = [...PROJECT_FILTER_EXTS, ...AUDIO_EXTS];
 
 export async function pickProjectPathToOpen(): Promise<string | null> {
-  const picked = await open({
-    multiple: false,
-    filters: [{ name: 'Spatialize project', extensions: PROJECT_FILTER_EXTS }],
-  });
+  const picked = await open({ multiple: false });
   return typeof picked === 'string' ? picked : null;
 }
 
 export async function pickProjectPathToSave(defaultName: string): Promise<string | null> {
-  return save({
-    defaultPath: `${defaultName}.${PROJECT_DEFAULT_EXT}`,
-    filters: [{ name: 'Spatialize project', extensions: PROJECT_FILTER_EXTS }],
-  });
+  // Save dialog needs a default extension hint so the user gets the right
+  // suffix appended. Filter kept here because save filters don't gray
+  // anything out on macOS (the user types the name).
+  return save({ defaultPath: `${defaultName}.${PROJECT_DEFAULT_EXT}` });
 }
 
 export async function pickAudioPath(title = 'Locate audio file'): Promise<string | null> {
-  const picked = await open({
-    title,
-    multiple: false,
-    filters: [{ name: 'Audio', extensions: AUDIO_EXTS }],
-  });
+  const picked = await open({ title, multiple: false });
   return typeof picked === 'string' ? picked : null;
 }
 
 export async function pickAnyPath(): Promise<string | null> {
-  // Single combined filter so macOS doesn't gray out audio when the wrong
-  // tab is selected. Type detection happens after the pick.
-  const picked = await open({
-    multiple: false,
-    filters: [{ name: 'Audio or Spatialize project', extensions: ALL_EXTS }],
-  });
+  const picked = await open({ multiple: false });
   return typeof picked === 'string' ? picked : null;
 }
 

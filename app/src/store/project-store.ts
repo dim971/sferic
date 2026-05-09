@@ -446,13 +446,18 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
         const { project, audioBuffer } = await loadProjectFile(path);
         get().setLoadedProject(project, path, audioBuffer);
       } else {
+        // Anything that's not a .json / .spatialize.json gets treated as audio.
+        // decodeAudioData will throw a meaningful error if the file isn't
+        // actually decodable, which we surface below.
         const arrayBuffer = await readAudioBytes(path);
         await get().loadAudioFile(path, arrayBuffer);
       }
       return true;
     } catch (e) {
-      // Surface the failure so the user knows what happened instead of silently failing.
-      console.error('Open failed', e);
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error('Open failed:', path, msg);
+      // eslint-disable-next-line no-alert
+      alert(`Couldn't open this file:\n${msg}`);
       throw e;
     }
   },
