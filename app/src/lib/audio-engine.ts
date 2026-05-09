@@ -129,6 +129,7 @@ class AudioEngineImpl {
   private splitter: ChannelSplitterNode | null = null;
   private analyserL: AnalyserNode | null = null;
   private analyserR: AnalyserNode | null = null;
+  private persistentWired = false;
 
   private startedAt = 0;
   private pausedAt = 0;
@@ -465,11 +466,15 @@ class AudioEngineImpl {
       this.analyserR.fftSize = 256;
       this.analyserR.smoothingTimeConstant = 0.4;
     }
-    // Persistent wiring: mixOut → splitter → analyserL/R AND mixOut → destination.
-    this.mixOut.connect(this.splitter);
-    this.splitter.connect(this.analyserL, 0);
-    this.splitter.connect(this.analyserR, 1);
-    this.mixOut.connect(ctx.destination);
+    // Persistent wiring made ONCE — multiple connect() calls would pile up edges,
+    // amplifying audio and breaking VU readings.
+    if (!this.persistentWired) {
+      this.mixOut.connect(this.splitter);
+      this.splitter.connect(this.analyserL, 0);
+      this.splitter.connect(this.analyserR, 1);
+      this.mixOut.connect(ctx.destination);
+      this.persistentWired = true;
+    }
     return { mixOut: this.mixOut };
   }
 

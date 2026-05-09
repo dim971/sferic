@@ -5,6 +5,9 @@ interface HorizontalVuMeterProps {
 }
 
 const SEGMENTS = 12;
+const SEG_W = 5;
+const SEG_H = 8;
+const SEG_GAP = 1;
 
 export function HorizontalVuMeter({ analyser }: HorizontalVuMeterProps) {
   const [lit, setLit] = useState(0);
@@ -24,8 +27,8 @@ export function HorizontalVuMeter({ analyser }: HorizontalVuMeterProps) {
         const v = Math.abs(data[i] - 128) / 128;
         if (v > max) max = v;
       }
-      peakRef.current = Math.max(max, peakRef.current * 0.92);
-      const segs = Math.min(SEGMENTS, Math.round(peakRef.current * SEGMENTS * 1.2));
+      peakRef.current = Math.max(max, peakRef.current * 0.9);
+      const segs = Math.min(SEGMENTS, Math.round(peakRef.current * SEGMENTS * 1.3));
       setLit(segs);
       raf = requestAnimationFrame(tick);
     };
@@ -34,19 +37,35 @@ export function HorizontalVuMeter({ analyser }: HorizontalVuMeterProps) {
   }, [analyser]);
 
   return (
-    <div className="flex gap-px" aria-hidden>
+    <div
+      style={{
+        display: 'flex',
+        gap: SEG_GAP,
+        alignItems: 'center',
+        flexShrink: 0,
+      }}
+      aria-hidden
+    >
       {Array.from({ length: SEGMENTS }).map((_, i) => {
         const isOn = i < lit;
         const color =
           i >= SEGMENTS - 1
-            ? 'bg-[--vu-red]'
+            ? '#E0533C'
             : i >= SEGMENTS - 3
-              ? 'bg-[--vu-yellow]'
-              : 'bg-[--vu-green]';
+              ? '#E0B341'
+              : '#22A858';
         return (
           <span
             key={i}
-            className={`w-1 h-[7px] rounded-[1px] ${color} ${isOn ? 'opacity-100' : 'opacity-25'}`}
+            style={{
+              display: 'inline-block',
+              width: SEG_W,
+              height: SEG_H,
+              borderRadius: 1,
+              background: color,
+              opacity: isOn ? 1 : 0.22,
+              flexShrink: 0,
+            }}
           />
         );
       })}
