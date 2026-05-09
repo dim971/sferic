@@ -1,4 +1,5 @@
 import { useProjectStore } from '@/store/project-store';
+import { useCpuMonitor } from '@/lib/use-monitoring';
 
 function formatTime(sec: number): string {
   if (!isFinite(sec) || sec < 0) sec = 0;
@@ -13,6 +14,7 @@ export function StatusBar() {
   const selectedId = useProjectStore((s) => s.selectedKeyframeId);
   const currentTime = useProjectStore((s) => s.playback.currentTime);
   const monitoring = useProjectStore((s) => s.monitoring);
+  const { cpu, bufferSize } = useCpuMonitor();
 
   const sortedIds = (project?.keyframes ?? [])
     .slice()
@@ -51,12 +53,24 @@ export function StatusBar() {
         <span className="text-[--text-secondary]">{monitoring}</span>
       </span>
       {audioBuffer && (
-        <span>
-          <span>sr </span>
-          <span className="text-[--text-secondary]">
-            {(audioBuffer.sampleRate / 1000).toFixed(1)}k
+        <>
+          <span>
+            <span>sr </span>
+            <span className="text-[--text-secondary]">
+              {(audioBuffer.sampleRate / 1000).toFixed(1)}k
+            </span>
           </span>
-        </span>
+          <span>
+            <span>cpu </span>
+            <span className="text-[--text-secondary]">{cpu.toFixed(1)}%</span>
+          </span>
+          {bufferSize !== null && (
+            <span>
+              <span>buf </span>
+              <span className="text-[--text-secondary]">{bufferSize}</span>
+            </span>
+          )}
+        </>
       )}
       <span className="ml-auto">
         <span className="text-[--text-secondary]">{formatTime(currentTime)}</span>

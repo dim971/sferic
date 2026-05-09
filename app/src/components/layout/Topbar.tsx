@@ -1,7 +1,6 @@
 import { Download, FolderOpen, Save } from 'lucide-react';
 import { useProjectStore } from '@/store/project-store';
 import { AudioEngine } from '@/lib/audio-engine';
-import { useCpuMonitor } from '@/lib/use-monitoring';
 import { VuMeter } from './VuMeter';
 
 export function Topbar() {
@@ -16,7 +15,6 @@ export function Topbar() {
   const sampleRateK = audioBuffer ? `${(audioBuffer.sampleRate / 1000).toFixed(1)}k` : '';
   const fileName = project?.audioFile.originalPath.split(/[/\\]/).pop() ?? '';
   const renderDisabled = !audioBuffer;
-  const { cpu, bufferSize } = useCpuMonitor();
 
   const handleOpen = () => {
     if (project) void openProjectFromDialog();
@@ -47,41 +45,31 @@ export function Topbar() {
         ))}
       </nav>
 
-      <div className="flex-1 min-w-0 flex items-center justify-center gap-2 text-[12px]">
+      <div className="flex-1 min-w-0 flex items-center justify-center gap-2.5 text-[12px]">
         {project ? (
           <>
-            <span className="text-[10px] tracking-widest uppercase px-2 py-0.5 rounded-md bg-[--accent-soft] text-[--accent]">
+            <span className="text-[10px] tracking-widest uppercase px-2 py-0.5 rounded-md bg-[--accent-soft] text-[--accent] flex-shrink-0">
               {project.settings.panningModel}
             </span>
-            <span className="text-[--text-secondary] truncate max-w-[180px]">{project.meta.name}</span>
-            <span className="font-mono text-[--text-secondary]">{sampleRateK}</span>
-            <span className="text-[--text-dim]">·</span>
-            <span className="font-mono text-[--text-secondary]">float32</span>
-            <span className="text-[--text-dim]">·</span>
-            <span className="text-[--text-secondary] truncate max-w-[220px]">{fileName}</span>
+            <span className="text-[--text-secondary] truncate max-w-[220px]">
+              {project.meta.name}
+            </span>
+            <span className="font-mono text-[--text-dim] flex-shrink-0">{sampleRateK}</span>
+            <span className="text-[--text-dim] flex-shrink-0">/</span>
+            <span className="font-mono text-[--text-dim] flex-shrink-0">float32</span>
+            <span className="text-[--text-dim] flex-shrink-0">·</span>
+            <span className="text-[--text-secondary] truncate max-w-[260px]">{fileName}</span>
             {isDirty && (
-              <span className="ml-1 text-[10px] tracking-widest uppercase px-2 py-0.5 rounded-md bg-[--vu-red] bg-opacity-20 text-[--vu-red] border border-[--vu-red]/40">
+              <span
+                className="ml-1 text-[10px] tracking-widest uppercase px-2 py-0.5 rounded-md text-[--accent] border border-[--accent] flex-shrink-0"
+                style={{ backgroundColor: 'rgba(248, 115, 40, 0.08)' }}
+              >
                 UNSAVED
               </span>
             )}
           </>
         ) : null}
       </div>
-
-      {audioBuffer && (
-        <div className="flex items-center gap-3 font-mono tabular-nums text-[10px] text-[--text-dim]">
-          <span>
-            <span className="tracking-widest uppercase">CPU</span>{' '}
-            <span className="text-[--text-secondary]">{cpu.toFixed(1)}%</span>
-          </span>
-          {bufferSize !== null && (
-            <span>
-              <span className="tracking-widest uppercase">BUF</span>{' '}
-              <span className="text-[--text-secondary]">{bufferSize}</span>
-            </span>
-          )}
-        </div>
-      )}
 
       <div className="flex items-center gap-2">
         <button
