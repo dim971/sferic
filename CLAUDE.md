@@ -1,61 +1,63 @@
-# Instructions pour Claude Code
+# Instructions for Claude Code
 
-Tu es chargé d'implémenter l'application **Sferic** décrite dans ce dépôt.
+You are tasked with implementing and maintaining the **Sferic** application described in this repository.
 
 ## Mission
 
-Construire un outil desktop multiplateforme (macOS, Windows, Linux) qui permet de spatialiser un fichier audio dans le temps via une interface visuelle 3D, en se basant sur le Web Audio API (`PannerNode` HRTF).
+Build and evolve a cross-platform desktop tool (macOS, Windows, Linux) that lets the user spatialize an audio file in time through a visual 3D interface, based on the Web Audio API (`PannerNode` HRTF).
 
-## Documents à lire dans cet ordre
+## Documents to read in this order
 
-1. `README.md` — vue d'ensemble et choix techno
-2. `ARCHITECTURE.md` — modèle de données, graphe audio, composants
-3. `DESIGN.md` — système visuel + image cible dans `design/` (source de vérité pour tout rendu)
-4. `ROADMAP.md` — découpage en 9 phases
-5. `tasks/phase-0-bootstrap.md` — première tâche
+1. `README.md` — product overview and tech choices
+2. `ARCHITECTURE.md` — data model, audio graph, components
+3. `DESIGN.md` — visual system + reference image in `design/` (source of truth for any rendering decision)
+4. `ROADMAP.md` — original 9-phase plan (now mostly delivered)
+5. `tasks/phase-0-bootstrap.md` — first task, kept as historical reference
 
-## Méthodologie
+## Methodology
 
-- **Travaille phase par phase**, en suivant strictement les fichiers `tasks/phase-N-*.md`.
-- À la fin de chaque phase, **arrête-toi** et demande validation humaine avant de continuer (sauf si l'utilisateur t'a explicitement dit « enchaîne tout »).
-- Crée le projet dans un sous-dossier `app/` à la racine du kit.
-- Utilise **pnpm** comme gestionnaire de paquets.
-- Utilise **Tauri 2** (jamais Tauri 1).
-- TypeScript en mode `strict`.
+- For new work, **prefer surgical edits** over feature-flag gates or backwards-compat shims unless the user asks otherwise.
+- The original kit was designed around **phase-by-phase delivery**; phases are largely complete. New requests come as targeted bug fixes or features — handle them directly without invoking the phased workflow unless asked.
+- Create the project under the `app/` subfolder at the kit root (already in place).
+- Use **pnpm** as the package manager.
+- Use **Tauri 2** (never Tauri 1).
+- TypeScript in `strict` mode.
 
-## Conventions de code
+## Code conventions
 
-- React : composants fonctionnels uniquement, hooks.
-- Pas de classe sauf pour `AudioEngine` (singleton).
-- Imports absolus depuis `@/` (configurer dans `tsconfig.json` et `vite.config.ts`).
-- Tailwind utility-first ; pas de CSS modules sauf cas exceptionnel.
-- Nommage : `PascalCase` pour composants, `camelCase` pour fonctions/variables, `SCREAMING_SNAKE_CASE` pour constantes globales.
-- Un fichier par composant React.
+- React: functional components only, hooks.
+- No classes except for `AudioEngine` (singleton).
+- Absolute imports from `@/` (configured in `tsconfig.json` and `vite.config.ts`).
+- Tailwind utility-first; no CSS modules unless truly necessary.
+- Tailwind v4 — use `bg-[var(--token)]` form, never `bg-[--token]` (the latter generates invalid CSS in v4).
+- Naming: `PascalCase` for components, `camelCase` for functions/variables, `SCREAMING_SNAKE_CASE` for global constants.
+- One file per React component.
 
-## Vérifications obligatoires à la fin de chaque phase
+## Mandatory checks before declaring a change "done"
 
-1. `pnpm install` passe sans warning critique.
-2. `pnpm tauri dev` démarre l'app sans erreur console.
-3. Le critère d'acceptation de la phase est rempli (testable manuellement).
-4. `pnpm tsc --noEmit` ne retourne aucune erreur.
-5. Commit créé avec le message `feat(phase-N): <résumé>`.
+1. `pnpm install` runs without critical warnings.
+2. `pnpm tauri dev` boots the app with no console errors (when applicable).
+3. The acceptance criterion of the requested change is met (testable manually).
+4. `pnpm tsc --noEmit` returns zero errors.
+5. Commit message follows Conventional Commits (e.g. `feat(scope): …`).
 
-## Quand demander confirmation
+## When to ask for confirmation
 
-- Avant d'ajouter une dépendance non listée dans `ARCHITECTURE.md` ou `DESIGN.md`.
-- Avant de modifier le découpage de composants.
-- Avant de toucher à la configuration de Tauri (sécurité, allowlist).
-- Avant de t'écarter visiblement du screenshot dans `design/` (couleurs, layout, hiérarchie).
-- Si une instruction d'une `tasks/phase-N` te semble contradictoire avec l'`ARCHITECTURE.md` ou `DESIGN.md`.
+- Before adding a dependency that isn't already listed in `ARCHITECTURE.md`, `DESIGN.md`, or one of the existing `package.json` files.
+- Before changing the component decomposition.
+- Before touching Tauri configuration (security, capabilities allowlist).
+- Before visibly diverging from the screenshot in `design/` (colours, layout, hierarchy).
+- If a task instruction conflicts with `ARCHITECTURE.md` or `DESIGN.md`.
 
-## Quand NE PAS demander
+## When NOT to ask
 
-- Choix mineurs de naming, structure de dossier interne, formattage.
-- Bibliothèques utilitaires courantes (ex : `clsx`, `nanoid`, `date-fns`).
+- Minor naming, internal folder structure, formatting choices.
+- Common utility libraries (e.g. `clsx`, `nanoid`, `date-fns`).
 
-## Premier message attendu de toi
+## Expected first response when starting a new session
 
-Quand tu commences :
-1. Confirme que tu as lu `README.md`, `ARCHITECTURE.md`, `DESIGN.md`, `ROADMAP.md` et regardé l'image dans `design/`.
-2. Indique la version de Node, Rust et pnpm détectées.
-3. Annonce que tu attaques la **phase 0** et ouvre `tasks/phase-0-bootstrap.md`.
+When you start:
+
+1. Confirm you have read `README.md`, `ARCHITECTURE.md`, `DESIGN.md`, `ROADMAP.md` and looked at the reference image in `design/`.
+2. Report the detected versions of Node, Rust, and pnpm.
+3. Acknowledge the user's request and begin work — there is no longer a "phase 0" to attack first; the project is built.

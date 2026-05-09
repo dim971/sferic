@@ -1,25 +1,25 @@
-# Phase 9 — Propriétés étendues des keyframes
+# Phase 9 — Extended keyframe properties
 
-## Objectif
+## Goal
 
-Étendre le modèle de données et le moteur audio pour supporter, **par keyframe** :
-- Gain en dB
-- Filtre passe-bas (LPF)
-- Filtre passe-haut (HPF)
+Extend the data model and audio engine to support, **per keyframe**:
+- Gain in dB
+- Low-pass filter (LPF)
+- High-pass filter (HPF)
 - Doppler on/off
-- Air absorption (rolloff hautes fréquences avec la distance)
-- Reverb send (envoi vers la réverb globale)
-- Tension (paramètre de la courbe `cubic`)
+- Air absorption (high-frequency rolloff with distance)
+- Reverb send (send to the global reverb)
+- Tension (parameter of the `cubic` curve)
 
-Et ajouter le type de courbe **`cubic`** (interpolation Catmull-Rom paramétrée par tension) en plus de `hold`, `linear`, `ease-out`. Renommer aussi les courbes existantes pour matcher la nomenclature du design.
+And add the **`cubic`** curve type (Catmull-Rom interpolation parameterised by tension) on top of `hold`, `linear`, `ease-out`. Also rename the existing curves to match the design's nomenclature.
 
-Ces automations sont **sample-accurate** car programmées via les `AudioParam` du Web Audio API.
+These automations are **sample-accurate** because they're scheduled via Web Audio API `AudioParam`s.
 
-## Migration du modèle de données
+## Data model migration
 
-### Nouveau type keyframe
+### New keyframe type
 
-Remplace `SpatialKeyframe` dans `src/types/project.ts` :
+Replace `SpatialKeyframe` in `src/types/project.ts`:
 
 ```ts
 export type CurveType = 'hold' | 'linear' | 'ease-out' | 'cubic';
@@ -29,33 +29,33 @@ export interface SpatialKeyframe {
   time: number;
   position: { x: number; y: number; z: number };
   curve: CurveType;
-  tension: number;        // 0..1, utile uniquement si curve === 'cubic'
-  gain: number;           // dB, [-60, +12], défaut 0
+  tension: number;        // 0..1, only used if curve === 'cubic'
+  gain: number;           // dB, [-60, +12], default 0
   lpf: number | null;     // Hz [200, 22000], null = bypass
   hpf: number | null;     // Hz [20, 2000], null = bypass
-  doppler: boolean;       // défaut true
-  airAbsorption: number;  // [0, 1], défaut 0.18
-  reverbSend: number | null; // [0, 1], null = utiliser le global
+  doppler: boolean;       // default true
+  airAbsorption: number;  // [0, 1], default 0.18
+  reverbSend: number | null; // [0, 1], null = use global
   label?: string;
 }
 ```
 
-### Nouveau type Project
+### New Project type
 
 ```ts
 export interface Project {
-  version: 2;             // était 1
+  version: 2;             // was 1
   audioFile: AudioFileMeta;
   keyframes: SpatialKeyframe[];
   settings: ProjectSettings;
-  audioMeta: { bpm: number | null; key: string | null }; // rempli par phase 10
+  audioMeta: { bpm: number | null; key: string | null }; // filled by phase 10
   meta: { createdAt: string; updatedAt: string; name: string };
 }
 ```
 
-### Migration v1 → v2
+### v1 → v2 migration
 
-Crée `src/lib/migrate.ts` :
+Create `src/lib/migrate.ts`:
 
 ```ts
 export function migrateProject(raw: unknown): Project {
@@ -90,48 +90,48 @@ function mapCurveV1(c: string): CurveType {
 }
 ```
 
-Importer `migrateProject` dans `loadProject` (phase 7).
+Import `migrateProject` into `loadProject` (phase 7).
 
-## Nouveau graphe audio
+## New audio graph
 
-Remplace le graphe créé dans `AudioEngine.play()` par :
+Replace the graph built in `AudioEngine.play()` with:
 
 ```
 AudioBufferSourceNode
         │
         ▼
-   GainNode (master, contrôlé par le slider de volume)
+   GainNode (master, controlled by the volume slider)
         │
         ▼
-   GainNode (per-keyframe gain, automaté en dB → linéaire)
+   GainNode (per-keyframe gain, automated dB → linear)
         │
         ▼
-   BiquadFilterNode (HPF, type='highpass', frequency automaté ; bypass si null = freq=0)
+   BiquadFilterNode (HPF, type='highpass', frequency automated; bypass if null = freq=0)
         │
         ▼
-   BiquadFilterNode (LPF, type='lowpass',  frequency automaté ; bypass si null = freq=22050)
+   BiquadFilterNode (LPF, type='lowpass',  frequency automated; bypass if null = freq=22050)
         │
         ▼
    BiquadFilterNode (air absorption, type='lowpass', frequency = f(distance, airAbsorption))
         │
         ▼
-   PannerNode (HRTF, position automatée — phase 5)
+   PannerNode (HRTF, position automated — phase 5)
         │
         ├──────────────┐
         ▼              ▼
-   GainNode        ConvolverNode (réverb)
-   (dry, fixe)         │
+   GainNode        ConvolverNode (reverb)
+   (dry, fixed)        │
         │              ▼
-        │         GainNode (wet, automaté par reverbSend)
+        │         GainNode (wet, automated by reverbSend)
         │              │
         └──────┬───────┘
                ▼
        AudioContext.destination
 ```
 
-### Implémentation `AudioEngine`
+### `AudioEngine` implementation
 
-Étends la classe avec des champs et méthodes :
+Extend the class with fields and methods:
 
 ```ts
 private gainKf: GainNode | null = null;
@@ -143,55 +143,55 @@ private convolver: ConvolverNode | null = null;
 private wet: GainNode | null = null;
 
 applyKeyframeAutomation(keyframes, startOffsetSec) {
-  // ... étendu : programmer pour chaque keyframe
-  //   - gainKf.gain (en linéaire = 10 ** (dB / 20))
-  //   - hpf.frequency (0 si null)
-  //   - lpf.frequency (22050 si null)
-  //   - airLpf.frequency (calculée selon distance et airAbsorption)
-  //   - panner.positionX/Y/Z (déjà fait phase 5)
-  //   - wet.gain (override per-keyframe ou global selon reverbSend)
+  // ... extended: schedule for each keyframe
+  //   - gainKf.gain (linear = 10 ** (dB / 20))
+  //   - hpf.frequency (0 if null)
+  //   - lpf.frequency (22050 if null)
+  //   - airLpf.frequency (computed from distance and airAbsorption)
+  //   - panner.positionX/Y/Z (already done in phase 5)
+  //   - wet.gain (per-keyframe override or global based on reverbSend)
 }
 ```
 
-### Calcul de l'air absorption
+### Air absorption computation
 
-Approximation simple : la fréquence de coupure du LPF d'absorption décroît avec la distance et avec le facteur d'absorption :
+Simple approximation: the absorption LPF's cutoff frequency drops with distance and with the absorption factor:
 
 ```ts
 function airAbsorptionCutoff(distance: number, airAbs: number): number {
   // distance ~ [0, 2], airAbs ~ [0, 1]
-  // À distance 0 : cutoff = 22050 Hz (transparent)
-  // À distance 2 et airAbs=1 : cutoff ~ 2000 Hz (très assourdi)
+  // At distance 0: cutoff = 22050 Hz (transparent)
+  // At distance 2 and airAbs=1: cutoff ~ 2000 Hz (very muffled)
   const k = airAbs * Math.min(distance, 2);
   return 22050 * Math.exp(-k * 1.2);
 }
 ```
 
-Programmation de `airLpf.frequency` à chaque keyframe avec la fonction ci-dessus, en utilisant la position du keyframe pour calculer sa distance au listener (rayon `√(x²+y²+z²)`).
+Schedule `airLpf.frequency` at each keyframe with the function above, using the keyframe's position to compute its distance from the listener (radius `√(x²+y²+z²)`).
 
-### Doppler — implémentation pragmatique
+### Doppler — pragmatic implementation
 
-Le `PannerNode` Web Audio **n'a plus** de gestion Doppler intégrée (retirée de la spec). Pour cette phase, implémente uniquement le **toggle dans l'UI et le data model**, mais **ne fais pas de pitch shifting réel** côté audio. Documente clairement le statut « stub » dans un commentaire dans le code :
+The Web Audio `PannerNode` **no longer** has built-in Doppler handling (removed from the spec). For this phase, implement only the **toggle in the UI and the data model**, but **don't apply any actual pitch shifting** on the audio side. Clearly document the "stub" status with a code comment:
 
 ```ts
-// TODO: Doppler effect — Web Audio API ne fournit plus l'automation native.
-// Implémentation manuelle possible via DelayNode modulé ou playbackRate du source,
-// mais coût en complexité non justifié pour la v1. Stub pour l'instant.
+// TODO: Doppler effect — Web Audio API no longer provides native automation.
+// Manual implementation possible via a modulated DelayNode or the source's playbackRate,
+// but the complexity cost isn't justified for v1. Stub for now.
 ```
 
-L'utilisateur verra le toggle dans l'UI et il sera persisté dans le projet ; seul le rendu réel est différé. À itérer plus tard.
+The user will see the toggle in the UI and it will be persisted in the project; only the actual rendering is deferred. To iterate later.
 
-### Courbe `cubic` avec tension
+### `cubic` curve with tension
 
-Pour les automations audio, le Web Audio API propose `setValueCurveAtTime(curveArray, time, duration)` qui permet de programmer un tableau de valeurs. On l'utilise pour les courbes cubic :
+For audio automations, the Web Audio API offers `setValueCurveAtTime(curveArray, time, duration)` which lets you schedule an array of values. We use it for cubic curves:
 
 ```ts
 function buildCubicCurve(from: number, to: number, tension: number, samples = 64): Float32Array {
-  // Catmull-Rom-like avec tension : t' = lerp avec un easing paramétré
+  // Catmull-Rom-like with tension: t' = lerp with parameterised easing
   const arr = new Float32Array(samples);
   for (let i = 0; i < samples; i++) {
     const t = i / (samples - 1);
-    // Hermite avec tangentes scalées par tension
+    // Hermite with tangents scaled by tension
     const t2 = t * t;
     const t3 = t2 * t;
     const h00 =  2*t3 - 3*t2 + 1;
@@ -205,58 +205,58 @@ function buildCubicCurve(from: number, to: number, tension: number, samples = 64
   return arr;
 }
 
-// puis lors de la programmation :
+// then when scheduling:
 const dur = nextKf.time - kf.time;
 audioParam.setValueCurveAtTime(buildCubicCurve(kf.value, nextKf.value, kf.tension), startTime, dur);
 ```
 
-## UI — Inspector enrichi
+## UI — Enriched Inspector
 
-Étends le composant `Inspector` ajouté en phase 4 avec les sections suivantes, dans cet ordre :
+Extend the `Inspector` component added in phase 4 with the following sections, in this order:
 
-### Section `POSITION`
+### `POSITION` section
 
-Toggle d'unité en haut à droite : `cartesian · m` ↔ `polar · ° / m`.
+Unit toggle in the top-right: `cartesian · m` ↔ `polar · ° / m`.
 
-- Mode cartésien : sliders + input numériques X / Y / Z (range −2..+2 m, step 0.001)
-- Mode polaire : Az (azimut) °, El (élévation) °, Dist (rayon) m
-- Conversion polar ↔ cartesian dans `src/lib/math3d.ts` :
+- Cartesian mode: sliders + numeric inputs X / Y / Z (range −2..+2 m, step 0.001)
+- Polar mode: Az (azimuth) °, El (elevation) °, Dist (radius) m
+- Polar ↔ cartesian conversion in `src/lib/math3d.ts`:
   ```ts
-  // azimuth : angle horizontal depuis +X dans le plan X/Z, anti-horaire vu du dessus
-  // elevation : angle vers le haut depuis le plan X/Z
+  // azimuth: horizontal angle from +X in the X/Z plane, counter-clockwise from above
+  // elevation: angle upward from the X/Z plane
   export function cartToSpherical(p): { az: number; el: number; r: number } { … }
   export function sphericalToCart(s): { x: number; y: number; z: number } { … }
   ```
 
-### Section `MOTION`
+### `MOTION` section
 
-- 4 boutons toggles (radio group) : `hold` / `linear` / `ease-out` / `cubic`
-- Affichage `Duration : +N.000s → kfNN` (calcul dynamique : durée jusqu'au prochain keyframe par `time` croissant)
-- Slider `Tension` (0..1, désactivé si curve ≠ cubic)
+- 4 toggle buttons (radio group): `hold` / `linear` / `ease-out` / `cubic`
+- Display `Duration: +N.000s → kfNN` (computed dynamically: duration to the next keyframe by ascending `time`)
+- `Tension` slider (0..1, disabled if curve ≠ cubic)
 
-### Section `GAIN & FILTER`
+### `GAIN & FILTER` section
 
-- Champ numérique `Gain` (dB, range −60..+12, step 0.1)
-- Champ numérique `LPF` (Hz, range 200..22000, step 100, valeur affichée en kHz si > 1000) avec toggle bypass
-- Champ numérique `HPF` (Hz, range 20..2000, step 10) avec toggle bypass
-- Toggle `Doppler` (on/off)
+- Numeric `Gain` field (dB, range −60..+12, step 0.1)
+- Numeric `LPF` field (Hz, range 200..22000, step 100, displayed in kHz if > 1000) with bypass toggle
+- Numeric `HPF` field (Hz, range 20..2000, step 10) with bypass toggle
+- `Doppler` toggle (on/off)
 
-### Section `SEND`
+### `SEND` section
 
-- Champ pourcentage `Reverb` (0..100 %) avec un mini bouton « auto » qui le remet à null (utiliser global)
-- Champ numérique `Air absorb` (0..1, step 0.01)
+- `Reverb` percentage field (0..100 %) with a small "auto" button that resets it to null (use global)
+- Numeric `Air absorb` field (0..1, step 0.01)
 
-## Bouton « + KEYFRAME »
+## "+ KEYFRAME" button
 
-Dans la transport bar, ajoute un bouton orange CTA `+ KEYFRAME` qui :
-1. Calcule la position interpolée actuelle (fonction `interpolatePosition` déjà existante)
-2. Crée un keyframe avec cette position au temps courant
-3. Hérite des paramètres audio (gain/lpf/hpf/etc.) du keyframe précédent dans le temps, ou des valeurs par défaut si premier
-4. Sélectionne automatiquement le nouveau keyframe
+In the transport bar, add an orange CTA button `+ KEYFRAME` that:
+1. Computes the current interpolated position (existing `interpolatePosition` function)
+2. Creates a keyframe at that position at the current time
+3. Inherits the audio parameters (gain/lpf/hpf/etc.) from the previous keyframe in time, or default values if none
+4. Automatically selects the new keyframe
 
-## Reprogrammation à chaud
+## Live reprogramming
 
-Si l'utilisateur modifie n'importe quel paramètre audio d'un keyframe pendant la lecture, il faut **immédiatement** reprogrammer les automations à partir du temps courant. Implémenter dans le store :
+If the user edits any audio parameter on a keyframe during playback, you must **immediately** reschedule the automations from the current time. Implement in the store:
 
 ```ts
 updateKeyframe: (id, partial) => {
@@ -267,18 +267,18 @@ updateKeyframe: (id, partial) => {
 }
 ```
 
-## Critère d'acceptation
+## Acceptance criterion
 
-- Charger un audio, créer 3 keyframes avec gains différents (-12, 0, +6 dB) → on entend nettement la différence à la lecture.
-- Mettre un LPF à 800 Hz sur un keyframe : la portion entre ce keyframe et le suivant doit sonner sourde, et redevenir claire après.
-- Toggle Doppler n'a pas d'effet audio (stub) mais la valeur est conservée dans le projet sauvegardé/rechargé.
-- Reverb send par keyframe : passer de 0 à 80 % entre deux keyframes fait monter la queue de réverb progressivement.
-- Migration : ouvrir un projet v1 sauvegardé avant cette phase fonctionne (test en gardant un `.sferic.json` v1 sous le coude).
-- Courbe cubic avec tension 0 = quasi-step, tension 1 = lisse.
-- Inspecteur affiche correctement toutes les nouvelles sections.
+- Load an audio file, create 3 keyframes with different gains (-12, 0, +6 dB) → you clearly hear the difference during playback.
+- Setting an LPF at 800 Hz on a keyframe: the section between this keyframe and the next must sound muffled, then become clear again afterwards.
+- Doppler toggle has no audio effect (stub) but the value is preserved across save/reload.
+- Per-keyframe reverb send: going from 0 to 80 % between two keyframes makes the reverb tail rise progressively.
+- Migration: opening a v1 project saved before this phase works (test by keeping a v1 `.sferic.json` around).
+- Cubic curve with tension 0 = nearly step, tension 1 = smooth.
+- The inspector correctly displays all the new sections.
 
 ## Commit
 
 ```
-feat(phase-9): propriétés étendues des keyframes (gain, filtres, send, courbe cubic)
+feat(phase-9): extended keyframe properties (gain, filters, send, cubic curve)
 ```

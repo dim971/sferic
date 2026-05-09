@@ -1,18 +1,18 @@
-# Phase 7 — Sauvegarde et chargement de projets
+# Phase 7 — Save and load projects
 
-## Objectif
+## Goal
 
-Permettre à l'utilisateur de sauvegarder un projet (audio + keyframes + settings) dans un fichier `.sferic.json` et de le rouvrir plus tard.
+Let the user save a project (audio + keyframes + settings) to a `.sferic.json` file and reopen it later.
 
-## Étapes
+## Steps
 
-1. **Format de fichier** : `.sferic.json`
-   - Structure exactement celle de l'interface `Project` (cf. `types/project.ts`).
-   - **Le fichier audio n'est PAS embarqué**. Seul le chemin original est stocké. Au chargement :
-     - On essaie d'ouvrir le chemin original.
-     - S'il n'existe plus (fichier déplacé), on demande à l'utilisateur de localiser le fichier audio.
+1. **File format**: `.sferic.json`
+   - Structure exactly matches the `Project` interface (see `types/project.ts`).
+   - **The audio file is NOT embedded**. Only the original path is stored. On load:
+     - We try to open the original path.
+     - If it no longer exists (file moved), we ask the user to locate the audio file.
 
-2. **Action `saveProject(path)`** dans le store :
+2. **`saveProject(path)` action** in the store:
    ```ts
    saveProject: async (path: string) => {
      const { project } = get();
@@ -22,18 +22,18 @@ Permettre à l'utilisateur de sauvegarder un projet (audio + keyframes + setting
    }
    ```
 
-3. **Action `loadProject(path)`** dans le store :
+3. **`loadProject(path)` action** in the store:
    ```ts
    loadProject: async (path: string) => {
      const json = await readTextFile(path);
      const project: Project = JSON.parse(json);
-     // Validation minimale
-     if (project.version !== 1) throw new Error('Version de projet incompatible');
-     // Charger l'audio
+     // Minimal validation
+     if (project.version !== 1) throw new Error('Incompatible project version');
+     // Load audio
      let audioPath = project.audioFile.originalPath;
      if (!(await exists(audioPath))) {
-       const picked = await open({ title: 'Localiser le fichier audio', filters: [...] });
-       if (!picked) throw new Error('Fichier audio introuvable');
+       const picked = await open({ title: 'Locate audio file', filters: [...] });
+       if (!picked) throw new Error('Audio file not found');
        audioPath = picked as string;
      }
      const bytes = await readFile(audioPath);
@@ -42,42 +42,42 @@ Permettre à l'utilisateur de sauvegarder un projet (audio + keyframes + setting
    }
    ```
 
-4. **UI** (cf. `DESIGN.md §3`) :
-   - Activer les boutons `Save` et `Open` du Topbar (déjà présents depuis phase 1).
-     - `Open` ouvre un menu déroulant à deux choix : `Open audio…` (chargement audio existant) et `Open project…` (chargement `.sferic.json`). Par défaut le clic ouvre `Open project…` ; un sub-menu présente l'autre option.
-     - `Save` sauvegarde le projet courant. `Cmd/Ctrl+Shift+S` → save as.
-   - Le menu `File` du Topbar reprend les actions complètes (`Open audio…`, `Open project…`, `Save`, `Save as…`, `Export…`).
-   - Stocker `currentProjectPath` dans le store.
-   - Afficher dans le titre de fenêtre Tauri : `Sferic — <nom du projet>` (sans le `• modifié` puisque le chip UNSAVED dans le Topbar joue ce rôle).
+4. **UI** (see `DESIGN.md §3`):
+   - Activate the Topbar's `Save` and `Open` buttons (already present since phase 1).
+     - `Open` opens a dropdown with two choices: `Open audio…` (load existing audio) and `Open project…` (load `.sferic.json`). By default the click opens `Open project…`; a sub-menu shows the other option.
+     - `Save` saves the current project. `Cmd/Ctrl+Shift+S` → save as.
+   - The Topbar's `File` menu lists the full actions (`Open audio…`, `Open project…`, `Save`, `Save as…`, `Export…`).
+   - Store `currentProjectPath` in the store.
+   - Show in the Tauri window title: `Sferic — <project name>` (without the `• modified` suffix since the UNSAVED chip in the Topbar plays that role).
 
-5. **Chip UNSAVED** (cf. `DESIGN §3` point 4) :
-   - Booléen `isDirty` dans le store, mis à `true` après chaque action mutative (`addKeyframe`, `updateKeyframe`, `removeKeyframe`, modification settings, etc.).
-   - Réinitialisé à `false` après `saveProject` réussi.
-   - Le chip `UNSAVED` (`bg-[--accent-soft] text-[--accent] text-[10px] tracking-widest uppercase px-2 py-0.5 rounded-md`) n'est rendu que si `isDirty === true`. Sinon il disparaît complètement du Topbar (pas masqué, retiré du flow).
-   - Au close de la fenêtre, si `isDirty`, demander confirmation via `dialog.ask` du plugin Tauri.
+5. **UNSAVED chip** (see `DESIGN §3` point 4):
+   - `isDirty` boolean in the store, set to `true` after each mutating action (`addKeyframe`, `updateKeyframe`, `removeKeyframe`, settings change, etc.).
+   - Reset to `false` after a successful `saveProject`.
+   - The `UNSAVED` chip (`bg-[--accent-soft] text-[--accent] text-[10px] tracking-widest uppercase px-2 py-0.5 rounded-md`) is only rendered when `isDirty === true`. Otherwise it disappears entirely from the Topbar (not hidden, removed from the flow).
+   - On window close, if `isDirty`, ask for confirmation via the Tauri plugin's `dialog.ask`.
 
-6. **Validation et migration** :
-   - Préparer une fonction `migrateProject(raw: unknown): Project` qui :
-     - Valide la structure (utiliser `zod` recommandé).
-     - Migre les anciennes versions si on en crée plus tard.
-   - Pour l'instant, version 1 uniquement.
+6. **Validation and migration**:
+   - Prepare a `migrateProject(raw: unknown): Project` function that:
+     - Validates the structure (using `zod` is recommended).
+     - Migrates older versions if we ever create more.
+   - For now, version 1 only.
    - `pnpm add zod`.
 
 ## Design
 
-Réf : `DESIGN.md §3` (chip UNSAVED, boutons Save/Open). Le chip UNSAVED apparaît/disparaît proprement (pas de flicker, pas de placeholder vide). Les boutons Save/Open restent en outline orange — uniformes avec l'identité visuelle.
+Ref: `DESIGN.md §3` (UNSAVED chip, Save/Open buttons). The UNSAVED chip appears/disappears cleanly (no flicker, no empty placeholder). The Save/Open buttons stay orange outline — uniform with the visual identity.
 
-## Critère d'acceptation
+## Acceptance criterion
 
-- Charger un audio, ajouter 5 keyframes avec différentes courbes, sauver dans `test.sferic.json`.
-- Quitter et relancer l'app. Ouvrir `test.sferic.json` → tout est restauré : audio chargé, keyframes au bon endroit, settings préservés.
-- Si on déplace l'audio entre temps, l'app demande à le relocaliser.
-- Le titre de fenêtre se met à jour correctement.
-- Le chip UNSAVED apparaît dès la première modification, disparaît à la sauvegarde.
-- `Cmd/Ctrl+S` sauvegarde sans dialogue si le projet a déjà un chemin.
+- Load an audio file, add 5 keyframes with different curves, save to `test.sferic.json`.
+- Quit and relaunch the app. Open `test.sferic.json` → everything is restored: audio loaded, keyframes in the right place, settings preserved.
+- If the audio is moved meanwhile, the app prompts to relocate it.
+- The window title updates correctly.
+- The UNSAVED chip appears at the first edit, disappears on save.
+- `Cmd/Ctrl+S` saves without a dialog if the project already has a path.
 
 ## Commit
 
 ```
-feat(phase-7): sauvegarde/chargement de projets .sferic.json
+feat(phase-7): save/load .sferic.json projects
 ```

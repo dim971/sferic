@@ -1,15 +1,15 @@
-# Phase 1 — Chargement audio + forme d'onde
+# Phase 1 — Audio loading + waveform
 
-## Objectif
+## Goal
 
-Permettre à l'utilisateur d'ouvrir un fichier audio (WAV/MP3/FLAC/OGG/M4A), le décoder, et afficher sa forme d'onde dans une timeline interactive.
+Let the user open an audio file (WAV/MP3/FLAC/OGG/M4A), decode it, and display its waveform on an interactive timeline.
 
-## Étapes
+## Steps
 
-1. **Définir les types** dans `src/types/project.ts` (cf. `ARCHITECTURE.md §2`) :
+1. **Define types** in `src/types/project.ts` (see `ARCHITECTURE.md §2`):
    ```ts
    export type CurveType = 'linear' | 'eaze' | 'smooth' | 'step';
-   // 'eaze' = ease-in-out classique ; 'smooth' = setTargetAtTime adouci paramétré par tension.
+   // 'eaze' = classic ease-in-out; 'smooth' = setTargetAtTime softened by tension.
 
    export interface SpatialKeyframe {
      id: string;
@@ -22,13 +22,13 @@ Permettre à l'utilisateur d'ouvrir un fichier audio (WAV/MP3/FLAC/OGG/M4A), le 
      duration?: number;
      tension?: number;
 
-     // Gain & Fades (gainDb fonctionnel phase 5 ; HPF/LPF stubs UI v1, cf. DESIGN §9)
+     // Gain & Fades (gainDb functional in phase 5; HPF/LPF UI stubs in v1, see DESIGN §9)
      gainDb?: number;
      snap?: boolean;
      hpfHz?: number;
      lpfHz?: number;
 
-     // Doppler (stubs UI v1)
+     // Doppler (UI stubs in v1)
      doppler?: boolean;
      velocity?: boolean;
      dopplerIntensity?: number;
@@ -60,12 +60,12 @@ Permettre à l'utilisateur d'ouvrir un fichier audio (WAV/MP3/FLAC/OGG/M4A), le 
    }
    ```
 
-2. **Créer le store Zustand** dans `src/store/project-store.ts` :
-   - State : `project`, `audioBuffer` (le `AudioBuffer` Web Audio décodé, hors du JSON sauvegardé), `selectedKeyframeId`, `playback: { isPlaying, currentTime }`.
-   - Actions de cette phase : `loadAudioFile(path: string, arrayBuffer: ArrayBuffer)`.
-   - Pour décoder : utiliser un `AudioContext` partagé exposé par `audio-engine.ts`.
+2. **Create the Zustand store** in `src/store/project-store.ts`:
+   - State: `project`, `audioBuffer` (the decoded Web Audio `AudioBuffer`, kept out of the saved JSON), `selectedKeyframeId`, `playback: { isPlaying, currentTime }`.
+   - Actions for this phase: `loadAudioFile(path: string, arrayBuffer: ArrayBuffer)`.
+   - To decode: use a shared `AudioContext` exposed by `audio-engine.ts`.
 
-3. **Implémenter `src/lib/audio-engine.ts`** (squelette pour cette phase) :
+3. **Implement `src/lib/audio-engine.ts`** (skeleton for this phase):
    ```ts
    class AudioEngineImpl {
      private ctx: AudioContext | null = null;
@@ -80,33 +80,33 @@ Permettre à l'utilisateur d'ouvrir un fichier audio (WAV/MP3/FLAC/OGG/M4A), le 
    export const AudioEngine = new AudioEngineImpl();
    ```
 
-4. **Installer les dépendances visuelles communes** (utilisées dès le Topbar et partout ensuite) :
+4. **Install common visual dependencies** (used in the Topbar and everywhere afterwards):
    ```bash
    pnpm add lucide-react @fontsource/inter @fontsource/jetbrains-mono
    ```
-   Importer les fontes dans `src/main.tsx` :
+   Import the fonts in `src/main.tsx`:
    ```ts
    import "@fontsource/inter/400.css";
    import "@fontsource/inter/500.css";
    import "@fontsource/jetbrains-mono/400.css";
    ```
-   Configurer la famille par défaut dans `index.css` (couche `@theme` Tailwind 4 ou `body { font-family: ... }`) selon `DESIGN.md §1.2`.
+   Configure the default family in `index.css` (Tailwind 4 `@theme` layer or `body { font-family: ... }`) per `DESIGN.md §1.2`.
 
-5. **Créer `src/components/layout/Topbar.tsx`** en suivant `DESIGN.md §3` (logo orange + texte, menus File/Edit/Project/Render/View/Help, métadonnées audio au centre, chip UNSAVED, boutons Save/Open outline orange, placeholder VU mètres, bouton Render plein orange). Pour cette phase, **seuls** les boutons "Open" et le rendu des métadonnées du fichier chargé sont fonctionnels — Save / Render / VU restent visuels (handlers vides ou `disabled`), les phases 5/6/7 les câbleront.
+5. **Create `src/components/layout/Topbar.tsx`** following `DESIGN.md §3` (orange logo + text, File/Edit/Project/Render/View/Help menus, audio metadata in the centre, UNSAVED chip, orange outline Save/Open buttons, VU meter placeholders, filled orange Render button). For this phase, **only** the "Open" button and rendering of the loaded file's metadata are functional — Save / Render / VU stay visual (empty handlers or `disabled`), phases 5/6/7 will wire them.
 
-   Le bouton **Open** (icône `FolderOpen` + label) :
-   - Utilise `@tauri-apps/plugin-dialog` → `open({ multiple: false, filters: [{ name: 'Audio', extensions: ['wav','mp3','flac','ogg','m4a','aac'] }] })`.
-   - Lit le fichier avec `@tauri-apps/plugin-fs` → `readFile(path)` (retourne un `Uint8Array`).
-   - Convertit en `ArrayBuffer` et appelle `loadAudioFile` du store.
+   The **Open** button (`FolderOpen` icon + label):
+   - Uses `@tauri-apps/plugin-dialog` → `open({ multiple: false, filters: [{ name: 'Audio', extensions: ['wav','mp3','flac','ogg','m4a','aac'] }] })`.
+   - Reads the file via `@tauri-apps/plugin-fs` → `readFile(path)` (returns a `Uint8Array`).
+   - Converts to `ArrayBuffer` and calls `loadAudioFile` on the store.
 
-   Une fois l'audio chargé, la zone centrale du Topbar affiche : nom du morceau (en `--accent`), `${sampleRate / 1000}k`, puis nom du fichier en `--text-secondary`. Avant chargement : zone vide.
+   Once audio is loaded, the Topbar's central area shows: track name (in `--accent`), `${sampleRate / 1000}k`, then file name in `--text-secondary`. Before loading: empty.
 
-6. **Créer `src/components/timeline/Waveform.tsx`** avec **wavesurfer.js v7** :
+6. **Create `src/components/timeline/Waveform.tsx`** with **wavesurfer.js v7**:
    ```bash
    pnpm add wavesurfer.js
    ```
-   - Le composant prend `audioBuffer: AudioBuffer | null` en prop.
-   - Initialise WaveSurfer avec les couleurs du design (cf. `DESIGN.md §6.2`) :
+   - The component takes `audioBuffer: AudioBuffer | null` as a prop.
+   - Initialises WaveSurfer with the design colours (see `DESIGN.md §6.2`):
      ```ts
      WaveSurfer.create({
        container,
@@ -120,11 +120,11 @@ Permettre à l'utilisateur d'ouvrir un fichier audio (WAV/MP3/FLAC/OGG/M4A), le 
        height: 96,
      });
      ```
-   - Le conteneur a `bg-[--waveform-bg]`.
-   - **Important** : pour passer un `AudioBuffer` déjà décodé, utiliser `ws.loadDecodedBuffer(audioBuffer)` ou en v7 : `ws.load(url)` avec un blob → préférer la première forme via la méthode `loadAudioBuffer` exposée par v7.
-   - Démonter proprement (`ws.destroy()` dans le `useEffect` cleanup).
+   - The container uses `bg-[--waveform-bg]`.
+   - **Important**: to pass an already-decoded `AudioBuffer`, use `ws.loadDecodedBuffer(audioBuffer)` or in v7: `ws.load(url)` with a blob → prefer the first form via the v7-exposed `loadAudioBuffer` method.
+   - Tear down cleanly (`ws.destroy()` in the `useEffect` cleanup).
 
-7. **Mettre à jour `src/App.tsx`** avec la grille définie dans `DESIGN.md §2`. À cette phase, la zone centrale (qui hébergera la `<DualScene />` + l'`<Inspector />` en phase 3-4) reste un placeholder vide aux bonnes proportions :
+7. **Update `src/App.tsx`** with the grid defined in `DESIGN.md §2`. In this phase, the central area (which will host `<DualScene />` + `<Inspector />` in phase 3–4) stays an empty placeholder at the right proportions:
    ```tsx
    import { Topbar } from '@/components/layout/Topbar';
    import { Waveform } from '@/components/timeline/Waveform';
@@ -138,9 +138,9 @@ Permettre à l'utilisateur d'ouvrir un fichier audio (WAV/MP3/FLAC/OGG/M4A), le 
            <Topbar />
          </div>
          <div className="bg-[--bg-panel] border-r border-[--border-subtle] flex items-center justify-center text-[--text-dim] text-[12px]">
-           {audioBuffer ? `${audioBuffer.duration.toFixed(2)}s · ${audioBuffer.numberOfChannels}ch · ${audioBuffer.sampleRate}Hz` : 'Aucun fichier chargé'}
+           {audioBuffer ? `${audioBuffer.duration.toFixed(2)}s · ${audioBuffer.numberOfChannels}ch · ${audioBuffer.sampleRate}Hz` : 'No file loaded'}
          </div>
-         <div className="bg-[--bg-panel]" />{/* Inspector, vide pour l'instant */}
+         <div className="bg-[--bg-panel]" />{/* Inspector, empty for now */}
          <div className="col-span-2 bg-[--bg-panel] border-t border-[--border-subtle] p-3">
            <Waveform audioBuffer={audioBuffer} />
          </div>
@@ -151,18 +151,18 @@ Permettre à l'utilisateur d'ouvrir un fichier audio (WAV/MP3/FLAC/OGG/M4A), le 
 
 ## Design
 
-Réfs : `DESIGN.md §3` (Topbar) et `§6.2` (waveform). Ouvrir le screenshot pour calibrer la densité du Topbar (gap `gap-3`, valeurs `text-[12px]`) et le ton de la waveform (orange chaud sur fond brun très sombre). Les contrôles non-fonctionnels en phase 1 (Save, Render, VU) sont rendus dans leur état visuel correct mais désactivés ou inertes — **pas de placeholder grossier** type "TODO" affiché dans la barre.
+Refs: `DESIGN.md §3` (Topbar) and `§6.2` (waveform). Open the screenshot to calibrate the Topbar's density (`gap-3`, `text-[12px]` values) and the waveform tone (warm orange on a very dark brown background). The non-functional controls in phase 1 (Save, Render, VU) are rendered in their correct visual state but disabled or inert — **no crude "TODO" placeholders** in the bar.
 
-## Critère d'acceptation
+## Acceptance criterion
 
-- Cliquer sur "Open" affiche un dialogue natif.
-- Sélectionner un fichier audio → la forme d'onde s'affiche en bas avec les couleurs du design, le nom du fichier + sample rate apparaissent dans le Topbar.
-- Re-sélectionner un autre fichier remplace correctement la forme d'onde sans fuite mémoire.
-- La grille du layout (44px / 1fr / 180px × 1fr / 320px) est en place même si Inspector et zone scènes sont vides.
-- Pas de warning console.
+- Clicking "Open" shows a native dialog.
+- Picking an audio file → the waveform appears at the bottom with the design colours, file name + sample rate appear in the Topbar.
+- Re-picking another file replaces the waveform correctly without memory leaks.
+- The layout grid (44px / 1fr / 180px × 1fr / 320px) is in place even if the Inspector and scene areas are empty.
+- No console warnings.
 
 ## Commit
 
 ```
-feat(phase-1): chargement et affichage de la forme d'onde
+feat(phase-1): audio loading and waveform display
 ```

@@ -1,44 +1,44 @@
-# Prompt pour déléguer à Claude Code
+# Prompt to delegate to Claude Code
 
-Copie-colle le bloc ci-dessous dans ta session Claude Code (lancée à la racine du kit décompressé) :
+Copy-paste the block below into your Claude Code session (started at the root of the unzipped kit):
 
 ---
 
-> Tu es chargé de construire l'application **Sferic** définie dans ce dépôt.
+> You are tasked with building the **Sferic** application defined in this repository.
 >
-> Lis dans cet ordre :
+> Read in this order:
 > 1. `README.md`
 > 2. `ARCHITECTURE.md`
-> 3. `DESIGN.md` + l'image dans `design/` (source de vérité visuelle)
+> 3. `DESIGN.md` + the image under `design/` (visual source of truth)
 > 4. `ROADMAP.md`
-> 5. `CLAUDE.md` (tes règles de fonctionnement)
+> 5. `CLAUDE.md` (your operating rules)
 >
-> Puis attaque la **phase 0** en suivant `tasks/phase-0-bootstrap.md`. Crée le projet dans un sous-dossier `app/`.
+> Then attack **phase 0** following `tasks/phase-0-bootstrap.md`. Create the project under a subfolder `app/`.
 >
-> À la fin de chaque phase :
-> - Lance `pnpm tsc --noEmit` et `pnpm tauri dev` pour valider.
-> - Fais un commit `feat(phase-N): <résumé>`.
-> - **Arrête-toi et résume ce que tu as fait, ce qui marche, ce qui reste à valider.** N'enchaîne pas la phase suivante sans mon feu vert.
+> At the end of each phase:
+> - Run `pnpm tsc --noEmit` and `pnpm tauri dev` to validate.
+> - Commit `feat(phase-N): <summary>`.
+> - **Stop and summarise what you did, what works, and what's left to validate.** Do not chain into the next phase without my green light.
 >
-> Si tu hésites sur un choix qui n'est pas couvert par les docs, demande plutôt que de présumer. Si tu veux ajouter une dépendance non listée dans `ARCHITECTURE.md`, demande d'abord.
+> If you hesitate on a choice not covered by the docs, ask rather than assume. If you want to add a dependency not listed in `ARCHITECTURE.md`, ask first.
 >
-> Commence maintenant : confirme la lecture des 4 documents et lance la phase 0.
+> Start now: confirm you have read the 4 documents and begin phase 0.
 
 ---
 
-## Variantes
+## Variants
 
-### Mode "enchaîne tout"
-Si tu lui fais entièrement confiance ou veux laisser tourner :
+### "Run everything" mode
+If you fully trust it or want to let it run:
 
-> ... Vas-y, enchaîne les 9 phases sans t'arrêter, mais commit à chaque phase et signale tout problème majeur. Je validerai à la fin.
+> … Go ahead, chain the 9 phases without stopping, but commit at each phase and flag any major issue. I'll review at the end.
 
-### Mode "phase isolée"
-Si tu veux qu'il ne fasse qu'une phase précise :
+### "Single phase" mode
+If you want it to do only one specific phase:
 
-> Lis `README.md`, `ARCHITECTURE.md`, et `tasks/phase-3-spatial-ui.md`. Implémente uniquement la phase 3 dans `app/`, en supposant que les phases 0–2 sont déjà faites. Stoppe à la fin.
+> Read `README.md`, `ARCHITECTURE.md`, and `tasks/phase-3-spatial-ui.md`. Implement only phase 3 inside `app/`, assuming phases 0–2 are already done. Stop at the end.
 
-### Mode "review"
-Pour faire relire ce qui existe :
+### "Review" mode
+To get an audit of what exists:
 
-> Lis tout le dépôt et fais-moi une revue critique de l'architecture, des choix techno et du roadmap. Pointe les risques, les zones floues, les dépendances obsolètes éventuelles, sans encore écrire de code.
+> Read the entire repository and give me a critical review of the architecture, tech choices, and roadmap. Point out risks, fuzzy areas, and any potentially obsolete dependencies, without writing code yet.

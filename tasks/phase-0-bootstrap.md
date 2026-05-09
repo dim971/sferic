@@ -1,56 +1,56 @@
-# Phase 0 — Bootstrap du projet
+# Phase 0 — Project bootstrap
 
-## Objectif
+## Goal
 
-Créer le squelette Tauri 2 + React + TypeScript + Tailwind dans un sous-dossier `app/`.
+Create the Tauri 2 + React + TypeScript + Tailwind skeleton inside an `app/` subfolder.
 
-## Étapes
+## Steps
 
-1. **Créer le projet Tauri** depuis la racine du kit :
+1. **Create the Tauri project** from the kit root:
    ```bash
    pnpm create tauri-app@latest
    ```
-   Réponses :
-   - Project name : `app`
-   - Identifier : `dev.sferic.app`
-   - Language for Frontend : **TypeScript / JavaScript**
-   - Package manager : **pnpm**
-   - UI template : **React**
-   - UI flavor : **TypeScript**
+   Answers:
+   - Project name: `app`
+   - Identifier: `dev.sferic.app`
+   - Frontend language: **TypeScript / JavaScript**
+   - Package manager: **pnpm**
+   - UI template: **React**
+   - UI flavour: **TypeScript**
 
-2. **Entrer dans `app/` et installer** :
+2. **Enter `app/` and install**:
    ```bash
    cd app
    pnpm install
    ```
 
-3. **Ajouter Tailwind CSS 4** (méthode officielle Vite) :
+3. **Add Tailwind CSS 4** (official Vite method):
    ```bash
    pnpm add -D tailwindcss @tailwindcss/vite
    ```
-   - Modifier `vite.config.ts` pour ajouter le plugin `@tailwindcss/vite`.
-   - Créer `src/index.css` avec `@import "tailwindcss";`.
-   - Importer ce CSS dans `src/main.tsx`.
+   - Edit `vite.config.ts` to add the `@tailwindcss/vite` plugin.
+   - Create `src/index.css` with `@import "tailwindcss";`.
+   - Import that CSS in `src/main.tsx`.
 
-4. **Configurer l'alias `@/`** :
-   - Dans `tsconfig.json` : `"baseUrl": ".", "paths": { "@/*": ["./src/*"] }`.
-   - Dans `vite.config.ts` : `resolve.alias = { "@": path.resolve(__dirname, "./src") }`.
+4. **Configure the `@/` alias**:
+   - In `tsconfig.json`: `"baseUrl": ".", "paths": { "@/*": ["./src/*"] }`.
+   - In `vite.config.ts`: `resolve.alias = { "@": path.resolve(__dirname, "./src") }`.
 
-5. **Activer le mode strict TypeScript** dans `tsconfig.json` (déjà par défaut, vérifier).
+5. **Enable TypeScript strict mode** in `tsconfig.json` (default — verify).
 
-6. **Installer les dépendances de runtime de base** :
+6. **Install base runtime dependencies**:
    ```bash
    pnpm add zustand nanoid clsx
    ```
 
-7. **Configurer les plugins Tauri 2 nécessaires** :
+7. **Configure required Tauri 2 plugins**:
    ```bash
    pnpm tauri add dialog
    pnpm tauri add fs
    ```
-   Cela ajoute les crates côté Rust et les permissions par défaut.
+   This adds the Rust crates and default permissions.
 
-8. **Limiter les permissions** dans `src-tauri/capabilities/default.json` :
+8. **Restrict permissions** in `src-tauri/capabilities/default.json`:
    ```json
    {
      "$schema": "../gen/schemas/desktop-schema.json",
@@ -69,9 +69,9 @@ Créer le squelette Tauri 2 + React + TypeScript + Tailwind dans un sous-dossier
    }
    ```
 
-9. **Déclarer les color tokens** dans `src/index.css` (cf. `DESIGN.md §1.1`). Après `@import "tailwindcss";`, ajouter un bloc `@theme` Tailwind 4 (ou `:root`) avec **tous** les tokens listés (`--bg-base`, `--bg-panel`, `--accent`, `--listener`, etc.). Ces tokens sont utilisés dès cette phase et par toutes les suivantes — ne pas les redéfiniwr ailleurs.
+9. **Declare the colour tokens** in `src/index.css` (see `DESIGN.md §1.1`). After `@import "tailwindcss";`, add a Tailwind 4 `@theme` block (or `:root`) with **all** listed tokens (`--bg-base`, `--bg-panel`, `--accent`, `--listener`, etc.). These tokens are used from this phase onward — do not redefine them elsewhere.
 
-10. **Remplacer le contenu de `src/App.tsx`** par un placeholder propre qui utilise déjà les tokens :
+10. **Replace `src/App.tsx`** with a clean placeholder that already uses the tokens:
     ```tsx
     export default function App() {
       return (
@@ -82,12 +82,12 @@ Créer le squelette Tauri 2 + React + TypeScript + Tailwind dans un sous-dossier
     }
     ```
 
-11. **Mettre à jour `tauri.conf.json`** :
-    - `productName` : `Sferic`
-    - `version` : `0.1.0`
-    - Window : `width: 1280, height: 800, minWidth: 1024, minHeight: 700, title: "Sferic"`
+11. **Update `tauri.conf.json`**:
+    - `productName`: `Sferic`
+    - `version`: `0.1.0`
+    - Window: `width: 1280, height: 800, minWidth: 1024, minHeight: 700, title: "Sferic"`
 
-12. **Créer la structure de dossiers cible** dans `app/src/` :
+12. **Create the target folder structure** under `app/src/`:
     ```
     src/
     ├── components/
@@ -108,18 +108,18 @@ Créer le squelette Tauri 2 + React + TypeScript + Tailwind dans un sous-dossier
     ├── main.tsx
     └── index.css
     ```
-    Crée des fichiers vides à ce stade (juste le placeholder `// TODO`), ils seront remplis aux phases suivantes.
+    Create empty files at this stage (just a `// TODO` placeholder); they'll be filled in later phases.
 
 ## Design
 
-Le placeholder n'a presque rien à montrer, mais la **palette doit être en place dès cette phase** : tous les tokens de `DESIGN.md §1.1` sont déclarés dans `src/index.css`, et `App.tsx` utilise `bg-[--bg-base]` + `text-[--text-primary]`. Ouvrir `design/Screenshot 2026-05-09 at 08.53.47.png` une fois pour calibrer l'œil sur le ton de noir attendu (très sombre, légèrement bleuté).
+The placeholder has almost nothing to show, but the **palette must be in place from this phase**: all `DESIGN.md §1.1` tokens are declared in `src/index.css`, and `App.tsx` uses `bg-[--bg-base]` + `text-[--text-primary]`. Open `design/Screenshot 2026-05-09 at 08.53.47.png` once to calibrate your eye on the expected black tone (very dark, slightly bluish).
 
-## Critère d'acceptation
+## Acceptance criterion
 
-- `pnpm tauri dev` démarre une fenêtre native avec le titre "Sferic" et le placeholder centré.
-- Le fond est `--bg-base` (≈ `#07080A`) et le texte `--text-primary` — pas de gris Tailwind par défaut.
-- Pas d'erreur dans la console (browser ni Rust).
-- `pnpm tsc --noEmit` passe.
+- `pnpm tauri dev` starts a native window with title "Sferic" and the centred placeholder.
+- Background is `--bg-base` (≈ `#07080A`) and text is `--text-primary` — no default Tailwind grey.
+- No errors in the console (browser or Rust).
+- `pnpm tsc --noEmit` passes.
 
 ## Commit
 

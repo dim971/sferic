@@ -1,110 +1,110 @@
-# Phase 4 — Timeline avec marqueurs et inspecteur
+# Phase 4 — Timeline with markers and inspector
 
-## Objectif
+## Goal
 
-Lier la timeline (forme d'onde) aux keyframes :
-- Afficher chaque keyframe comme un marqueur vertical sur la waveform.
-- Cliquer sur la waveform → seek + (en mode "ajout") → ajouter un keyframe.
-- Inspecteur latéral pour éditer les propriétés du keyframe sélectionné.
+Tie the timeline (waveform) to the keyframes:
+- Display each keyframe as a vertical marker on the waveform.
+- Click on the waveform → seek + (in "add" mode) → add a keyframe.
+- Side inspector to edit the selected keyframe's properties.
 
-## Étapes
+## Steps
 
-1. **Étendre `Waveform.tsx`** :
-   - Synchroniser le curseur WaveSurfer avec `playback.currentTime` du store.
-   - Sur `ws.on('seek', ...)`, appeler `seek()` du store.
-   - Désactiver le seek auto-géré de WaveSurfer si nécessaire pour rester source unique.
+1. **Extend `Waveform.tsx`**:
+   - Sync the WaveSurfer cursor with the store's `playback.currentTime`.
+   - On `ws.on('seek', ...)`, call the store's `seek()`.
+   - Disable WaveSurfer's auto-managed seek if needed to keep a single source of truth.
 
-2. **Ajouter le plugin Markers / Regions** de WaveSurfer pour les keyframes :
+2. **Add WaveSurfer's Markers / Regions plugin** for keyframes:
    ```bash
    pnpm add wavesurfer.js
    ```
-   Utiliser `RegionsPlugin` ou créer un overlay simple :
-   - Calque absolu `position: relative` sur le conteneur waveform.
-   - Pour chaque keyframe, un trait vertical à `left: (kf.time / duration) * 100%`.
-   - `onClick` du trait → `selectKeyframe(kf.id)`.
+   Use `RegionsPlugin` or build a simple overlay:
+   - Absolute layer `position: relative` on the waveform container.
+   - For each keyframe, a vertical line at `left: (kf.time / duration) * 100%`.
+   - Line `onClick` → `selectKeyframe(kf.id)`.
 
-3. **Créer `src/components/inspector/Inspector.tsx`** en suivant **strictement** `DESIGN.md §5`. Le panneau (320px droite, `bg-[--bg-panel]`) a deux modes :
+3. **Create `src/components/inspector/Inspector.tsx`** strictly following `DESIGN.md §5`. The panel (320px right, `bg-[--bg-panel]`) has two modes:
 
-   - **Aucun keyframe sélectionné** → afficher les **réglages projet** dans une section unique `PROJECT` :
+   - **No keyframe selected** → show **project settings** in a single `PROJECT` section:
      - Toggle `panningModel` (HRTF / equalpower).
      - Slider `refDistance` (0..10), `rolloffFactor` (0..2).
      - Toggle `reverb.enabled` + slider `reverb.wet` (0..1).
      - Toggle `snapToSphere` (default true).
 
-   - **Keyframe sélectionné** → afficher l'en-tête + 4 sections (`POSITION`, `MOTION`, `GAIN & FADES`, `DOPP`). Voir `DESIGN.md §5.1–5.5` pour la mise en page précise. Récap :
+   - **Keyframe selected** → show the header + 4 sections (`POSITION`, `MOTION`, `GAIN & FADES`, `DOPP`). See `DESIGN.md §5.1–5.5` for the precise layout. Recap:
 
-     **En-tête** :
-     - Tab `INSPECTOR` (label section).
-     - Ligne : icône losange `--accent` 10px, `Keyframe NN`, paginator `< 1 of N >` à droite (cyclique entre keyframes triés par temps).
-     - Ligne : timecode mono `00:11.150`.
+     **Header**:
+     - Tab `INSPECTOR` (section label).
+     - Row: `--accent` 10px diamond icon, `Keyframe NN`, `< 1 of N >` paginator on the right (cyclic across keyframes sorted by time).
+     - Row: mono timecode `00:11.150`.
 
-     **Section `POSITION`** :
-     - 3 inputs cartésiens (X, Y, Z) en mono, fond `--bg-input`. Update temps réel sur change.
-     - 3 readouts sphériques (Az, El, R) calculés depuis (X,Y,Z) — lecture seule v1.
+     **`POSITION` section**:
+     - 3 cartesian inputs (X, Y, Z) in mono, `--bg-input` background. Real-time update on change.
+     - 3 spherical readouts (Az, El, R) computed from (X,Y,Z) — read-only in v1.
 
-     **Section `MOTION`** :
-     - **Curve picker** : 4 chips `Linear` / `Eaze` / `Smooth` / `Step` (cf. `DESIGN §5.3`). Chip actif = `bg-[--accent-soft] border-[--accent] text-[--accent]`.
-     - Input `Duration` (s, default = écart avec keyframe précédent).
-     - Input `Tension` (0..1, n'agit que si curve === 'smooth').
+     **`MOTION` section**:
+     - **Curve picker**: 4 chips `Linear` / `Eaze` / `Smooth` / `Step` (see `DESIGN §5.3`). Active chip = `bg-[--accent-soft] border-[--accent] text-[--accent]`.
+     - `Duration` input (s, default = gap to previous keyframe).
+     - `Tension` input (0..1, only effective if curve === 'smooth').
 
-     **Section `GAIN & FADES`** :
+     **`GAIN & FADES` section**:
      - `Vol` input dB (-24..+6).
-     - `HPF` input Hz (stub UI v1 — marquer `*`).
-     - `LPF` input Hz (stub UI v1 — marquer `*`).
-     - Toggle `Snapper` (`snap` du keyframe).
+     - `HPF` input Hz (UI stub v1 — mark with `*`).
+     - `LPF` input Hz (UI stub v1 — mark with `*`).
+     - `Snapper` toggle (the keyframe's `snap`).
 
-     **Section `DOPP`** :
-     - `Speed` (m/s, lecture seule, calculé depuis keyframes adjacents).
-     - Toggle `Doppler` (stub v1).
-     - Toggle `Velocity` (stub v1).
-     - Slider `Intensity` 0..1 (stub v1).
+     **`DOPP` section**:
+     - `Speed` (m/s, read-only, computed from adjacent keyframes).
+     - `Doppler` toggle (v1 stub).
+     - `Velocity` toggle (v1 stub).
+     - `Intensity` slider 0..1 (v1 stub).
 
-   - **Bouton Supprimer** : icône `Trash2` rouge `--vu-red`, en bas du panneau, confirme via `dialog.ask`.
+   - **Delete button**: `Trash2` icon red `--vu-red`, at the bottom of the panel, confirms via `dialog.ask`.
 
-   Indiquer les contrôles stubs avec un astérisque `*` discret en `--text-dim` à côté du label, ou un tooltip "v1: read-only" (cf. `DESIGN §9`).
+   Mark stub controls with a discreet `*` asterisk in `--text-dim` next to the label, or a tooltip "v1: read-only" (see `DESIGN §9`).
 
-4. **Comportement de la waveform** :
-   - **Clic simple** sur la waveform → seek.
-   - **Shift + clic** → ajoute un keyframe à ce temps, à la position 3D courante de la source (ou à `(0,0,-1)` si aucun keyframe avant).
-   - Indiquer ces raccourcis dans une légende discrète sous la timeline.
+4. **Waveform behaviour**:
+   - **Single click** on the waveform → seek.
+   - **Shift + click** → adds a keyframe at that time, at the source's current 3D position (or `(0,0,-1)` if no keyframe before).
+   - Show these shortcuts in a discreet legend below the timeline.
 
-5. **Styliser les marqueurs de keyframes** sur la waveform (cf. `DESIGN §6.2`) :
-   - Trait vertical 2px sur toute la hauteur, couleur `--accent` opacité 0.5.
-   - Si sélectionné : opacité 1, petit losange orange 6px en haut, bouton `X` (icône `lucide-react/X`) au hover en haut → `removeKeyframe(id)`.
+5. **Style the keyframe markers** on the waveform (see `DESIGN §6.2`):
+   - Vertical 2px line full height, `--accent` colour opacity 0.5.
+   - If selected: opacity 1, small 6px orange diamond at the top, `X` button (icon `lucide-react/X`) on hover at the top → `removeKeyframe(id)`.
 
-6. **Ruler des temps** sous la waveform (cf. `DESIGN §6.4`) : bande 16px avec graduations 0:00, 0:30, 1:00, etc. en mono `text-[10px] --text-dim`. Le tick correspondant à un keyframe sélectionné passe en `--accent`.
+6. **Time ruler** below the waveform (see `DESIGN §6.4`): 16px strip with 0:00, 0:30, 1:00, etc. graduations in mono `text-[10px] --text-dim`. The tick matching a selected keyframe goes `--accent`.
 
-7. **Composer la `<Timeline />` finale** : la rangée du bas (180px) contient en grille `grid-cols-[auto_1fr_auto] gap-3 px-3 py-2` (cf. `DESIGN §6`) :
-   - Bloc gauche : `<TransportBar />` (créé en phase 2) + grille 5 readouts mono (x, y, z, az, el de la source courante).
-   - Bloc central : `<Waveform />` + ses marqueurs + ruler.
-   - Bloc droit : boutons `± zoom` (icônes `Plus`/`Minus`), lecture compacte de la sélection.
+7. **Compose the final `<Timeline />`**: the bottom row (180px) holds a `grid-cols-[auto_1fr_auto] gap-3 px-3 py-2` grid (see `DESIGN §6`):
+   - Left block: `<TransportBar />` (created in phase 2) + 5-readout mono grid (x, y, z, az, el of the current source).
+   - Centre block: `<Waveform />` + its markers + ruler.
+   - Right block: `± zoom` buttons (`Plus`/`Minus` icons), compact selection readout.
 
-8. **Ajouter raccourcis clavier** dans un hook `useKeyboardShortcuts()` :
-   - `Espace` → play/pause
-   - `Suppr` → supprimer le keyframe sélectionné
-   - `Esc` → désélectionner
-   - `Cmd/Ctrl+S` → save (pour la phase 7, déjà préparer le hook)
+8. **Add keyboard shortcuts** in a `useKeyboardShortcuts()` hook:
+   - `Space` → play/pause
+   - `Delete` → remove the selected keyframe
+   - `Esc` → deselect
+   - `Cmd/Ctrl+S` → save (for phase 7, prepare the hook now)
 
 ## Design
 
-C'est la phase la plus dense visuellement. Comparer **section par section** au screenshot et à `DESIGN.md §5–6`. Pièges classiques :
-- Les chips de Curve doivent être en ligne, compacts, et le sélectionné saute clairement (pas juste un texte gras).
-- Les readouts sphériques (Az/El/R) sont en `--text-secondary` non éditables — les confondre avec des inputs casserait l'analogie avec le screenshot.
-- Les stubs (HPF/LPF/Doppler/Velocity) doivent être **présents** dans l'UI, pas masqués — c'est ce qui rend le rendu fidèle à la cible. Les marquer comme stubs (astérisque + tooltip) est suffisant.
-- La timeline a **trois blocs** alignés horizontalement (transport+readouts | waveform+ruler | zoom). Pas de retour à la ligne, ça doit tenir dans 180px de haut.
+This is the visually densest phase. Compare **section by section** with the screenshot and `DESIGN.md §5–6`. Common pitfalls:
+- Curve chips should be inline, compact, and the selected one clearly pops (not just bold text).
+- Spherical readouts (Az/El/R) are non-editable in `--text-secondary` — confusing them with inputs would break the analogy with the screenshot.
+- Stubs (HPF/LPF/Doppler/Velocity) must be **present** in the UI, not hidden — that's what makes the render faithful to the target. Marking them as stubs (asterisk + tooltip) is enough.
+- The timeline has **three blocks** aligned horizontally (transport+readouts | waveform+ruler | zoom). No line wrapping, it must fit in 180px tall.
 
-## Critère d'acceptation
+## Acceptance criterion
 
-- Les keyframes ajoutés en phase 3 apparaissent comme des traits orange sur la waveform.
-- Cliquer sur un trait sélectionne le keyframe (visible dans les deux scènes 3D + inspecteur).
-- L'inspecteur affiche les 4 sections (POSITION, MOTION, GAIN & FADES, DOPP) avec en-tête + paginator. Modifier les contrôles fonctionnels (X/Y/Z, Curve, Duration, Tension, Vol, Snapper) propage en temps réel.
-- Les contrôles stubs (HPF/LPF/Doppler/Velocity) sont visibles, leurs valeurs sont stockées dans le keyframe, mais ne sont pas câblés à l'audio en v1.
-- Shift+clic sur la waveform ajoute un keyframe au bon temps.
-- Espace lance/met en pause la lecture.
-- Comparer la disposition de l'inspecteur au screenshot : densité, alignement, casse des labels (`POSITION` en majuscules), tabular nums sur tous les readouts.
+- Keyframes added in phase 3 appear as orange lines on the waveform.
+- Clicking a line selects the keyframe (visible in both 3D scenes + inspector).
+- The inspector shows the 4 sections (POSITION, MOTION, GAIN & FADES, DOPP) with header + paginator. Editing functional controls (X/Y/Z, Curve, Duration, Tension, Vol, Snapper) propagates in real time.
+- Stub controls (HPF/LPF/Doppler/Velocity) are visible, their values are stored on the keyframe, but they are not wired to the audio in v1.
+- Shift+click on the waveform adds a keyframe at the right time.
+- Space starts/pauses playback.
+- Compare the inspector layout with the screenshot: density, alignment, label casing (`POSITION` uppercase), tabular nums on every readout.
 
 ## Commit
 
 ```
-feat(phase-4): timeline avec marqueurs keyframes et inspecteur
+feat(phase-4): timeline with keyframe markers and inspector
 ```

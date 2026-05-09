@@ -1,29 +1,29 @@
-# Phase 3 — Scènes spatiales 3D (dual view)
+# Phase 3 — 3D spatial scenes (dual view)
 
-## Objectif
+## Goal
 
-Construire **deux scènes 3D** Three.js (via React Three Fiber) côte à côte (cf. `DESIGN.md §4`) :
-- `SceneTop` (caméra orthographique au-dessus, regard vers -Y).
-- `ScenePerspective` (caméra perspective + `OrbitControls`).
+Build **two 3D scenes** with Three.js (via React Three Fiber) side by side (see `DESIGN.md §4`):
+- `SceneTop` (orthographic camera above, looking down -Y).
+- `ScenePerspective` (perspective camera + `OrbitControls`).
 
-Les deux affichent le même contenu :
-- Un **auditeur** au centre (petite sphère bleue `--listener` rayon 0.04).
-- Une **sphère de référence** wireframe orange `--accent` rayon 1, opacité 0.18.
-- Une **trajectoire** orange semi-transparente reliant les positions interpolées des keyframes (≥ 2 keyframes requis).
-- Tous les **keyframes** sous forme de marqueurs orange numérotés, plus grands + halo quand sélectionnés.
-- La **source sonore courante** (position interpolée au temps de lecture) en sphère orange avec halo prononcé.
+Both display the same content:
+- A **listener** at the centre (small blue sphere `--listener` radius 0.04).
+- A **reference sphere** wireframe orange `--accent` radius 1, opacity 0.18.
+- A **trajectory** in semi-transparent orange linking the interpolated keyframe positions (≥ 2 keyframes required).
+- All **keyframes** as numbered orange markers, larger + halo when selected.
+- The **current sound source** (interpolated position at playback time) as an orange sphere with a pronounced halo.
 
-L'utilisateur peut **cliquer dans la scène Perspective** pour ajouter un keyframe (la position est projetée sur la sphère unité si `settings.snapToSphere`).
+The user can **click in the Perspective scene** to add a keyframe (the position is projected onto the unit sphere if `settings.snapToSphere`).
 
-## Étapes
+## Steps
 
-1. **Installer les dépendances** :
+1. **Install dependencies**:
    ```bash
    pnpm add three @react-three/fiber @react-three/drei
    pnpm add -D @types/three
    ```
 
-2. **Créer `src/lib/math3d.ts`** (`CurveType` = `'linear' | 'eaze' | 'smooth' | 'step'`) :
+2. **Create `src/lib/math3d.ts`** (`CurveType` = `'linear' | 'eaze' | 'smooth' | 'step'`):
    ```ts
    import type { CurveType, SpatialKeyframe } from '@/types/project';
 
@@ -60,13 +60,13 @@ L'utilisateur peut **cliquer dans la scène Perspective** pour ajouter un keyfra
    }
    ```
 
-3. **Étendre le store** : ajouter actions
-   - `addKeyframe(position, time?)` (time = currentTime si omis)
+3. **Extend the store**: add actions
+   - `addKeyframe(position, time?)` (time = currentTime if omitted)
    - `updateKeyframe(id, partial)`
    - `removeKeyframe(id)`
    - `selectKeyframe(id | null)`
 
-4. **Créer un composant scène partagée `src/components/scene/SceneContents.tsx`** qui rend tout le contenu commun aux deux vues (sphère wireframe orange, listener, source courante, keyframes, trajectoire). Aucune `<Canvas>` ici — juste le scenegraph R3F :
+4. **Create a shared scene component `src/components/scene/SceneContents.tsx`** that renders all the content shared between the two views (orange wireframe sphere, listener, current source, keyframes, trajectory). No `<Canvas>` here — just the R3F scenegraph:
    ```tsx
    import { Html } from '@react-three/drei';
    import { useProjectStore } from '@/store/project-store';
@@ -84,7 +84,7 @@ L'utilisateur peut **cliquer dans la scène Perspective** pour ajouter un keyfra
      return (
        <>
          <ambientLight intensity={0.5} />
-         {/* Sphère wireframe orange (cf. DESIGN §4.1) */}
+         {/* Orange wireframe sphere (see DESIGN §4.1) */}
          <mesh>
            <sphereGeometry args={[1, 20, 16]} />
            <meshBasicMaterial color="#F87328" wireframe transparent opacity={0.18} />
@@ -100,7 +100,7 @@ L'utilisateur peut **cliquer dans la scène Perspective** pour ajouter un keyfra
    }
    ```
 
-5. **Créer `src/components/scene/SceneTop.tsx`** — vue plongeante orthographique, caméra non-controllable :
+5. **Create `src/components/scene/SceneTop.tsx`** — top-down orthographic view, non-controllable camera:
    ```tsx
    import { Canvas, OrthographicCamera } from '@react-three/fiber';
    import { SceneContents } from './SceneContents';
@@ -110,14 +110,14 @@ L'utilisateur peut **cliquer dans la scène Perspective** pour ajouter un keyfra
        <Canvas orthographic camera={{ position: [0, 5, 0], zoom: 200, near: 0.1, far: 100 }}
                className="bg-[--bg-panel]">
          <SceneContents />
-         {/* Pas d'OrbitControls : vue figée */}
+         {/* No OrbitControls: fixed view */}
        </Canvas>
      );
    }
    ```
-   Overlay HTML (cf. `DESIGN §4.2`) : label `TOP` en haut-gauche, timecode courant en haut-droit, repères `+1.0`/`-1.0` aux bords.
+   HTML overlay (see `DESIGN §4.2`): `TOP` label top-left, current timecode top-right, `+1.0`/`-1.0` markers at the edges.
 
-6. **Créer `src/components/scene/ScenePerspective.tsx`** — caméra libre :
+6. **Create `src/components/scene/ScenePerspective.tsx`** — free camera:
    ```tsx
    import { Canvas } from '@react-three/fiber';
    import { OrbitControls } from '@react-three/drei';
@@ -134,9 +134,9 @@ L'utilisateur peut **cliquer dans la scène Perspective** pour ajouter un keyfra
      );
    }
    ```
-   Overlay HTML : label `PERSPECTIVE`, timecode, lecture d'azimut/élévation en bas.
+   HTML overlay: `PERSPECTIVE` label, timecode, azimuth/elevation readout at the bottom.
 
-7. **Créer `src/components/scene/DualScene.tsx`** :
+7. **Create `src/components/scene/DualScene.tsx`**:
    ```tsx
    import { SceneTop } from './SceneTop';
    import { ScenePerspective } from './ScenePerspective';
@@ -151,47 +151,47 @@ L'utilisateur peut **cliquer dans la scène Perspective** pour ajouter un keyfra
    }
    ```
 
-8. **Créer `Listener.tsx`** : petite sphère pleine `--listener` (`#4F8EF7`) rayon 0.04 à l'origine. Pas de cône directionnel (l'auditeur est fixe).
+8. **Create `Listener.tsx`**: small solid `--listener` (`#4F8EF7`) sphere radius 0.04 at the origin. No directional cone (the listener is fixed).
 
-9. **Créer `Source.tsx`** : sphère orange `--accent` rayon 0.06 à la position interpolée, avec un sprite halo (`<sprite>` + texture circulaire ou `<mesh>` + matériau additif) plus large (rayon 0.18, opacité 0.4).
+9. **Create `Source.tsx`**: orange `--accent` sphere radius 0.06 at the interpolated position, with a halo sprite (`<sprite>` + circular texture or `<mesh>` + additive material) wider (radius 0.18, opacity 0.4).
 
-10. **Créer `TrajectoryLine.tsx`** : utilise `<Line>` de drei pour tracer la trajectoire interpolée (≥ 2 keyframes). Échantillonnage 64 segments, couleur `#F87328`, opacité 0.6, épaisseur 2. Implémenter une fonction `samplePath(keyframes, n)` dans `math3d.ts` qui appelle `interpolatePosition` à n temps répartis sur `[firstKf.time, lastKf.time]`.
+10. **Create `TrajectoryLine.tsx`**: use `<Line>` from drei to draw the interpolated trajectory (≥ 2 keyframes). 64-segment sampling, colour `#F87328`, opacity 0.6, width 2. Implement a `samplePath(keyframes, n)` function in `math3d.ts` that calls `interpolatePosition` at n times spread over `[firstKf.time, lastKf.time]`.
 
-11. **Créer `KeyframeMarker.tsx`** (cf. `DESIGN §4.1`) :
-    - Sphère pleine `--accent` rayon 0.05 ; bord `--accent-hot` 1px (via second mesh légèrement plus grand en `meshBasicMaterial wireframe` ou outline shader).
-    - Label numérique flottant via `<Html>` de drei : `<span className="text-[10px] text-white">{index}</span>`.
+11. **Create `KeyframeMarker.tsx`** (see `DESIGN §4.1`):
+    - Solid `--accent` sphere radius 0.05; `--accent-hot` 1px outline (via a second slightly larger mesh in `meshBasicMaterial wireframe` or outline shader).
+    - Floating numeric label via drei's `<Html>`: `<span className="text-[10px] text-white">{index}</span>`.
     - `onClick` (R3F event) → `selectKeyframe(kf.id)`.
-    - `onPointerDown` + drag → `updateKeyframe(id, { position })`. Reprojection sur sphère unité si `settings.snapToSphere || kf.snap`.
-    - Si sélectionné → rayon 0.08, halo (sprite circulaire 0.18 transparent `--accent`), label étendu (`Keyframe NN — m:ss.cc`).
+    - `onPointerDown` + drag → `updateKeyframe(id, { position })`. Reproject onto the unit sphere if `settings.snapToSphere || kf.snap`.
+    - If selected → radius 0.08, halo (circular sprite 0.18 transparent `--accent`), expanded label (`Keyframe NN — m:ss.cc`).
 
-12. **Créer `ClickToPlace.tsx`** (uniquement dans `ScenePerspective`) :
-    - Mesh invisible (sphère de rayon 1.5) qui capture les clics dans le vide.
-    - `onPointerDown` :
-      - Récupère le point d'intersection.
-      - Si `settings.snapToSphere` → `pos.normalize()` (rayon = 1).
-      - Appelle `addKeyframe({ x, y, z }, currentTime)` avec `snap: settings.snapToSphere`.
+12. **Create `ClickToPlace.tsx`** (only in `ScenePerspective`):
+    - Invisible mesh (sphere of radius 1.5) that captures clicks in empty space.
+    - `onPointerDown`:
+      - Get the intersection point.
+      - If `settings.snapToSphere` → `pos.normalize()` (radius = 1).
+      - Call `addKeyframe({ x, y, z }, currentTime)` with `snap: settings.snapToSphere`.
 
-13. **Layout** : remplacer le placeholder de la zone scènes (créé en phase 1) par `<DualScene />`. Le squelette du layout (44px / 1fr / 180px × 1fr / 320px, cf. `DESIGN §2`) est déjà en place depuis phase 1. La cellule "Inspector" reste vide — phase 4 la remplit.
+13. **Layout**: replace the scenes-area placeholder (created in phase 1) with `<DualScene />`. The layout skeleton (44px / 1fr / 180px × 1fr / 320px, see `DESIGN §2`) is already in place since phase 1. The "Inspector" cell stays empty — phase 4 fills it.
 
 ## Design
 
-Réf : `DESIGN.md §4` (DualScene complet — palette, marqueurs, overlays, interactions). Comparer pixel-à-pixel avec le screenshot : la sphère wireframe doit être discrète (opacité ≈ 0.18), les marqueurs orange doivent ressortir nettement, l'auditeur bleu doit être un point parmi le wireframe (pas une grosse sphère). La trajectoire orange semi-transparente est un signal **fort** que le path entre keyframes est lu — son absence rend la scène fade.
+Ref: `DESIGN.md §4` (full DualScene — palette, markers, overlays, interactions). Compare pixel-by-pixel with the screenshot: the wireframe sphere should be discreet (opacity ≈ 0.18), the orange markers should clearly stand out, the blue listener should be a point inside the wireframe (not a big sphere). The semi-transparent orange trajectory is a **strong** signal that the path between keyframes is being read — without it the scene falls flat.
 
-Les overlays HTML (labels TOP/PERSPECTIVE, timecode, repères de coordonnées) sont indispensables au rendu pro — ne pas les sauter.
+The HTML overlays (TOP/PERSPECTIVE labels, timecode, coordinate markers) are essential for the polished look — don't skip them.
 
-## Critère d'acceptation
+## Acceptance criterion
 
-- Au chargement d'un fichier, les **deux** scènes apparaissent avec auditeur, sphère wireframe orange, et source par défaut devant l'auditeur.
-- Cliquer sur la sphère dans la vue Perspective ajoute un keyframe orange à cet endroit (snap-to-sphere actif par défaut).
-- Le keyframe est cliquable, sélectionnable, et son état sélectionné est cohérent dans les deux vues.
-- Drag d'un keyframe sélectionné met à jour sa position en temps réel dans les deux vues.
-- `OrbitControls` rotate/zoom fonctionne dans la vue Perspective uniquement (la vue Top reste fixe).
-- La trajectoire orange relie ≥ 2 keyframes correctement.
-- La source orange se déplace en suivant la trajectoire lors de la lecture (interpolation `linear` suffit en phase 3, les autres curves arrivent en phase 5).
-- Visuellement, comparer au screenshot — couleurs, épaisseur de wireframe, taille des marqueurs, halo du keyframe sélectionné.
+- When a file is loaded, **both** scenes appear with listener, orange wireframe sphere, and a default source in front of the listener.
+- Clicking on the sphere in the Perspective view adds an orange keyframe at that spot (snap-to-sphere on by default).
+- The keyframe is clickable, selectable, and its selected state is consistent across both views.
+- Dragging a selected keyframe updates its position in real time in both views.
+- `OrbitControls` rotate/zoom works in the Perspective view only (the Top view stays fixed).
+- The orange trajectory connects ≥ 2 keyframes correctly.
+- The orange source moves along the trajectory during playback (`linear` interpolation is enough for phase 3, the other curves arrive in phase 5).
+- Visually, compare with the screenshot — colours, wireframe thickness, marker size, halo on the selected keyframe.
 
 ## Commit
 
 ```
-feat(phase-3): scène 3D Three.js avec keyframes interactifs
+feat(phase-3): 3D Three.js scene with interactive keyframes
 ```

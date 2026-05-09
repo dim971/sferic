@@ -1,40 +1,49 @@
-# Roadmap — 9 phases d'exécution
+# Roadmap — 9 execution phases
 
-Chaque phase est **livrable indépendamment** et a un critère d'acceptation clair. Ne passe pas à la phase suivante tant que les critères ne sont pas remplis.
+Each phase was **independently shippable** with a clear acceptance criterion. The original plan ran phase by phase and would not move on until each criterion was met. All nine phases are now delivered; this file is kept as historical reference.
 
-| Phase | Objectif | Fichier détaillé | Durée estimée (agent) |
+| Phase | Goal | Detailed file | Estimated duration (agent) |
 |---|---|---|---|
-| 0 | Bootstrap projet Tauri + React + TS + Tailwind | `tasks/phase-0-bootstrap.md` | 30 min |
-| 1 | Charger un fichier audio et afficher sa forme d'onde | `tasks/phase-1-audio-loading.md` | 1 h |
-| 2 | Moteur audio Web Audio API + lecture stéréo simple | `tasks/phase-2-audio-engine.md` | 1 h |
-| 3 | Scène 3D Three.js avec auditeur fixe + sphère + ajout de keyframes | `tasks/phase-3-spatial-ui.md` | 2 h |
-| 4 | Timeline avec marqueurs synchronisés et édition de keyframes | `tasks/phase-4-timeline-keyframes.md` | 1.5 h |
-| 5 | Lecture temps réel avec spatialisation HRTF automatisée | `tasks/phase-5-realtime-preview.md` | 1.5 h |
-| 6 | Export offline en WAV / MP3 stéréo avec effet bakké | `tasks/phase-6-offline-render.md` | 1.5 h |
-| 7 | Sauvegarde / chargement de projets `.sferic.json` | `tasks/phase-7-project-persistence.md` | 1 h |
-| 8 | Build cross-platform et CI GitHub Actions | `tasks/phase-8-distribution.md` | 1 h |
+| 0 | Bootstrap Tauri + React + TS + Tailwind project | `tasks/phase-0-bootstrap.md` | 30 min |
+| 1 | Load an audio file and display its waveform | `tasks/phase-1-audio-loading.md` | 1 h |
+| 2 | Web Audio API engine + simple stereo playback | `tasks/phase-2-audio-engine.md` | 1 h |
+| 3 | Three.js 3D scene with fixed listener + sphere + keyframe insertion | `tasks/phase-3-spatial-ui.md` | 2 h |
+| 4 | Timeline with synchronised markers and keyframe editing | `tasks/phase-4-timeline-keyframes.md` | 1.5 h |
+| 5 | Realtime playback with automated HRTF spatialization | `tasks/phase-5-realtime-preview.md` | 1.5 h |
+| 6 | Offline export to WAV / MP3 stereo with the spatial effect baked in | `tasks/phase-6-offline-render.md` | 1.5 h |
+| 7 | Save / load `.sferic.json` projects | `tasks/phase-7-project-persistence.md` | 1 h |
+| 8 | Cross-platform build and GitHub Actions CI | `tasks/phase-8-distribution.md` | 1 h |
 
-**Total estimé** : ~11 heures d'agent autonome avec validation humaine entre chaque phase.
+**Estimated total**: ~11 hours of autonomous agent work with human validation between phases.
 
-## Règles globales
+## Global rules (applied throughout)
 
-1. **Tester à la fin de chaque phase** : `pnpm tauri dev` doit démarrer sans erreur.
-2. **Commits atomiques par phase** : un commit `feat(phase-N): …` à la fin de chaque phase.
-3. **TypeScript strict** : `"strict": true`, pas de `any` sauf justifié en commentaire.
-4. **Pas de bibliothèque non listée dans `ARCHITECTURE.md` sans demander**.
-5. **Conserver le découpage de composants** indiqué dans l'architecture.
-6. **Pour Tauri 2** : utiliser uniquement la v2 (pas de mélange v1/v2).
-7. **Toujours utiliser pnpm** (pas npm/yarn) pour rester cohérent avec les locks.
+1. **Test at the end of each phase** — `pnpm tauri dev` must start without errors.
+2. **Atomic commits per phase** — one `feat(phase-N): …` commit when the phase wrapped up.
+3. **TypeScript strict** — `"strict": true`, no `any` unless justified in a comment.
+4. **No library outside the ARCHITECTURE.md list without asking**.
+5. **Preserve the component decomposition** spelled out in the architecture.
+6. **Tauri 2 only** — never mix v1 and v2.
+7. **Always use pnpm** (not npm/yarn) so the lockfile stays consistent.
 
-## Préparation utilisateur (avant phase 0)
+## User-side preparation (before phase 0)
 
-Vérifier sur la machine cible :
+Check on the target machine:
 
 ```bash
 node -v        # ≥ 20
 rustc --version # ≥ 1.77
-pnpm -v        # n'importe quelle version récente
+pnpm -v        # any recent version
 ```
 
-Et installer les dépendances système pour Tauri 2 selon l'OS :
+And install Tauri 2 system dependencies per OS:
 [https://v2.tauri.app/start/prerequisites/](https://v2.tauri.app/start/prerequisites/)
+
+## Beyond v0.1
+
+Now that the original phases are landed, future work is request-driven (bug fixes, polish, new features). Some directions on the table:
+
+- Multi-source mixing (more than one spatialized track at once)
+- Ambisonic export (B-format / Atmos sidecar)
+- MIDI controller mapping for keyframe parameters
+- Web build (audio-only, no native rendering)

@@ -1,67 +1,67 @@
-# Architecture technique
+# Technical architecture
 
-> **Identité visuelle** : `DESIGN.md` est la source de vérité pour tout ce qui touche au rendu (couleurs, typographie, layout, composants). Cette architecture définit les contours techniques ; `DESIGN.md` définit l'apparence. En cas de conflit visuel/technique, voir `DESIGN.md §10` pour l'ordre de priorité.
+> **Visual identity**: `DESIGN.md` is the source of truth for everything related to rendering (colours, typography, layout, components). This architecture defines the technical contour; `DESIGN.md` defines the look. In case of a visual/technical conflict, see `DESIGN.md §10` for the priority order.
 
-## 1. Vue d'ensemble
+## 1. Overview
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Tauri 2 (binaire natif)                  │
+│                    Tauri 2 (native binary)                  │
 │  ┌──────────────────────┐    ┌───────────────────────────┐  │
-│  │   Backend Rust       │    │   Frontend (WebView)      │  │
+│  │   Rust backend       │    │   Frontend (WebView)      │  │
 │  │   ─────────────      │◄──►│   ─────────────────       │  │
-│  │   • Décodage audio   │ IPC│   • React + TypeScript    │  │
+│  │   • audio decoding   │ IPC│   • React + TypeScript    │  │
 │  │     (symphonia)      │    │   • Web Audio API engine  │  │
-│  │   • I/O fichiers     │    │   • Three.js scène 3D     │  │
-│  │   • Encodage WAV     │    │   • WaveSurfer timeline   │  │
-│  │   • Plugin fs/dialog │    │   • Zustand store         │  │
+│  │   • file I/O         │    │   • Three.js 3D scene     │  │
+│  │   • WAV encoding     │    │   • WaveSurfer timeline   │  │
+│  │   • fs/dialog plugin │    │   • Zustand store         │  │
 │  └──────────────────────┘    └───────────────────────────┘  │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## 2. Modèle de données
+## 2. Data model
 
 ### `SpatialKeyframe`
 ```ts
 type CurveType = 'linear' | 'eaze' | 'smooth' | 'step';
-// 'eaze' = ease-in-out classique ; 'smooth' = setTargetAtTime adouci paramétré par `tension`.
+// 'eaze' = classic ease-in-out; 'smooth' = setTargetAtTime softened by `tension`.
 
 interface SpatialKeyframe {
   id: string;           // uuid
-  time: number;         // en secondes depuis le début du morceau
+  time: number;         // seconds since track start
   position: {
-    x: number;          // -1 (gauche) à 1 (droite)
-    y: number;          // -1 (bas) à 1 (haut)
-    z: number;          // -1 (avant) à 1 (arrière) ; rayon recommandé : 1
+    x: number;          // -1 (left) to 1 (right)
+    y: number;          // -1 (bottom) to 1 (top)
+    z: number;          // -1 (front) to 1 (back); recommended radius: 1
   };
   curve: CurveType;
   label?: string;
 
   // Motion (phase 5)
-  duration?: number;    // s, override de l'écart avec le keyframe précédent (default = écart)
-  tension?: number;     // 0..1, n'agit que si curve === 'smooth'
+  duration?: number;    // s, override of the gap from the previous keyframe (default = gap)
+  tension?: number;     // 0..1, only meaningful when curve === 'smooth'
 
-  // Gain & Fades (phase 5 pour gainDb ; HPF/LPF restent stubs UI v1, cf. DESIGN §9)
+  // Gain & Fades (phase 5 for gainDb; HPF/LPF stay UI stubs in v1, see DESIGN §9)
   gainDb?: number;      // -24..+6, default 0
-  snap?: boolean;       // true = la position est forcée à r=1 (snap-to-sphere), default = settings.snapToSphere
-  hpfHz?: number;       // 20..2000, stub v1
-  lpfHz?: number;       // 200..20000, stub v1
+  snap?: boolean;       // true = position is forced to r=1 (snap-to-sphere), default = settings.snapToSphere
+  hpfHz?: number;       // 20..2000, v1 stub
+  lpfHz?: number;       // 200..20000, v1 stub
 
-  // Doppler (stubs v1)
-  doppler?: boolean;        // active le shift de fréquence
-  velocity?: boolean;       // active la modulation de gain par vitesse
+  // Doppler (v1 stubs)
+  doppler?: boolean;        // enables frequency shift
+  velocity?: boolean;       // enables velocity-driven gain modulation
   dopplerIntensity?: number; // 0..1
 }
 ```
 
-> Tous les champs au-delà de `id/time/position/curve/label` sont optionnels et stockés dans le projet sauvegardé. Voir `DESIGN.md §9` pour le statut « fonctionnel vs stub » en v1.
+> All fields beyond `id/time/position/curve/label` are optional and stored in the saved project. See `DESIGN.md §9` for the "functional vs stub" status in v1.
 
 ### `Project`
 ```ts
 interface Project {
   version: 1;
   audioFile: {
-    originalPath: string;     // chemin absolu d'origine
+    originalPath: string;     // absolute path of origin
     embeddedSampleRate: number;
     durationSec: number;
     channels: number;
@@ -73,69 +73,69 @@ interface Project {
     refDistance: number;
     rolloffFactor: number;
     reverb: { enabled: boolean; wet: number };  // 0..1
-    snapToSphere: boolean;                       // default true — colle les nouveaux keyframes à r=1
-    doppler: { enabled: boolean; intensity: number }; // global, stub v1 (cf. DESIGN §9)
+    snapToSphere: boolean;                       // default true — sticks new keyframes to r=1
+    doppler: { enabled: boolean; intensity: number }; // global, v1 stub (see DESIGN §9)
   };
   meta: { createdAt: string; updatedAt: string; name: string };
 }
 ```
 
-Format de sauvegarde : `.sferic.json` (texte lisible, versionné).
+Save format: `.sferic.json` (human-readable, versioned).
 
-## 3. Graphe audio (temps réel)
+## 3. Audio graph (realtime)
 
 ```
 AudioBufferSourceNode
         │
         ▼
-   GainNode (volume master)
+   GainNode (master volume)
         │
         ▼
-   PannerNode (panningModel: 'HRTF')   ←── automation 3D depuis keyframes
+   PannerNode (panningModel: 'HRTF')   ←── 3D automation from keyframes
         │            ▲
-        │            │ AudioListener (fixe en 0,0,0)
+        │            │ AudioListener (fixed at 0,0,0)
         ▼
-   ConvolverNode (réverb optionnelle)
+   ConvolverNode (optional reverb)
         │
         ▼
    AudioContext.destination
 ```
 
-L'automation des positions se fait via `pannerNode.positionX.setValueAtTime(...)` et `setTargetAtTime(...)` ou `linearRampToValueAtTime(...)` selon la courbe choisie pour chaque keyframe. **Cette automation native du Web Audio API est sample-accurate** — pas besoin d'un timer JS.
+Position automation goes through `pannerNode.positionX.setValueAtTime(...)` and `setTargetAtTime(...)` or `linearRampToValueAtTime(...)` depending on the curve chosen for each keyframe. **This native Web Audio automation is sample-accurate** — no JS timer needed.
 
-Le `GainNode` master est aussi automatisé par-keyframe (`gainDb` du keyframe → `gain.setTargetAtTime`). Les nœuds `BiquadFilterNode` HPF/LPF, ainsi que la modulation Doppler/Velocity, sont **prévus** dans le graphe mais **stubs en v1** : leurs valeurs sont stockées dans le keyframe mais ne sont pas câblées dans phase 5. Cf. `DESIGN.md §9`.
+The master `GainNode` is also automated per keyframe (`gainDb` → `gain.setTargetAtTime`). The `BiquadFilterNode` HPF/LPF nodes, plus Doppler/Velocity modulation, are **planned** in the graph but **stubs in v1**: their values are stored in the keyframe but not wired in phase 5. See `DESIGN.md §9`.
 
-## 4. Rendu offline
+## 4. Offline render
 
-Pour exporter, on duplique le graphe ci-dessus dans un `OfflineAudioContext` initialisé à la durée et au sample rate du fichier source. On reprogramme toutes les automations depuis `t=0`, on appelle `startRendering()` qui retourne un `AudioBuffer`, qu'on encode :
+To export, we duplicate the graph above in an `OfflineAudioContext` initialised with the source file's duration and sample rate. We reprogram every automation from `t=0`, call `startRendering()` which returns an `AudioBuffer`, and encode:
 
-- **WAV** : sérialisation manuelle PCM 16-bit ou 24-bit (utilitaire dans `lib/wav-encoder.ts`)
-- **MP3** : `@breezystack/lamejs` (LAME compilé en JS, fonctionne en main thread, OK pour <30 min)
+- **WAV** — manual 16-bit or 24-bit PCM serialisation (helper in `lib/wav-encoder.ts`)
+- **MP3** — `@breezystack/lamejs` (LAME compiled to JS, runs on the main thread, fine for <30 min)
 
-Pour les très gros fichiers (>1h), on peut déléguer l'encodage WAV à Rust via un `tauri::command` qui reçoit le `AudioBuffer` sérialisé en `Float32Array` et utilise `hound`.
+For very large files (>1 h), WAV encoding can be delegated to Rust through a `tauri::command` that receives the `AudioBuffer` serialised as a `Float32Array` and uses `hound`.
 
-## 5. Composants React principaux
+## 5. Main React components
 
 ```
 <App>
-├── <Topbar />                       — logo, menus, métadonnées audio, save chip,
-│                                      Save/Open, VU mètres, Render CTA
+├── <Topbar />                       — logo, menus, audio metadata, save chip,
+│                                      Save/Open, VU meters, Render CTA
 ├── <MainGrid>                       — grid: scenes (1fr) | inspector (320px)
-│   ├── <DualScene>                  — split horizontal 50/50
-│   │   ├── <SceneTop />             — caméra orthographique au-dessus
-│   │   └── <ScenePerspective />     — caméra perspective + OrbitControls
-│   └── <Inspector />                — sections POSITION / MOTION / GAIN & FADES / DOPP
+│   ├── <DualScene>                  — horizontal 50/50 split
+│   │   ├── <SceneTop />             — orthographic camera from above
+│   │   └── <ScenePerspective />     — perspective camera + OrbitControls
+│   └── <Inspector />                — POSITION / MOTION / GAIN & FADES / DOPP sections
 └── <Timeline />                     — transport (play/pause/stop + readouts) +
-                                       waveform + ruler ; pleine largeur
+                                       waveform + ruler; full width
 ```
 
-> La `<TransportBar />` historique est **fusionnée** dans `<Timeline />` (bloc gauche), comme dans le screenshot de référence (`design/Screenshot 2026-05-09 at 08.53.47.png`). Voir `DESIGN.md §6` pour la grille interne de la timeline.
+> The historical `<TransportBar />` is **merged** into `<Timeline />` (left block), as in the reference screenshot (`design/Screenshot 2026-05-09 at 08.53.47.png`). See `DESIGN.md §6` for the timeline's internal grid.
 
-Les deux scènes partagent le store : sélectionner ou drag un keyframe dans l'une se reflète dans l'autre. La vue Top reste fixe (caméra non-controllable) ; la vue Perspective accepte rotate/zoom via `OrbitControls`.
+Both scenes share the store: selecting or dragging a keyframe in one is reflected in the other. The Top view stays fixed (camera not controllable); the Perspective view accepts rotate/zoom via `OrbitControls`.
 
 ## 6. State (Zustand)
 
-Un seul store `useProjectStore` avec :
+A single `useProjectStore` with:
 
 ```ts
 {
@@ -148,11 +148,11 @@ Un seul store `useProjectStore` avec :
 }
 ```
 
-Le moteur audio (`AudioEngine` classe singleton dans `lib/audio-engine.ts`) **lit** le store mais ne le mute pas pour éviter les boucles ; il expose des méthodes (`play`, `pause`, `seek`, `applyKeyframes`) appelées par les actions du store.
+The audio engine (`AudioEngine` singleton class in `lib/audio-engine.ts`) **reads** the store but never mutates it to avoid loops; it exposes methods (`play`, `pause`, `seek`, `applyKeyframes`) called by the store actions.
 
-## 7. Frontières IPC Rust ↔ JS
+## 7. Rust ↔ JS IPC boundaries
 
-Commandes Tauri à exposer (minimales — beaucoup de choses peuvent rester côté JS) :
+Tauri commands to expose (minimal — most things stay on the JS side):
 
 ```rust
 #[tauri::command] async fn read_audio_file(path: String) -> Result<AudioFileMeta, String>
@@ -161,14 +161,14 @@ Commandes Tauri à exposer (minimales — beaucoup de choses peuvent rester côt
 #[tauri::command] async fn export_wav(path: String, samples: Vec<f32>, sample_rate: u32, channels: u16) -> Result<(), String>
 ```
 
-Le décodage initial peut aussi se faire côté JS via `audioContext.decodeAudioData(arrayBuffer)` — plus simple. Côté Rust on intervient surtout pour l'export volumineux et la lecture de métadonnées.
+Initial decoding can also happen on the JS side via `audioContext.decodeAudioData(arrayBuffer)` — simpler. Rust gets involved mainly for large exports and metadata reads.
 
-## 8. Plateformes ciblées
+## 8. Target platforms
 
-| OS | Format binaire | Notes |
+| OS | Binary format | Notes |
 |---|---|---|
-| macOS (universal) | `.dmg`, `.app` | signature Apple Developer ID recommandée hors CI personnel |
-| Windows | `.msi`, `.exe` (NSIS) | WebView2 inclus automatiquement |
-| Linux | `.AppImage`, `.deb`, `.rpm` | dépend de webkit2gtk |
+| macOS (universal) | `.dmg`, `.app` | Apple Developer ID signing recommended outside personal CI |
+| Windows | `.msi`, `.exe` (NSIS) | WebView2 included automatically |
+| Linux | `.AppImage`, `.deb`, `.rpm` | depends on webkit2gtk |
 
-CI suggérée : GitHub Actions avec matrice 3-OS via `tauri-action`.
+Suggested CI: GitHub Actions with a 3-OS matrix via `tauri-action`.

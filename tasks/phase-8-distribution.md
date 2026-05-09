@@ -1,20 +1,20 @@
-# Phase 8 — Build cross-platform et CI
+# Phase 8 — Cross-platform build and CI
 
-## Objectif
+## Goal
 
-Produire des binaires natifs pour macOS, Windows et Linux et automatiser ce build via GitHub Actions.
+Produce native binaries for macOS, Windows, and Linux and automate this build via GitHub Actions.
 
-## Étapes
+## Steps
 
-1. **Configurer le bundler** dans `src-tauri/tauri.conf.json` :
+1. **Configure the bundler** in `src-tauri/tauri.conf.json`:
    ```json
    {
      "bundle": {
        "active": true,
        "targets": "all",
        "category": "Music",
-       "shortDescription": "Spatialiser un fichier audio dans le temps",
-       "longDescription": "Outil multiplateforme pour ajouter un effet 8D / spatialisation HRTF à un fichier audio via une interface visuelle 3D.",
+       "shortDescription": "Spatialise an audio file over time",
+       "longDescription": "Cross-platform tool to add an 8D / HRTF spatialisation effect to an audio file via a 3D visual interface.",
        "icon": [
          "icons/32x32.png",
          "icons/128x128.png",
@@ -29,18 +29,18 @@ Produire des binaires natifs pour macOS, Windows et Linux et automatiser ce buil
    }
    ```
 
-2. **Générer les icônes** : créer une icône SVG simple (sphère 3D stylisée + onde) et utiliser :
+2. **Generate the icons**: create a simple SVG icon (stylised 3D sphere + wave) and use:
    ```bash
    pnpm tauri icon ./assets/icon.png
    ```
 
-3. **Build local** pour valider sur la machine de dev :
+3. **Local build** to validate on the dev machine:
    ```bash
    pnpm tauri build
    ```
-   Vérifier que les binaires apparaissent dans `src-tauri/target/release/bundle/`.
+   Verify the binaries appear in `src-tauri/target/release/bundle/`.
 
-4. **GitHub Actions** : créer `.github/workflows/release.yml` :
+4. **GitHub Actions**: create `.github/workflows/release.yml`:
    ```yaml
    name: Release
    on:
@@ -86,7 +86,7 @@ Produire des binaires natifs pour macOS, Windows et Linux et automatiser ce buil
              args: ${{ matrix.args }}
    ```
 
-5. **Workflow CI** plus léger sur PR (`.github/workflows/ci.yml`) :
+5. **Lighter PR CI workflow** (`.github/workflows/ci.yml`):
    ```yaml
    name: CI
    on: [push, pull_request]
@@ -108,45 +108,45 @@ Produire des binaires natifs pour macOS, Windows et Linux et automatiser ce buil
            if: always()
    ```
 
-6. **Documenter dans `app/README.md`** :
-   - Comment installer les prérequis par OS.
-   - Commandes : `pnpm install`, `pnpm tauri dev`, `pnpm tauri build`.
-   - Comment créer un release : tag `v0.1.0` et push.
+6. **Document in `app/README.md`**:
+   - How to install prerequisites per OS.
+   - Commands: `pnpm install`, `pnpm tauri dev`, `pnpm tauri build`.
+   - How to cut a release: tag `v0.1.0` and push.
 
-7. **Tester le binaire** sur au moins une plateforme (idéalement les trois si possible) :
-   - L'app s'ouvre.
-   - Charger un audio, ajouter keyframes, exporter.
-   - Aucun warning d'antivirus / Gatekeeper bloquant.
-   - **Note** : sur macOS, sans signature Developer ID, l'utilisateur doit clic-droit → Ouvrir la première fois. Documenter ça.
+7. **Test the binary** on at least one platform (ideally all three if possible):
+   - The app opens.
+   - Load an audio file, add keyframes, export.
+   - No antivirus / Gatekeeper warnings blocking it.
+   - **Note**: on macOS, without Developer ID signing, the user must right-click → Open the first time. Document that.
 
 ## Design
 
-Avant de tagger `v0.1.0`, faire une **passe finale de QA visuel** : ouvrir `design/Screenshot 2026-05-09 at 08.53.47.png` côte à côte avec l'app installée et lister les écarts. Tout écart non documenté dans `DESIGN.md §9` (stubs reconnus) doit être corrigé ou tracé en issue.
+Before tagging `v0.1.0`, run a **final visual QA pass**: open `design/Screenshot 2026-05-09 at 08.53.47.png` side by side with the installed app and list the gaps. Any gap not documented in `DESIGN.md §9` (acknowledged stubs) must be fixed or tracked as an issue.
 
-## Critère d'acceptation
+## Acceptance criterion
 
-- Les trois bundles sont produits localement (au moins sur la machine de dev).
-- Le workflow CI passe au push.
-- Le workflow Release crée un draft de release avec les artifacts attachés quand on tag `v0.1.0`.
-- L'app installée fonctionne identiquement à `pnpm tauri dev`.
+- All three bundles are produced locally (at least on the dev machine).
+- The CI workflow passes on push.
+- The Release workflow creates a draft release with the artifacts attached when tagging `v0.1.0`.
+- The installed app behaves identically to `pnpm tauri dev`.
 
 ## Commit
 
 ```
-feat(phase-8): build multiplateforme et CI GitHub Actions
+feat(phase-8): cross-platform build and GitHub Actions CI
 chore: tag v0.1.0
 ```
 
 ---
 
-🎉 **À ce stade, l'application est complète et distribuable.**
+🎉 **At this stage, the application is complete and shippable.**
 
-## Idées pour la suite (hors scope du roadmap initial)
+## Ideas for what's next (out of scope of the initial roadmap)
 
-- Effet **Doppler** automatique selon la vitesse de déplacement de la source.
-- Multi-sources (plusieurs pistes spatialisées indépendamment).
-- Import/export **Ambisonics** (B-format).
-- Mode "trace" : dessiner un chemin dans l'espace au lieu de placer des keyframes.
-- Preset de trajectoires (rotation horizontale, hélice descendante, etc.).
-- Synchro MIDI pour piloter les positions depuis un contrôleur externe.
-- Export **vidéo** (visualisation animée + audio) pour partage sur réseaux sociaux.
+- Automatic **Doppler** effect based on source velocity.
+- Multi-source (several tracks spatialised independently).
+- **Ambisonics** import/export (B-format).
+- "Trace" mode: draw a path in space instead of placing keyframes.
+- Trajectory presets (horizontal rotation, descending helix, etc.).
+- MIDI sync to drive positions from an external controller.
+- **Video** export (animated visualisation + audio) for sharing on social networks.

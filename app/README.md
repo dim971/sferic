@@ -1,66 +1,66 @@
-# Sferic
+# Sferic — application
 
-Outil desktop multiplateforme pour spatialiser un fichier audio dans le temps via une interface visuelle 3D et une lecture HRTF binaurale.
+Cross-platform desktop app for spatializing audio in time through a visual 3D interface with HRTF binaural playback. This folder contains the application itself; product overview lives in the [repository root README](../README.md).
 
-## Prérequis
+## Prerequisites
 
 - **Node.js ≥ 20**
-- **Rust ≥ 1.77** (avec cargo)
+- **Rust ≥ 1.77** (with cargo)
 - **pnpm** (`npm install -g pnpm`)
-- Dépendances système Tauri 2 selon l'OS — voir https://v2.tauri.app/start/prerequisites/
-  - **macOS** : Xcode Command Line Tools
-  - **Windows** : Microsoft C++ Build Tools + WebView2 (auto)
-  - **Linux** : `libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libssl-dev`
+- Tauri 2 system prerequisites per OS — see [v2.tauri.app/start/prerequisites](https://v2.tauri.app/start/prerequisites/):
+  - **macOS** — Xcode Command Line Tools
+  - **Windows** — Microsoft C++ Build Tools + WebView2 (auto)
+  - **Linux** — `libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libssl-dev`
 
-## Développement
+## Develop
 
 ```bash
 pnpm install
 pnpm tauri dev
 ```
 
-Le port Vite est fixé à 1420 (`strictPort`). Si vous le voyez occupé après une session précédente, libérez-le :
+The Vite port is pinned to 1420 (`strictPort`). If you see it busy after a previous session, free it:
 
 ```bash
 lsof -nP -iTCP:1420 -sTCP:LISTEN | awk 'NR>1 {print $2}' | xargs -r kill
 ```
 
-## Vérifications avant commit
+## Pre-commit checks
 
 ```bash
 pnpm tsc --noEmit
 pnpm tsc --noEmit -p tsconfig.node.json
 ```
 
-## Build local
+## Local build
 
 ```bash
 pnpm tauri build
 ```
 
-Les binaires apparaissent dans `src-tauri/target/release/bundle/`.
+Binaries land in `src-tauri/target/release/bundle/`.
 
-## Release multiplateforme
+## Cross-platform release
 
-Push d'un tag `v*` déclenche le workflow `.github/workflows/release.yml` qui produit en parallèle :
+Pushing a `v*` tag triggers `.github/workflows/release.yml`, which builds in parallel:
 
 - macOS universal (`.dmg`, `.app`)
 - Windows (`.msi`, `.exe`)
 - Linux (`.AppImage`, `.deb`, `.rpm`)
 
-Et publie un draft de release GitHub avec les artefacts attachés.
+…and publishes a draft GitHub release with the artefacts attached.
 
 ```bash
 git tag v0.1.0
 git push origin v0.1.0
 ```
 
-## Notes plateformes
+## Platform notes
 
-- **macOS sans Developer ID** : la première ouverture demande clic-droit → Ouvrir (Gatekeeper). Documentez-le pour vos utilisateurs ou signez l'app.
-- **Linux** : le `.deb` dépend de `libwebkit2gtk-4.1-0` et `libssl3`. Les paquets de Debian/Ubuntu récents les fournissent.
-- **Windows** : WebView2 est embarqué via `webviewInstallMode: embedBootstrapper`.
+- **macOS without a Developer ID** — first launch requires right-click → Open (Gatekeeper). Document this for users or sign the app.
+- **Linux** — the `.deb` depends on `libwebkit2gtk-4.1-0` and `libssl3`. Recent Debian/Ubuntu packages provide both.
+- **Windows** — WebView2 is shipped via `webviewInstallMode: embedBootstrapper`.
 
 ## Architecture
 
-Voir `../ARCHITECTURE.md` (graphe audio + composants) et `../DESIGN.md` (système visuel) à la racine du kit.
+See [`../ARCHITECTURE.md`](../ARCHITECTURE.md) (audio graph + components) and [`../DESIGN.md`](../DESIGN.md) (visual system) at the repo root.

@@ -1,12 +1,12 @@
-# Phase 2 — Moteur audio Web Audio API
+# Phase 2 — Web Audio API audio engine
 
-## Objectif
+## Goal
 
-Construire le moteur audio temps réel avec lecture stéréo simple (sans encore la spatialisation automatisée — celle-ci viendra phase 5). Mettre en place le graphe complet pour pouvoir ensuite l'enrichir.
+Build the realtime audio engine with simple stereo playback (no automated spatialisation yet — that lands in phase 5). Set up the full graph so we can enrich it later.
 
-## Étapes
+## Steps
 
-1. **Étendre `src/lib/audio-engine.ts`** :
+1. **Extend `src/lib/audio-engine.ts`**:
 
    ```ts
    import type { ProjectSettings } from '@/types/project';
@@ -62,9 +62,9 @@ Construire le moteur audio temps réel avec lecture stéréo simple (sans encore
        panner.rolloffFactor = 1;
        panner.positionX.value = 0;
        panner.positionY.value = 0;
-       panner.positionZ.value = -1; // devant l'auditeur par défaut
+       panner.positionZ.value = -1; // in front of the listener by default
 
-       // Auditeur fixe à l'origine, regardant vers -Z
+       // Listener fixed at the origin, looking towards -Z
        const listener = ctx.listener;
        if (listener.forwardX) {
          listener.forwardX.value = 0;
@@ -124,7 +124,7 @@ Construire le moteur audio temps réel avec lecture stéréo simple (sans encore
 
      private stopInternal(): void {
        if (this.source) {
-         try { this.source.stop(); } catch { /* déjà arrêté */ }
+         try { this.source.stop(); } catch { /* already stopped */ }
          this.source.disconnect();
          this.source = null;
        }
@@ -136,13 +136,13 @@ Construire le moteur audio temps réel avec lecture stéréo simple (sans encore
    export const AudioEngine = new AudioEngineImpl();
    ```
 
-2. **Connecter le store au moteur** dans `project-store.ts` :
-   - Quand `audioBuffer` change, appeler `AudioEngine.setBuffer(audioBuffer)`.
-   - Ajouter actions : `play()`, `pause()`, `stop()`, `seek(time)`.
-   - Ces actions appellent simplement `AudioEngine.<méthode>()` puis `set({ playback: { isPlaying, currentTime } })`.
+2. **Wire the store to the engine** in `project-store.ts`:
+   - When `audioBuffer` changes, call `AudioEngine.setBuffer(audioBuffer)`.
+   - Add actions: `play()`, `pause()`, `stop()`, `seek(time)`.
+   - These actions just call `AudioEngine.<method>()` then `set({ playback: { isPlaying, currentTime } })`.
 
-3. **Créer une boucle de mise à jour `currentTime`** :
-   - Dans un hook `useTransportSync()` dans `src/lib/use-transport-sync.ts` :
+3. **Create a `currentTime` update loop**:
+   - In a hook `useTransportSync()` in `src/lib/use-transport-sync.ts`:
      ```ts
      export function useTransportSync(): void {
        const isPlaying = useProjectStore((s) => s.playback.isPlaying);
@@ -159,35 +159,35 @@ Construire le moteur audio temps réel avec lecture stéréo simple (sans encore
        }, [isPlaying, setCurrentTime]);
      }
      ```
-   - Appeler ce hook une fois dans `App.tsx`.
+   - Call this hook once in `App.tsx`.
 
-4. **Créer `src/components/transport/TransportBar.tsx`** (cf. `DESIGN.md §6.1`). Ce composant sera **composé à l'intérieur du `<Timeline />`** en phase 3 (bloc gauche de la timeline), pas placé sous la waveform :
-   - Trois boutons icônes `Play` / `Pause` / `Square` (stop) de `lucide-react`, 16px, couleur `--accent`. Bouton actif : fond `--accent-soft`.
-   - Affichage du temps `m:ss` en `text-[14px] font-mono text-[--text-primary]` (ex. `1:23` dans le screenshot).
-   - Slider de volume (gain master, 0..1.5) — peut rester discret en phase 2 (un petit slider horizontal `--accent`), plus tard remplacé par les VU mètres dans le Topbar (phase 5).
-   - Pas de slider de seek dans le TransportBar : le seek se fait en cliquant sur la waveform (phase 4). Si nécessaire pour debug en phase 2, garder un slider invisible ou un input numérique.
+4. **Create `src/components/transport/TransportBar.tsx`** (see `DESIGN.md §6.1`). This component will be **composed inside `<Timeline />`** in phase 3 (left block of the timeline), not placed under the waveform:
+   - Three icon buttons `Play` / `Pause` / `Square` (stop) from `lucide-react`, 16px, colour `--accent`. Active button: `--accent-soft` background.
+   - Time display `m:ss` in `text-[14px] font-mono text-[--text-primary]` (e.g. `1:23` in the screenshot).
+   - Volume slider (master gain, 0..1.5) — can stay discreet in phase 2 (small horizontal `--accent` slider), later replaced by the VU meters in the Topbar (phase 5).
+   - No seek slider in the TransportBar: seeking is done by clicking on the waveform (phase 4). If needed for debug in phase 2, keep an invisible slider or a numeric input.
 
-5. **Mettre à jour `App.tsx`** : à cette phase, la `TransportBar` est temporairement placée dans la cellule "Inspector" (320px droite) du layout grille existant, ou en bas à gauche de la zone Timeline si la grille est déjà en place. **L'objectif final** (phase 3) est qu'elle vive dans la rangée Timeline (cf. `DESIGN.md §2`). Appeler `useTransportSync()` une fois dans `App.tsx`.
+5. **Update `App.tsx`**: at this stage, the `TransportBar` is temporarily placed in the existing layout grid's "Inspector" cell (320px right), or at the bottom-left of the Timeline area if the grid is already in place. **The final goal** (phase 3) is that it lives in the Timeline row (see `DESIGN.md §2`). Call `useTransportSync()` once in `App.tsx`.
 
 ## Design
 
-Réf : `DESIGN.md §6.1` (TransportBar). Les icônes viennent de `lucide-react` (déjà installé en phase 1) — `Play`, `Pause`, `Square`. Le temps utilise la fonte mono déjà configurée. Pas de fioritures — la TransportBar est compacte (≈ 32px de haut, padding minimal).
+Ref: `DESIGN.md §6.1` (TransportBar). Icons come from `lucide-react` (already installed in phase 1) — `Play`, `Pause`, `Square`. Time uses the mono font already configured. No frills — the TransportBar is compact (≈ 32px tall, minimal padding).
 
-## Critère d'acceptation
+## Acceptance criterion
 
-- Charger un fichier puis cliquer Play → on entend le son en stéréo.
-- Pause / Stop / Seek fonctionnent.
-- Le compteur de temps avance en temps réel.
-- Le slider de volume modifie réellement le niveau.
-- Les icônes/couleurs des boutons transport correspondent à `DESIGN.md §6.1`.
+- Load a file then click Play → the sound plays in stereo.
+- Pause / Stop / Seek work.
+- The time counter advances in real time.
+- The volume slider really changes the level.
+- Transport button icons/colours match `DESIGN.md §6.1`.
 
-## Notes pour l'agent
+## Notes for the agent
 
-- Le `PannerNode` est instancié dès maintenant pour préparer la phase 5, même si sa position reste fixe pour l'instant.
-- Sur certains navigateurs (et la WebView Tauri), `AudioContext` doit être créé après une interaction utilisateur. Lance `getContext()` dans le handler du bouton "Ouvrir" si besoin.
+- The `PannerNode` is instantiated now to prepare phase 5, even though its position stays fixed for now.
+- On some browsers (and the Tauri WebView), `AudioContext` must be created after a user interaction. Trigger `getContext()` from the "Open" button handler if needed.
 
 ## Commit
 
 ```
-feat(phase-2): moteur audio Web Audio API avec transport play/pause/seek
+feat(phase-2): Web Audio API engine with play/pause/seek transport
 ```

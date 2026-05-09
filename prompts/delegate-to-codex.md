@@ -1,36 +1,36 @@
-# Prompt pour déléguer à Codex
+# Prompt to delegate to Codex
 
-Codex (CLI ou IDE OpenAI) lit automatiquement `AGENTS.md` à la racine. Le prompt à coller en début de session est donc plus court.
+Codex (CLI or OpenAI IDE) automatically reads `AGENTS.md` at the root. The opening prompt is therefore shorter.
 
-Copie-colle dans ta session Codex (lancée à la racine du kit décompressé) :
+Copy-paste into your Codex session (started at the root of the unzipped kit):
 
 ---
 
-> Lis `AGENTS.md`, `README.md`, `ARCHITECTURE.md`, `DESIGN.md` (+ l'image dans `design/`), `ROADMAP.md`, puis `tasks/phase-0-bootstrap.md`.
+> Read `AGENTS.md`, `README.md`, `ARCHITECTURE.md`, `DESIGN.md` (+ the image in `design/`), `ROADMAP.md`, then `tasks/phase-0-bootstrap.md`.
 >
-> Implémente la phase 0 dans un sous-dossier `app/`. À la fin :
-> - Lance `pnpm tsc --noEmit` et `pnpm tauri dev`.
+> Implement phase 0 inside a subfolder `app/`. At the end:
+> - Run `pnpm tsc --noEmit` and `pnpm tauri dev`.
 > - Commit `feat(phase-0): bootstrap`.
-> - Stoppe et fais-moi un récapitulatif.
+> - Stop and give me a recap.
 
 ---
 
-## Notes spécifiques Codex
+## Codex-specific notes
 
-- Codex respecte mieux les contraintes formulées en listes à puces que les paragraphes longs.
-- Si tu utilises Codex en CLI, ajoute `--auto-approve` avec prudence : pour les commandes shell de bootstrap (`pnpm install`, etc.), c'est ok ; pour les modifications de système, refuse.
-- Codex est moins bon que Claude sur les choix d'architecture en cours de route. Reste sur les rails du `ROADMAP.md` et n'autorise pas d'écarts.
+- Codex respects bullet-list constraints better than long paragraphs.
+- If you use Codex in CLI, add `--auto-approve` carefully: for bootstrap shell commands (`pnpm install`, etc.), that's fine; for system modifications, refuse.
+- Codex is weaker than Claude at mid-flight architectural choices. Stay on the `ROADMAP.md` rails and don't allow deviations.
 
-## Mode parallèle (Claude + Codex)
+## Parallel mode (Claude + Codex)
 
-Tu peux faire travailler les deux sur des branches Git différentes :
-- Claude → branche `feat/phases-0-2` (bootstrap, audio loading, audio engine — partie où l'architecture compte le plus)
-- Codex → branche `feat/phases-3-4` (UI 3D, timeline — partie plus mécanique)
+You can have both work on different Git branches:
+- Claude → `feat/phases-0-2` branch (bootstrap, audio loading, audio engine — the part where architecture matters most)
+- Codex → `feat/phases-3-4` branch (3D UI, timeline — more mechanical part)
 
-Puis tu fusionnes manuellement.
+Then merge manually.
 
-## Mode parallèle inversé
+## Reverse parallel mode
 
-Une autre stratégie qui marche bien : Claude fait la **review** de ce que Codex produit. Lance Codex pour implémenter une phase, puis ouvre Claude Code et dis :
+Another strategy that works well: Claude does the **review** of what Codex produces. Run Codex to implement a phase, then open Claude Code and say:
 
-> Lis `tasks/phase-3-spatial-ui.md` et la branche actuelle. Vérifie que l'implémentation respecte la spec et l'architecture. Liste écarts, bugs potentiels, et suggestions concrètes. N'écris pas de code.
+> Read `tasks/phase-3-spatial-ui.md` and the current branch. Check the implementation respects the spec and architecture. List deviations, potential bugs, and concrete suggestions. Don't write code.

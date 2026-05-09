@@ -1,95 +1,95 @@
-# UPDATE — Addendum design v1.4
+# UPDATE — design v1.4 addendum
 
-Cet addendum complète le kit initial pour couvrir les fonctionnalités du design retenu (référence : maquette Sferic 1.4.2). Décompresse cette archive **dans le même dossier que le kit principal** : les fichiers s'ajoutent à côté et ne remplacent rien physiquement, mais ils **changent l'ordre d'exécution** du roadmap.
+This addendum extended the original kit to cover the features of the final design (reference: Sferic 1.4.2 mockup). Historically it shipped as a zip to be unpacked **into the same folder as the main kit**: files added next to existing ones without physically replacing anything, but **changing the roadmap execution order**.
 
-## Comment intégrer ce changement
+## How the change was integrated
 
-1. Décompresse `spatialize-kit-addendum.zip` à la racine du kit. Tu obtiendras :
+1. Unpacked `spatialize-kit-addendum.zip` at the kit root, producing:
    ```
    spatialize-kit/
-   ├── UPDATE.md                                          ← ce fichier
+   ├── UPDATE.md                                          ← this file
    ├── tasks/
-   │   ├── phase-3b-dual-orthographic-views.md            ← REMPLACE phase 3
-   │   ├── phase-9-extended-keyframe-properties.md        ← NOUVEAU
-   │   └── phase-10-audio-analysis-monitoring.md          ← NOUVEAU
-   └── (fichiers existants inchangés)
+   │   ├── phase-3b-dual-orthographic-views.md            ← REPLACES phase 3
+   │   ├── phase-9-extended-keyframe-properties.md        ← NEW
+   │   └── phase-10-audio-analysis-monitoring.md          ← NEW
+   └── (existing files unchanged)
    ```
-2. Avant de lancer Claude Code / Codex, **modifie `ROADMAP.md`** pour utiliser la nouvelle séquence (cf. section suivante).
-3. Le prompt de délégation reste valable, mais ajoute en préambule :
-   > **Important** : lis `UPDATE.md` avant tout. Il modifie le roadmap initial. Suis l'ordre d'exécution donné dans `UPDATE.md`, pas celui de `ROADMAP.md`.
+2. Before launching Claude Code / Codex, **edit `ROADMAP.md`** to use the new sequence (next section).
+3. The delegation prompt remains valid, but prepend:
+   > **Important**: read `UPDATE.md` first. It alters the original roadmap. Follow the execution order given in `UPDATE.md`, not the one in `ROADMAP.md`.
 
-## Nouveau roadmap (à appliquer)
+## New roadmap (applied)
 
-| # | Phase | Statut | Fichier |
+| # | Phase | Status | File |
 |---|---|---|---|
-| 0 | Bootstrap Tauri + React + TS + Tailwind | inchangé | `tasks/phase-0-bootstrap.md` |
-| 1 | Chargement audio + waveform | inchangé | `tasks/phase-1-audio-loading.md` |
-| 2 | Moteur audio Web Audio API | inchangé | `tasks/phase-2-audio-engine.md` |
-| **3b** | **Vues orthographiques TOP + SIDE** | **NOUVEAU — remplace 3** | `tasks/phase-3b-dual-orthographic-views.md` |
-| 4 | Timeline avec marqueurs et inspecteur | inchangé | `tasks/phase-4-timeline-keyframes.md` |
-| 5 | Spatialisation HRTF temps réel | inchangé | `tasks/phase-5-realtime-preview.md` |
-| **9** | **Propriétés étendues des keyframes** (gain, filtres, send, doppler, courbe cubic) | **NOUVEAU** | `tasks/phase-9-extended-keyframe-properties.md` |
-| **10** | **Analyse audio + monitoring** (BPM, key, CPU, vu-mètres) | **NOUVEAU** | `tasks/phase-10-audio-analysis-monitoring.md` |
-| 6 | Export offline WAV/MP3 | **à étendre** (cf. ci-dessous) | `tasks/phase-6-offline-render.md` |
-| 7 | Sauvegarde / chargement projets | **à étendre** (migration v1 → v2) | `tasks/phase-7-project-persistence.md` |
-| 8 | Build cross-platform et CI | inchangé | `tasks/phase-8-distribution.md` |
+| 0 | Bootstrap Tauri + React + TS + Tailwind | unchanged | `tasks/phase-0-bootstrap.md` |
+| 1 | Audio loading + waveform | unchanged | `tasks/phase-1-audio-loading.md` |
+| 2 | Web Audio API engine | unchanged | `tasks/phase-2-audio-engine.md` |
+| **3b** | **TOP + SIDE orthographic views** | **NEW — replaces 3** | `tasks/phase-3b-dual-orthographic-views.md` |
+| 4 | Timeline with markers and inspector | unchanged | `tasks/phase-4-timeline-keyframes.md` |
+| 5 | Realtime HRTF spatialization | unchanged | `tasks/phase-5-realtime-preview.md` |
+| **9** | **Extended keyframe properties** (gain, filters, send, doppler, cubic curve) | **NEW** | `tasks/phase-9-extended-keyframe-properties.md` |
+| **10** | **Audio analysis + monitoring** (BPM, key, CPU, VU meters) | **NEW** | `tasks/phase-10-audio-analysis-monitoring.md` |
+| 6 | Offline export WAV/MP3 | **extended** (see below) | `tasks/phase-6-offline-render.md` |
+| 7 | Save / load projects | **extended** (v1 → v2 migration) | `tasks/phase-7-project-persistence.md` |
+| 8 | Cross-platform build and CI | unchanged | `tasks/phase-8-distribution.md` |
 
-**Justification de l'ordre** : les phases 9 et 10 doivent être faites **avant** la phase 6 (export). Sinon le rendu offline ne saurait pas appliquer les filtres, gains et envois par keyframe — il faudrait y revenir et tout refactorer. De même la phase 7 (persistence) doit gérer le format projet enrichi.
+**Order rationale**: phases 9 and 10 must happen **before** phase 6 (export). Otherwise the offline render wouldn't know how to apply per-keyframe filters, gains, and sends — we'd have to come back and refactor everything. Same for phase 7 (persistence): it must handle the enriched project format.
 
-## Adaptations à apporter aux phases existantes
+## Adjustments to existing phases
 
 ### Phase 0 — Bootstrap
 
-Ajouter ces dépendances dès le bootstrap :
+Add these dependencies during bootstrap:
 ```bash
 pnpm add web-audio-beat-detector
-# Optionnel pour la détection de tonalité — peut être différé en phase 10
+# Optional for key detection — can be deferred to phase 10
 # pnpm add essentia.js
 ```
 
-### Phase 4 — Timeline et inspecteur
+### Phase 4 — Timeline and inspector
 
-L'**inspector** dans cette phase ne reste plus minimal. Il doit être structuré dès maintenant en sections collapsibles :
-- `POSITION` (coordonnées cartésiennes ET polaires avec toggle)
-- `MOTION` (placeholder pour la phase 9 : courbes hold/linear/ease-out/cubic + tension)
-- `GAIN & FILTER` (sections vides à ce stade, remplies en phase 9)
-- `SEND` (idem)
+The **inspector** in this phase is no longer minimal. It must be structured up front into collapsible sections:
+- `POSITION` (Cartesian and polar coordinates with a toggle)
+- `MOTION` (placeholder for phase 9: hold/linear/ease-out/cubic curves + tension)
+- `GAIN & FILTER` (empty sections at this stage, filled in phase 9)
+- `SEND` (same)
 
-Ajouter un en-tête keyframe avec :
-- Numéro stable (`k01`, `k02`, etc.) calculé dynamiquement à partir de l'index temporel
-- Label éditable
+Add a keyframe header containing:
+- Stable number (`k01`, `k02`, …) computed dynamically from the time index
+- Editable label
 - Navigation `‹ N of M ›`
-- Boutons dupliquer / supprimer
+- Duplicate / delete buttons
 
-### Phase 6 — Export offline (extension)
+### Phase 6 — Offline export (extension)
 
-Quand l'agent attaque cette phase :
-1. Le `OfflineAudioContext` doit reproduire **exactement** le graphe complet de la phase 9 (panner + filtres + gain + reverb send), pas juste le panner.
-2. La fonction `renderProject` doit programmer toutes les automations : position, gain, lpf, hpf, send.
-3. Ajouter une boîte de dialogue **Render** (et non plus simple Export) avec :
-   - Format : WAV / MP3 / FLAC (FLAC = bonus, peut être différé)
-   - Profondeur : 16 / 24 / 32-bit float (WAV)
-   - Bitrate : 192 / 256 / 320 kbps (MP3)
-   - Plage temporelle : tout / loop region / sélection
-   - Dithering : on / off (pour 16-bit)
-   - Barre de progression
-   - Bouton « Annuler »
+When the agent picks this phase up:
+1. The `OfflineAudioContext` must reproduce the **full** signal graph from phase 9 (panner + filters + gain + reverb send), not just the panner.
+2. The `renderProject` function must schedule every automation: position, gain, lpf, hpf, send.
+3. Add a **Render** dialog (no longer a plain Export) with:
+   - Format: WAV / MP3 / FLAC (FLAC = bonus, can be deferred)
+   - Bit depth: 16 / 24 / 32-bit float (WAV)
+   - Bitrate: 192 / 256 / 320 kbps (MP3)
+   - Time range: full / loop region / selection
+   - Dithering: on / off (for 16-bit)
+   - Progress bar
+   - "Cancel" button
 
 ### Phase 7 — Persistence (extension)
 
-Le format projet passe à `version: 2`.
+The project format moves to `version: 2`.
 
-Implémenter une fonction `migrateV1ToV2(p1: ProjectV1): ProjectV2` qui :
-- Conserve position, time, curve (mappe `easeIn` → `ease-in`, `step` → `hold`)
-- Initialise les nouvelles propriétés keyframe : `gain: 0, lpf: null, hpf: null, doppler: true, airAbsorption: 0.18, reverbSend: null, tension: 0.5`
-- Initialise `audioMeta: { bpm: null, key: null }` (sera rempli au prochain chargement)
+Implement a `migrateV1ToV2(p1: ProjectV1): ProjectV2` function that:
+- Preserves position, time, curve (maps `easeIn` → `ease-in`, `step` → `hold`)
+- Initialises new keyframe properties: `gain: 0, lpf: null, hpf: null, doppler: true, airAbsorption: 0.18, reverbSend: null, tension: 0.5`
+- Initialises `audioMeta: { bpm: null, key: null }` (filled on next load)
 
-## Adaptations à la barre de menu (Topbar)
+## Topbar / menu adjustments
 
-Le design final montre une **vraie barre de menu native** (`File / Edit / Project / Render / View / Help`). Implémenter via l'API `tauri::menu` côté Rust :
+The final design shows a **real native menu bar** (`File / Edit / Project / Render / View / Help`). Implement via the `tauri::menu` API on the Rust side:
 
 ```rust
-// dans src-tauri/src/main.rs
+// in src-tauri/src/main.rs
 use tauri::menu::{Menu, MenuItem, Submenu};
 
 let file_menu = Submenu::new("File", Menu::new()
@@ -100,23 +100,23 @@ let file_menu = Submenu::new("File", Menu::new()
     .add_item(MenuItem::new("Import audio…", "import_audio", true, Some("CmdOrCtrl+I")))
     .add_separator()
     .add_item(MenuItem::new("Render…", "render", true, Some("CmdOrCtrl+R"))));
-// idem Edit / Project / Render / View / Help
+// likewise for Edit / Project / Render / View / Help
 ```
 
-Émettre un event Tauri (`emit_all("menu", id)`) au clic, écouté côté React via `listen('menu', ...)`. Cette tâche est **petite** (≈ 30 min) et peut être faite en fin de phase 4 ou en parallèle.
+Emit a Tauri event (`emit_all("menu", id)`) on click, listened to from React via `listen('menu', ...)`. This task is **small** (≈ 30 min) and can land at the end of phase 4 or in parallel.
 
-## Vérifications globales additionnelles
+## Additional global verifications
 
-À la fin de la phase 10, l'app doit afficher en topbar :
-- Nom du projet et fichier audio source ✅
-- Sample rate + bit depth ✅ (depuis `AudioBuffer.sampleRate` et métadonnée fichier via Rust)
-- Indicateur UNSAVED si dirty ✅
-- CPU % (depuis tauri-plugin-sysinfo ou approximation `audioContext` callback) ✅
-- Buffer size (`audioContext.outputLatency * sampleRate` arrondi) ✅
-- Vu-mètres L/R ✅
+By the end of phase 10, the topbar must show:
+- Project name and source audio file ✅
+- Sample rate + bit depth ✅ (from `AudioBuffer.sampleRate` and file metadata via Rust)
+- UNSAVED indicator when dirty ✅
+- CPU % (via tauri-plugin-sysinfo or an `audioContext` callback approximation) ✅
+- Buffer size (`audioContext.outputLatency * sampleRate`, rounded) ✅
+- L/R VU meters ✅
 
-Et en bas (transport bar) :
-- Position courante en `m:ss.mmm` ✅
-- BAR / Beat / Sixteenth dérivés du BPM ✅
-- BPM + tonalité détectés ✅
-- Mode monitoring (BINAURAL / STEREO BYPASS) ✅
+And at the bottom (transport bar):
+- Current position in `m:ss.mmm` ✅
+- BAR / Beat / Sixteenth derived from BPM ✅
+- Detected BPM + key ✅
+- Monitoring mode (BINAURAL / STEREO BYPASS) ✅
