@@ -1,6 +1,5 @@
 import { Play, Pause, Plus, Repeat, Square, SkipBack } from 'lucide-react';
 import { useProjectStore } from '@/store/project-store';
-import { useState } from 'react';
 
 function formatTime(sec: number): string {
   if (!isFinite(sec) || sec < 0) sec = 0;
@@ -19,7 +18,8 @@ export function TransportBar() {
   const stop = useProjectStore((s) => s.stop);
   const seek = useProjectStore((s) => s.seek);
   const setMasterGain = useProjectStore((s) => s.setMasterGain);
-  const [loop, setLoop] = useState(false);
+  const loopEnabled = useProjectStore((s) => s.loopEnabled);
+  const setLoopEnabled = useProjectStore((s) => s.setLoopEnabled);
 
   const disabled = !audioBuffer;
   const skipToStart = () => seek(0);
@@ -60,11 +60,12 @@ export function TransportBar() {
       </button>
       <button
         type="button"
-        onClick={() => setLoop(!loop)}
+        onClick={() => setLoopEnabled(!loopEnabled)}
         disabled={disabled}
-        aria-label={loop ? 'Loop on' : 'Loop off'}
+        aria-label={loopEnabled ? 'Loop on' : 'Loop off'}
+        title={loopEnabled ? 'Disable loop' : 'Enable loop region'}
         className={`w-7 h-7 flex items-center justify-center rounded-md disabled:opacity-40 disabled:cursor-not-allowed ${
-          loop ? 'bg-[--accent-soft] text-[--accent]' : 'text-[--text-dim] hover:text-[--text-primary]'
+          loopEnabled ? 'bg-[--accent-soft] text-[--accent]' : 'text-[--text-dim] hover:text-[--text-primary]'
         }`}
       >
         <Repeat size={14} strokeWidth={1.75} />

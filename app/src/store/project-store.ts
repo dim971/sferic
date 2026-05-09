@@ -39,6 +39,9 @@ interface ProjectStore {
   viewStates: Record<Projection, ViewState>;
   snapAngleDeg: number;
   viewMode: ViewMode;
+  loopEnabled: boolean;
+  loopRegion: { start: number; end: number } | null;
+  waveformZoom: number;
 
   loadAudioFile: (path: string, arrayBuffer: ArrayBuffer) => Promise<void>;
   setLoadedProject: (project: Project, path: string | null, audioBuffer: AudioBuffer) => void;
@@ -63,6 +66,10 @@ interface ProjectStore {
   setViewState: (which: Projection, partial: Partial<ViewState>) => void;
   setSnapAngle: (deg: number) => void;
   setViewMode: (mode: ViewMode) => void;
+  setLoopEnabled: (enabled: boolean) => void;
+  setLoopRegion: (region: { start: number; end: number } | null) => void;
+  setWaveformZoom: (px: number) => void;
+  setProjectName: (name: string) => void;
   addKeyframeAtProjection: (proj: Projection, u: number, v: number) => void;
   moveKeyframe: (id: string, proj: Projection, u: number, v: number) => void;
 
@@ -132,6 +139,9 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
   viewStates: DEFAULT_VIEW_STATES,
   snapAngleDeg: 0,
   viewMode: '2d',
+  loopEnabled: false,
+  loopRegion: null,
+  waveformZoom: 50,
   renderModalOpen: false,
   shortcutsOpen: false,
 
@@ -327,6 +337,35 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
   setSnapAngle: (deg) => set({ snapAngleDeg: deg }),
 
   setViewMode: (mode) => set({ viewMode: mode }),
+
+  setLoopEnabled: (enabled) => {
+    const state = get();
+    const audioBuffer = state.audioBuffer;
+    if (enabled && !state.loopRegion && audioBuffer) {
+      // Default region: from currentTime (clamped) to currentTime + 8 s, or full
+      const start = Math.max(0, state.playback.currentTime);
+      const end = Math.min(audioBuffer.duration, start + 8);
+      set({ loopEnabled: true, loopRegion: { start, end } });
+    } else {
+      set({ loopEnabled: enabled });
+    }
+  },
+
+  setLoopRegion: (region) => set({ loopRegion: region }),
+
+  setWaveformZoom: (px) => set({ waveformZoom: Math.max(5, Math.min(500, px)) }),
+
+  setProjectName: (name) => {
+    const project = get().project;
+    if (!project) return;
+    set({
+      project: {
+        ...project,
+        meta: { ...project.meta, name, updatedAt: new Date().toISOString() },
+      },
+      isDirty: true,
+    });
+  },
 
   addKeyframeAtProjection: (proj, u, v) => {
     const state = get();

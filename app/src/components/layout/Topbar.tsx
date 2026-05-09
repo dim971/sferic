@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AudioLines, Download, FileAudio, FolderOpen, Save } from 'lucide-react';
 import { useProjectStore } from '@/store/project-store';
 import { AudioEngine } from '@/lib/audio-engine';
@@ -69,9 +69,7 @@ export function Topbar() {
         {project ? (
           <>
             <FileAudio size={12} className="text-[--text-dim] flex-shrink-0" />
-            <span className="text-[--text-secondary] truncate max-w-[280px]">
-              {project.meta.name}
-            </span>
+            <EditableProjectName />
             <span className="text-[--text-dim] flex-shrink-0">·</span>
             <span className="font-mono text-[--text-dim] truncate max-w-[280px]">{fileName}</span>
             <span className="text-[--text-dim] flex-shrink-0">·</span>
@@ -155,5 +153,54 @@ export function Topbar() {
         <RenderModal onClose={() => setRenderModalOpen(false)} />
       )}
     </header>
+  );
+}
+
+function EditableProjectName() {
+  const project = useProjectStore((s) => s.project);
+  const setProjectName = useProjectStore((s) => s.setProjectName);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState('');
+
+  useEffect(() => {
+    if (!editing) setDraft(project?.meta.name ?? '');
+  }, [project, editing]);
+
+  if (!project) return null;
+
+  const commit = () => {
+    const trimmed = draft.trim();
+    if (trimmed) setProjectName(trimmed);
+    setEditing(false);
+  };
+
+  if (editing) {
+    return (
+      <input
+        autoFocus
+        type="text"
+        value={draft}
+        onChange={(e) => setDraft(e.currentTarget.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') commit();
+          if (e.key === 'Escape') {
+            setEditing(false);
+            setDraft(project.meta.name);
+          }
+        }}
+        className="bg-[--bg-input] text-[12px] text-[--text-primary] px-2 py-0.5 rounded outline-none focus:ring-1 focus:ring-[--accent] max-w-[280px]"
+      />
+    );
+  }
+  return (
+    <button
+      type="button"
+      onClick={() => setEditing(true)}
+      title="Click to rename project"
+      className="text-[--text-secondary] hover:text-[--text-primary] truncate max-w-[280px] text-left"
+    >
+      {project.meta.name}
+    </button>
   );
 }

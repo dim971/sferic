@@ -19,6 +19,10 @@ export function Waveform({ audioBuffer }: WaveformProps) {
   const addKeyframe = useProjectStore((s) => s.addKeyframe);
   const selectKeyframe = useProjectStore((s) => s.selectKeyframe);
   const removeKeyframe = useProjectStore((s) => s.removeKeyframe);
+  const loopEnabled = useProjectStore((s) => s.loopEnabled);
+  const loopRegion = useProjectStore((s) => s.loopRegion);
+  const setLoopRegion = useProjectStore((s) => s.setLoopRegion);
+  const waveformZoom = useProjectStore((s) => s.waveformZoom);
 
   const keyframes = project?.keyframes ?? [];
   const duration = audioBuffer?.duration ?? 0;
@@ -65,6 +69,16 @@ export function Waveform({ audioBuffer }: WaveformProps) {
     }
   }, [currentTime, duration]);
 
+  useEffect(() => {
+    if (wsRef.current && waveformZoom > 0) {
+      try {
+        wsRef.current.zoom(waveformZoom);
+      } catch {
+        /* ignore — zoom may throw if buffer not ready */
+      }
+    }
+  }, [waveformZoom, audioBuffer]);
+
   if (!audioBuffer) {
     return (
       <div className="h-24 flex items-center justify-center text-[--text-dim] text-[10px] tracking-widest uppercase">
@@ -80,6 +94,14 @@ export function Waveform({ audioBuffer }: WaveformProps) {
     if (e.shiftKey) {
       const pos = interpolatePosition(keyframes, t);
       addKeyframe(pos, t);
+    } else if (e.altKey) {
+      // Alt+click sets loop end (or start if before current loop start)
+      if (loopRegion) {
+        if (t > loopRegion.start) setLoopRegion({ start: loopRegion.start, end: t });
+        else setLoopRegion({ start: t, end: loopRegion.end });
+      } else {
+        setLoopRegion({ start: 0, end: t });
+      }
     } else {
       seek(t);
     }
@@ -95,11 +117,20 @@ export function Waveform({ audioBuffer }: WaveformProps) {
         onRemove={removeKeyframe}
       />
       <div
-        className="relative bg-[--waveform-bg] rounded-md cursor-crosshair flex-1 min-h-0"
+        className="relative bg-[--waveform-bg] rounded-md cursor-crosshair flex-1 min-h-0 overflow-hidden"
         onClick={handleClick}
       >
         <div ref={containerRef} className="h-full" />
         <div className="absolute inset-0 pointer-events-none">
+          {/* Loop region brackets and tinted band */}
+          {loopRegion && duration > 0 && (
+            <LoopRegionOverlay
+              start={loopRegion.start}
+              end={loopRegion.end}
+              duration={duration}
+              enabled={loopEnabled}
+            />
+          )}
           {keyframes.map((kf) => {
             const left = duration > 0 ? (kf.time / duration) * 100 : 0;
             const isSel = kf.id === selectedId;
@@ -118,6 +149,43 @@ export function Waveform({ audioBuffer }: WaveformProps) {
             );
           })}
         </div>
+      </div>
+    </div>
+  );
+}
+
+interface LoopRegionOverlayProps {
+  start: number;
+  end: number;
+  duration: number;
+  enabled: boolean;
+}
+
+function LoopRegionOverlay({ start, end, duration, enabled }: LoopRegionOverlayProps) {
+  if (duration <= 0 || end <= start) return null;
+  const leftPct = (start / duration) * 100;
+  const widthPct = ((end - start) / duration) * 100;
+  const opacity = enabled ? 1 : 0.4;
+  return (
+    <div
+      className="absolute top-0 bottom-0 pointer-events-none"
+      style={{ left: `${leftPct}%`, width: `${widthPct}%`, opacity }}
+    >
+      <div
+        className="absolute inset-0"
+        style={{ backgroundColor: enabled ? 'rgba(248, 115, 40, 0.08)' : 'rgba(248, 115, 40, 0.04)' }}
+      />
+      {/* Left bracket */}
+      <div className="absolute top-0 bottom-0 left-0 flex flex-col">
+        <span className="w-2 h-1 bg-[--accent]" />
+        <span className="w-px h-full bg-[--accent]" />
+        <span className="w-2 h-1 bg-[--accent]" />
+      </div>
+      {/* Right bracket */}
+      <div className="absolute top-0 bottom-0 right-0 flex flex-col items-end">
+        <span className="w-2 h-1 bg-[--accent]" />
+        <span className="w-px h-full bg-[--accent]" />
+        <span className="w-2 h-1 bg-[--accent]" />
       </div>
     </div>
   );

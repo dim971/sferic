@@ -101,25 +101,10 @@ export default function App() {
                 <MeterBar analyser={AudioEngine.getAnalyserR()} />
               </div>
             </div>
-            <div className="flex items-center gap-1 text-[--text-dim]">
-              <button
-                type="button"
-                className="w-5 h-5 flex items-center justify-center rounded-md hover:bg-[--bg-panel-elev]"
-                aria-label="Zoom out"
-              >
-                <Minus size={12} />
-              </button>
-              <button
-                type="button"
-                className="w-5 h-5 flex items-center justify-center rounded-md hover:bg-[--bg-panel-elev]"
-                aria-label="Zoom in"
-              >
-                <Plus size={12} />
-              </button>
-              <span className="font-mono text-[10px] text-[--text-dim] tabular-nums ml-1">
-                {project ? `${project.keyframes.length} kf` : '0 kf'}
-              </span>
-            </div>
+            <ZoomControls />
+            <span className="font-mono text-[10px] text-[--text-dim] tabular-nums">
+              {project ? `${project.keyframes.length} kf` : '0 kf'}
+            </span>
           </div>
         </div>
       </div>
@@ -132,6 +117,34 @@ export default function App() {
         <RenderModal onClose={() => setRenderModalOpen(false)} />
       )}
       {shortcutsOpen && <ShortcutsHelp onClose={() => setShortcutsOpen(false)} />}
+    </div>
+  );
+}
+
+function ZoomControls() {
+  const zoom = useProjectStore((s) => s.waveformZoom);
+  const setZoom = useProjectStore((s) => s.setWaveformZoom);
+  return (
+    <div className="flex items-center gap-1 text-[--text-dim]">
+      <button
+        type="button"
+        onClick={() => setZoom(zoom / 1.5)}
+        className="w-5 h-5 flex items-center justify-center rounded-md hover:bg-[--bg-panel-elev]"
+        aria-label="Zoom out"
+        title="Zoom out"
+      >
+        <Minus size={12} />
+      </button>
+      <span className="font-mono text-[10px] tabular-nums w-10 text-center">{Math.round(zoom)}px/s</span>
+      <button
+        type="button"
+        onClick={() => setZoom(zoom * 1.5)}
+        className="w-5 h-5 flex items-center justify-center rounded-md hover:bg-[--bg-panel-elev]"
+        aria-label="Zoom in"
+        title="Zoom in"
+      >
+        <Plus size={12} />
+      </button>
     </div>
   );
 }

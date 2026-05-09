@@ -11,7 +11,16 @@ export function useTransportSync(): void {
     if (!isPlaying) return;
     let raf = 0;
     const tick = () => {
-      setCurrentTime(AudioEngine.getCurrentTime());
+      const now = AudioEngine.getCurrentTime();
+      setCurrentTime(now);
+      // Loop wrap: if enabled and we passed loopEnd, seek back to loopStart.
+      const state = useProjectStore.getState();
+      if (state.loopEnabled && state.loopRegion) {
+        const { start, end } = state.loopRegion;
+        if (now >= end - 0.005 && end > start) {
+          state.seek(start);
+        }
+      }
       if (!AudioEngine.isPlaying()) {
         setIsPlaying(false);
         return;
