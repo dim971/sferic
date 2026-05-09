@@ -4,6 +4,11 @@ import { migrateProject } from '@/lib/migrate';
 import { AudioEngine } from '@/lib/audio-engine';
 import type { Project } from '@/types/project';
 
+export async function readAudioBytes(path: string): Promise<ArrayBuffer> {
+  const bytes = await readFile(path);
+  return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
+}
+
 const PROJECT_EXT = 'spatialize.json';
 
 export async function pickProjectPathToOpen(): Promise<string | null> {

@@ -12,8 +12,10 @@ import { AudioEngine } from '@/lib/audio-engine';
 import { detectBpm } from '@/lib/audio-analysis';
 import {
   loadProjectFile,
+  pickAudioPath,
   pickProjectPathToOpen,
   pickProjectPathToSave,
+  readAudioBytes,
   saveProjectFile,
 } from '@/lib/project-io';
 import { interpolatePosition, type Vec3 } from '@/lib/math3d';
@@ -67,6 +69,12 @@ interface ProjectStore {
   saveCurrentProject: () => Promise<boolean>;
   saveCurrentProjectAs: () => Promise<boolean>;
   openProjectFromDialog: () => Promise<boolean>;
+  loadAudioFromDialog: () => Promise<boolean>;
+
+  renderModalOpen: boolean;
+  shortcutsOpen: boolean;
+  setRenderModalOpen: (open: boolean) => void;
+  setShortcutsOpen: (open: boolean) => void;
 }
 
 function inferName(path: string): string {
@@ -120,6 +128,8 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
   orbitEnabled: true,
   viewStates: DEFAULT_VIEW_STATES,
   snapAngleDeg: 0,
+  renderModalOpen: false,
+  shortcutsOpen: false,
 
   loadAudioFile: async (path, arrayBuffer) => {
     const buffer = await AudioEngine.decode(arrayBuffer);
@@ -368,4 +378,15 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     get().setLoadedProject(project, path, audioBuffer);
     return true;
   },
+
+  loadAudioFromDialog: async () => {
+    const path = await pickAudioPath('Open audio file');
+    if (!path) return false;
+    const arrayBuffer = await readAudioBytes(path);
+    await get().loadAudioFile(path, arrayBuffer);
+    return true;
+  },
+
+  setRenderModalOpen: (open) => set({ renderModalOpen: open }),
+  setShortcutsOpen: (open) => set({ shortcutsOpen: open }),
 }));

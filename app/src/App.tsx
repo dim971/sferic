@@ -10,16 +10,24 @@ import { Waveform } from '@/components/timeline/Waveform';
 import { Ruler } from '@/components/timeline/Ruler';
 import { OrthographicView } from '@/components/scene/OrthographicView';
 import { Inspector } from '@/components/inspector/Inspector';
+import { RenderModal } from '@/components/render/RenderModal';
+import { ShortcutsHelp } from '@/components/help/ShortcutsHelp';
 import { AudioEngine } from '@/lib/audio-engine';
 import { useProjectStore } from '@/store/project-store';
 import { useTransportSync } from '@/lib/use-transport-sync';
 import { useKeyboardShortcuts } from '@/lib/use-keyboard-shortcuts';
+import { useMenuEvents } from '@/lib/use-menu-events';
 
 export default function App() {
   useTransportSync();
   useKeyboardShortcuts();
+  useMenuEvents();
   const audioBuffer = useProjectStore((s) => s.audioBuffer);
   const project = useProjectStore((s) => s.project);
+  const renderModalOpen = useProjectStore((s) => s.renderModalOpen);
+  const shortcutsOpen = useProjectStore((s) => s.shortcutsOpen);
+  const setRenderModalOpen = useProjectStore((s) => s.setRenderModalOpen);
+  const setShortcutsOpen = useProjectStore((s) => s.setShortcutsOpen);
   const duration = audioBuffer?.duration ?? 0;
 
   return (
@@ -93,6 +101,11 @@ export default function App() {
           </div>
         </div>
       </div>
+
+      {renderModalOpen && audioBuffer && project && (
+        <RenderModal onClose={() => setRenderModalOpen(false)} />
+      )}
+      {shortcutsOpen && <ShortcutsHelp onClose={() => setShortcutsOpen(false)} />}
     </div>
   );
 }

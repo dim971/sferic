@@ -48,6 +48,30 @@ export function useKeyboardShortcuts(): void {
         void state.openProjectFromDialog();
         return;
       }
+
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'i') {
+        e.preventDefault();
+        void state.loadAudioFromDialog();
+        return;
+      }
+
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'r') {
+        e.preventDefault();
+        if (state.audioBuffer) state.setRenderModalOpen(true);
+        return;
+      }
+
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        if (state.audioBuffer) state.insertKeyframeAtCurrent();
+        return;
+      }
+
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'm') {
+        e.preventDefault();
+        state.setMonitoring(state.monitoring === 'binaural' ? 'stereo' : 'binaural');
+        return;
+      }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);

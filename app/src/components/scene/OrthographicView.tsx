@@ -1,5 +1,5 @@
 import { useMemo, useRef } from 'react';
-import { Crosshair, Lock, LockOpen, Maximize } from 'lucide-react';
+import { Crosshair, Lock, LockOpen, Magnet, Maximize } from 'lucide-react';
 import type { Projection, SpatialKeyframe } from '@/types/project';
 import { useProjectStore } from '@/store/project-store';
 import { interpolatePosition, cartesianToSpherical, type Vec3 } from '@/lib/math3d';
@@ -59,6 +59,13 @@ function snapAngleXY(sx: number, sy: number, snapDeg: number): { sx: number; sy:
 
 function fmt(v: number): string {
   return (v >= 0 ? '+' : '') + v.toFixed(2);
+}
+
+function formatTimecode(sec: number): string {
+  if (!isFinite(sec) || sec < 0) sec = 0;
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
 export function OrthographicView({ projection }: OrthographicViewProps) {
@@ -156,25 +163,19 @@ export function OrthographicView({ projection }: OrthographicViewProps) {
     setSnapAngle(cycle[(idx + 1) % cycle.length]);
   };
 
+  const tc = formatTimecode(currentTime);
+
   return (
     <div className="flex flex-col h-full bg-[--bg-panel] min-h-0 min-w-0">
       <div className="flex items-center justify-between px-3 py-1.5 text-[11px] font-mono tabular-nums text-[--text-secondary] border-b border-[--border-subtle]">
         <span>
           <span className="tracking-widest uppercase text-[--text-dim]">{meta.label}</span>
           <span className="text-[--text-dim] ml-2">{meta.plane}</span>
-          <span className="ml-2">{view.zoom.toFixed(1)}×</span>
         </span>
-        <button
-          type="button"
-          onClick={cycleSnap}
-          className="flex items-center gap-2 hover:text-[--text-primary]"
-          aria-label="Cycle snap angle"
-        >
-          Snap {snapAngleDeg}°
-          <span
-            className={`size-1.5 rounded-full ${snapAngleDeg > 0 ? 'bg-[--accent]' : 'bg-[--vu-green]'}`}
-          />
-        </button>
+        <span className="flex items-center gap-3">
+          <span className="text-[--text-dim]">{view.zoom.toFixed(1)}×</span>
+          <span className="text-[--text-secondary]">{tc}</span>
+        </span>
       </div>
 
       <div className="flex-1 min-h-0 relative">
@@ -307,12 +308,20 @@ export function OrthographicView({ projection }: OrthographicViewProps) {
           <ViewControl onClick={recenter} title="Auto-fit (1.0×)">
             <Maximize size={12} strokeWidth={1.75} />
           </ViewControl>
-          <ViewControl onClick={() => setViewState(projection, { zoom: 1 })} title="Recentrer">
+          <ViewControl onClick={() => setViewState(projection, { zoom: 1 })} title="Recenter">
             <Crosshair size={12} strokeWidth={1.75} />
           </ViewControl>
           <ViewControl
+            onClick={cycleSnap}
+            title={`Snap angle: ${snapAngleDeg}°`}
+            active={snapAngleDeg > 0}
+            label={snapAngleDeg > 0 ? `${snapAngleDeg}°` : undefined}
+          >
+            <Magnet size={12} strokeWidth={1.75} />
+          </ViewControl>
+          <ViewControl
             onClick={toggleLock}
-            title={view.locked ? 'Déverrouiller' : 'Verrouiller'}
+            title={view.locked ? 'Unlock' : 'Lock'}
             active={view.locked}
           >
             {view.locked ? (
@@ -380,22 +389,24 @@ interface ViewControlProps {
   onClick: () => void;
   title: string;
   active?: boolean;
+  label?: string;
   children: React.ReactNode;
 }
 
-function ViewControl({ onClick, title, active, children }: ViewControlProps) {
+function ViewControl({ onClick, title, active, label, children }: ViewControlProps) {
   return (
     <button
       type="button"
       onClick={onClick}
       title={title}
-      className={`w-6 h-6 flex items-center justify-center rounded-md transition-colors ${
+      className={`h-6 px-1.5 flex items-center gap-1 rounded-md transition-colors ${
         active
           ? 'bg-[--accent-soft] text-[--accent]'
           : 'bg-[--bg-panel-elev] text-[--text-secondary] hover:text-[--text-primary]'
       }`}
     >
       {children}
+      {label && <span className="text-[10px] font-mono">{label}</span>}
     </button>
   );
 }
