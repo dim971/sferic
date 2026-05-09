@@ -19,7 +19,6 @@ export function TransportBar() {
   const stop = useProjectStore((s) => s.stop);
   const seek = useProjectStore((s) => s.seek);
   const setMasterGain = useProjectStore((s) => s.setMasterGain);
-  const insertKeyframe = useProjectStore((s) => s.insertKeyframeAtCurrent);
   const [loop, setLoop] = useState(false);
 
   const disabled = !audioBuffer;
@@ -85,16 +84,24 @@ export function TransportBar() {
         style={{ accentColor: '#F87328' }}
         className="w-20 disabled:opacity-40"
       />
-      <button
-        type="button"
-        onClick={() => insertKeyframe()}
-        disabled={disabled}
-        title="Insert keyframe at current time"
-        className="ml-1 flex items-center gap-1 text-[11px] tracking-widest uppercase px-2 py-1 rounded-md bg-[--accent] text-white hover:bg-[--accent-hot] disabled:opacity-40 disabled:cursor-not-allowed"
-      >
-        <Plus size={12} strokeWidth={2.25} />
-        Keyframe
-      </button>
     </div>
+  );
+}
+
+export function InsertKeyframeButton() {
+  const audioBuffer = useProjectStore((s) => s.audioBuffer);
+  const insertKeyframe = useProjectStore((s) => s.insertKeyframeAtCurrent);
+  const disabled = !audioBuffer;
+  return (
+    <button
+      type="button"
+      onClick={() => insertKeyframe()}
+      disabled={disabled}
+      title="Insert keyframe at current time (⌘K)"
+      className="flex items-center gap-1 text-[11px] tracking-widest uppercase px-2.5 py-1 rounded-md bg-[--accent] text-white hover:bg-[--accent-hot] disabled:opacity-40 disabled:cursor-not-allowed"
+    >
+      <Plus size={12} strokeWidth={2.25} />
+      Keyframe
+    </button>
   );
 }

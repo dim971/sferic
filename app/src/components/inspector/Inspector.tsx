@@ -32,8 +32,9 @@ export function Inspector() {
 
   if (!project) {
     return (
-      <div className="h-full p-3 flex items-center justify-center text-[--text-dim] text-[12px]">
-        Charge un projet
+      <div className="h-full p-3 flex flex-col gap-2 items-center justify-center text-[--text-dim] text-[12px]">
+        <span className="text-[10px] tracking-widest uppercase">Inspector</span>
+        <span>No project loaded</span>
       </div>
     );
   }

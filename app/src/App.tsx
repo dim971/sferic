@@ -1,7 +1,7 @@
 import { Plus, Minus } from 'lucide-react';
 import { Topbar } from '@/components/layout/Topbar';
 import { StatusBar } from '@/components/layout/StatusBar';
-import { TransportBar } from '@/components/transport/TransportBar';
+import { TransportBar, InsertKeyframeButton } from '@/components/transport/TransportBar';
 import { BpmDisplay } from '@/components/transport/BpmDisplay';
 import { BarBeatDisplay } from '@/components/transport/BarBeatDisplay';
 import { MonitoringToggle } from '@/components/transport/MonitoringToggle';
@@ -46,7 +46,7 @@ export default function App() {
         </>
       ) : (
         <div className="col-span-2 bg-[--bg-panel] border-r border-[--border-subtle] flex items-center justify-center text-[--text-dim] text-[12px]">
-          Charge un fichier audio pour commencer
+          Open an audio file to begin — File ▸ Open audio…  (⌘I)
         </div>
       )}
 
@@ -55,13 +55,14 @@ export default function App() {
       </div>
 
       <div className="col-span-3 bg-[--bg-panel] border-t border-[--border-subtle] grid grid-cols-[auto_1fr_auto] gap-3 px-3 py-2 items-stretch">
-        <div className="flex flex-col gap-1.5 justify-between min-w-[200px]">
+        <div className="flex flex-col gap-1.5 justify-between min-w-[260px]">
           <TransportBar />
           {project && <Readouts />}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <BpmDisplay />
             <BarBeatDisplay />
             <MonitoringToggle />
+            <InsertKeyframeButton />
           </div>
         </div>
         <div className="flex flex-col gap-1 min-w-0">

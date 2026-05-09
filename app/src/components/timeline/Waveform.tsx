@@ -67,8 +67,8 @@ export function Waveform({ audioBuffer }: WaveformProps) {
 
   if (!audioBuffer) {
     return (
-      <div className="h-24 flex items-center justify-center text-[--text-dim] text-[12px]">
-        Aucun fichier chargé
+      <div className="h-24 flex items-center justify-center text-[--text-dim] text-[10px] tracking-widest uppercase">
+        no waveform
       </div>
     );
   }
