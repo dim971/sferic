@@ -165,6 +165,11 @@ export function OrthographicView({ projection }: OrthographicViewProps) {
 
   const tc = formatTimecode(currentTime);
 
+  const selectedKf = sortedKfs.find((k) => k.id === selectedId);
+  const selectedXY = selectedKf
+    ? project(selectedKf.position, projection)
+    : { sx: 0, sy: 0 };
+
   return (
     <div className="flex flex-col h-full bg-[--bg-panel] min-h-0 min-w-0">
       <div className="flex items-center justify-between px-3 py-1.5 text-[11px] font-mono tabular-nums text-[--text-secondary] border-b border-[--border-subtle]">
@@ -173,6 +178,14 @@ export function OrthographicView({ projection }: OrthographicViewProps) {
           <span className="text-[--text-dim] ml-2">{meta.plane}</span>
         </span>
         <span className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={cycleSnap}
+            className="text-[--text-dim] hover:text-[--text-secondary]"
+            title={`Snap angle: ${snapAngleDeg}° — click to cycle`}
+          >
+            Snap {snapAngleDeg}°
+          </button>
           <span className="text-[--text-dim]">{view.zoom.toFixed(1)}×</span>
           <span className="text-[--text-secondary]">{tc}</span>
         </span>
@@ -279,14 +292,15 @@ export function OrthographicView({ projection }: OrthographicViewProps) {
           })}
 
           {/* Listener at center */}
-          <g aria-hidden>
-            <circle cx={0} cy={0} r={0.045} fill="#4F8EF7" />
-            <polygon
-              points="0,-0.085 0.025,-0.04 -0.025,-0.04"
-              fill="#4F8EF7"
-              opacity={0.6}
+          <ListenerIcon projection={projection} />
+          {/* Selected keyframe label */}
+          {selectedKf && (
+            <SelectedLabel
+              num={numByKf.get(selectedKf.id) ?? 0}
+              x={selectedXY.sx}
+              y={selectedXY.sy}
             />
-          </g>
+          )}
 
           {/* Live source cursor (only when playing) */}
           {isPlaying && projectState && sortedKfs.length > 0 && (
@@ -380,6 +394,58 @@ function KeyframeNode({ keyframe, num, sx, sy, selected }: KeyframeNodeProps) {
         style={{ pointerEvents: 'none', userSelect: 'none' }}
       >
         {num}
+      </text>
+    </g>
+  );
+}
+
+function ListenerIcon({ projection }: { projection: Projection }) {
+  if (projection === 'top') {
+    // Top-down view: head as a small circle with a forward triangle pointing -Z (top of screen).
+    return (
+      <g aria-hidden>
+        <circle cx={0} cy={0} r={0.045} fill="#4F8EF7" />
+        <polygon points="0,-0.085 0.025,-0.04 -0.025,-0.04" fill="#4F8EF7" opacity={0.7} />
+      </g>
+    );
+  }
+  // Side view (Z / Y): head profile facing -Z (left of screen since +Z is right).
+  // Drawn with a slight beveled face and a tiny nose jutting to the left.
+  return (
+    <g aria-hidden>
+      <ellipse cx={0} cy={-0.005} rx={0.05} ry={0.06} fill="#4F8EF7" />
+      <polygon
+        points="-0.05,0 -0.075,0.005 -0.05,0.025"
+        fill="#4F8EF7"
+        opacity={0.85}
+      />
+      <circle cx={-0.025} cy={-0.015} r={0.008} fill="#0F1014" />
+    </g>
+  );
+}
+
+function SelectedLabel({ num, x, y }: { num: number; x: number; y: number }) {
+  return (
+    <g transform={`translate(${x + 0.07} ${y - 0.07})`} aria-hidden>
+      <rect
+        x={0}
+        y={-0.04}
+        width={0.18}
+        height={0.05}
+        rx={0.005}
+        fill="#0E0F13"
+        stroke="#F87328"
+        strokeWidth={0.004}
+      />
+      <text
+        x={0.09}
+        y={-0.005}
+        fontSize={0.04}
+        fill="#F87328"
+        textAnchor="middle"
+        fontFamily="JetBrains Mono, monospace"
+      >
+        k{num.toString().padStart(2, '0')}
       </text>
     </g>
   );

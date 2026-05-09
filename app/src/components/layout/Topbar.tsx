@@ -33,17 +33,23 @@ export function Topbar() {
       <div className="flex items-center gap-2 min-w-0">
         <span className="w-2 h-2 rounded-full bg-[--accent]" aria-hidden />
         <span className="text-[16px] font-medium text-[--text-primary]">Spatialize</span>
+        <span className="text-[10px] tracking-widest text-[--text-dim] font-mono">v1.4</span>
       </div>
 
       <div className="flex-1 min-w-0 flex items-center justify-center gap-2 text-[12px]">
         {project ? (
           <>
-            <span className="text-[--accent] truncate max-w-[180px]">{project.meta.name}</span>
+            <span className="text-[10px] tracking-widest uppercase px-2 py-0.5 rounded-md bg-[--accent-soft] text-[--accent]">
+              {project.settings.panningModel}
+            </span>
+            <span className="text-[--text-secondary] truncate max-w-[180px]">{project.meta.name}</span>
             <span className="font-mono text-[--text-secondary]">{sampleRateK}</span>
             <span className="text-[--text-dim]">·</span>
-            <span className="text-[--text-secondary] truncate max-w-[260px]">{fileName}</span>
+            <span className="font-mono text-[--text-secondary]">float32</span>
+            <span className="text-[--text-dim]">·</span>
+            <span className="text-[--text-secondary] truncate max-w-[220px]">{fileName}</span>
             {isDirty && (
-              <span className="ml-1 text-[10px] tracking-widest uppercase px-2 py-0.5 rounded-md bg-[--accent-soft] text-[--accent]">
+              <span className="ml-1 text-[10px] tracking-widest uppercase px-2 py-0.5 rounded-md bg-[--vu-red] bg-opacity-20 text-[--vu-red] border border-[--vu-red]/40">
                 UNSAVED
               </span>
             )}

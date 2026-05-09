@@ -1,5 +1,6 @@
 import { Plus, Minus } from 'lucide-react';
 import { Topbar } from '@/components/layout/Topbar';
+import { StatusBar } from '@/components/layout/StatusBar';
 import { TransportBar } from '@/components/transport/TransportBar';
 import { BpmDisplay } from '@/components/transport/BpmDisplay';
 import { BarBeatDisplay } from '@/components/transport/BarBeatDisplay';
@@ -31,7 +32,7 @@ export default function App() {
   const duration = audioBuffer?.duration ?? 0;
 
   return (
-    <div className="h-screen w-screen grid grid-rows-[44px_1fr_180px] grid-cols-[1fr_1fr_320px] bg-[--bg-base] text-[--text-primary]">
+    <div className="h-screen w-screen grid grid-rows-[44px_1fr_180px_22px] grid-cols-[1fr_1fr_320px] bg-[--bg-base] text-[--text-primary]">
       <div className="col-span-3 border-b border-[--border-subtle]">
         <Topbar />
       </div>
@@ -100,6 +101,10 @@ export default function App() {
             </span>
           </div>
         </div>
+      </div>
+
+      <div className="col-span-3">
+        <StatusBar />
       </div>
 
       {renderModalOpen && audioBuffer && project && (
