@@ -1,10 +1,13 @@
-import { useMemo } from 'react';
+import { Suspense, useMemo } from 'react';
 import { Canvas, useThree, type ThreeEvent } from '@react-three/fiber';
-import { Html, Line, OrbitControls } from '@react-three/drei';
-import { Raycaster, Sphere, Vector2, Vector3 } from 'three';
+import { Html, Line, OrbitControls, useGLTF } from '@react-three/drei';
+import { Box3, Raycaster, Sphere, Vector2, Vector3 } from 'three';
 import type { SpatialKeyframe } from '@/types/project';
 import { useProjectStore } from '@/store/project-store';
 import { interpolatePosition, samplePath, cartesianToSpherical } from '@/lib/math3d';
+
+const LISTENER_MODEL_URL = '/models/human_head.glb';
+useGLTF.preload(LISTENER_MODEL_URL);
 
 function formatTimecode(sec: number): string {
   if (!isFinite(sec) || sec < 0) sec = 0;
@@ -60,8 +63,10 @@ export function PerspectiveScene() {
         {/* Reference rings on the equator/meridians for orientation */}
         <RefRings />
 
-        {/* Listener at origin */}
-        <Listener />
+        {/* Listener at origin — use head model in 3D, fallback to cone+sphere */}
+        <Suspense fallback={<ListenerFallback />}>
+          <ListenerHead />
+        </Suspense>
 
         {/* Trajectory line */}
         {sortedKfs.length > 1 && <Trajectory keyframes={sortedKfs} />}
@@ -129,18 +134,41 @@ function RefRings() {
   );
 }
 
-function Listener() {
+function ListenerFallback() {
   return (
     <group>
       <mesh>
         <sphereGeometry args={[0.05, 20, 14]} />
         <meshBasicMaterial color="#4F8EF7" />
       </mesh>
-      {/* Forward indicator pointing -Z (where the listener faces) */}
       <mesh position={[0, 0, -0.1]} rotation={[Math.PI / 2, 0, 0]}>
         <coneGeometry args={[0.025, 0.06, 12]} />
         <meshBasicMaterial color="#4F8EF7" transparent opacity={0.7} />
       </mesh>
+    </group>
+  );
+}
+
+function ListenerHead() {
+  const gltf = useGLTF(LISTENER_MODEL_URL);
+  // Auto-scale the model so its longest dimension fits ~0.22 world units
+  // (about a real head sitting at the centre of a unit-radius sphere).
+  const { scale, offsetY } = useMemo(() => {
+    const box = new Box3().setFromObject(gltf.scene);
+    const size = new Vector3();
+    box.getSize(size);
+    const longest = Math.max(size.x, size.y, size.z) || 1;
+    const target = 0.24;
+    const s = target / longest;
+    // Recenter vertically so eyes/ears land near the origin.
+    const center = new Vector3();
+    box.getCenter(center);
+    return { scale: s, offsetY: -center.y * s };
+  }, [gltf.scene]);
+
+  return (
+    <group rotation={[0, Math.PI, 0]} position={[0, offsetY, 0]} scale={scale}>
+      <primitive object={gltf.scene} />
     </group>
   );
 }
