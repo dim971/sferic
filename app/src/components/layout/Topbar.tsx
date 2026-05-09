@@ -6,6 +6,7 @@ import { useCpuMonitor } from '@/lib/use-monitoring';
 import { RenderModal } from '@/components/render/RenderModal';
 import { HorizontalVuMeter } from './HorizontalVuMeter';
 import { MenuBar } from './MenuBar';
+import { SHOW_INAPP_MENUBAR } from '@/lib/platform';
 
 export function Topbar() {
   const project = useProjectStore((s) => s.project);
@@ -43,8 +44,8 @@ export function Topbar() {
         <span className="text-[11px] text-[var(--text-dim)] font-mono">1.4.2</span>
       </div>
 
-      {/* Menus */}
-      <MenuBar />
+      {/* Menus — hidden on macOS prod where the system menu bar is enough */}
+      {SHOW_INAPP_MENUBAR && <MenuBar />}
 
       {/* Project metadata */}
       <div className="flex items-center gap-2 text-[12px] flex-1 min-w-0 ml-2">
