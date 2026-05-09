@@ -11,6 +11,7 @@ interface WaveformProps {
 export function Waveform({ audioBuffer }: WaveformProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const wsRef = useRef<WaveSurfer | null>(null);
+  const wavePointerRef = useRef<{ origin: number; start: number } | null>(null);
 
   const project = useProjectStore((s) => s.project);
   const currentTime = useProjectStore((s) => s.playback.currentTime);
@@ -86,8 +87,6 @@ export function Waveform({ audioBuffer }: WaveformProps) {
       </div>
     );
   }
-
-  const wavePointerRef = useRef<{ origin: number; start: number } | null>(null);
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (e.button !== 0) return;
