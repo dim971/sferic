@@ -1,6 +1,6 @@
 # Instructions pour Claude Code
 
-Tu es chargé d'implémenter l'application **Spatialize** décrite dans ce dépôt.
+Tu es chargé d'implémenter l'application **Sferic** décrite dans ce dépôt.
 
 ## Mission
 

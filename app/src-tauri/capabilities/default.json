@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Default capabilities for Spatialize",
+  "description": "Default capabilities for Sferic",
   "windows": ["main"],
   "permissions": [
     "core:default",

@@ -4,7 +4,7 @@ Ce fichier suit la convention `AGENTS.md` reconnue par Codex et les agents OpenA
 
 ## Mission
 
-Implémenter l'application **Spatialize** : un outil desktop multiplateforme (macOS, Windows, Linux) qui permet de spatialiser un fichier audio dans le temps via une interface visuelle 3D.
+Implémenter l'application **Sferic** : un outil desktop multiplateforme (macOS, Windows, Linux) qui permet de spatialiser un fichier audio dans le temps via une interface visuelle 3D.
 
 ## Sources de vérité (à lire en premier)
 

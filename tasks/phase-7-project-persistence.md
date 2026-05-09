@@ -2,11 +2,11 @@
 
 ## Objectif
 
-Permettre à l'utilisateur de sauvegarder un projet (audio + keyframes + settings) dans un fichier `.spatialize.json` et de le rouvrir plus tard.
+Permettre à l'utilisateur de sauvegarder un projet (audio + keyframes + settings) dans un fichier `.sferic.json` et de le rouvrir plus tard.
 
 ## Étapes
 
-1. **Format de fichier** : `.spatialize.json`
+1. **Format de fichier** : `.sferic.json`
    - Structure exactement celle de l'interface `Project` (cf. `types/project.ts`).
    - **Le fichier audio n'est PAS embarqué**. Seul le chemin original est stocké. Au chargement :
      - On essaie d'ouvrir le chemin original.
@@ -44,11 +44,11 @@ Permettre à l'utilisateur de sauvegarder un projet (audio + keyframes + setting
 
 4. **UI** (cf. `DESIGN.md §3`) :
    - Activer les boutons `Save` et `Open` du Topbar (déjà présents depuis phase 1).
-     - `Open` ouvre un menu déroulant à deux choix : `Open audio…` (chargement audio existant) et `Open project…` (chargement `.spatialize.json`). Par défaut le clic ouvre `Open project…` ; un sub-menu présente l'autre option.
+     - `Open` ouvre un menu déroulant à deux choix : `Open audio…` (chargement audio existant) et `Open project…` (chargement `.sferic.json`). Par défaut le clic ouvre `Open project…` ; un sub-menu présente l'autre option.
      - `Save` sauvegarde le projet courant. `Cmd/Ctrl+Shift+S` → save as.
    - Le menu `File` du Topbar reprend les actions complètes (`Open audio…`, `Open project…`, `Save`, `Save as…`, `Export…`).
    - Stocker `currentProjectPath` dans le store.
-   - Afficher dans le titre de fenêtre Tauri : `Spatialize — <nom du projet>` (sans le `• modifié` puisque le chip UNSAVED dans le Topbar joue ce rôle).
+   - Afficher dans le titre de fenêtre Tauri : `Sferic — <nom du projet>` (sans le `• modifié` puisque le chip UNSAVED dans le Topbar joue ce rôle).
 
 5. **Chip UNSAVED** (cf. `DESIGN §3` point 4) :
    - Booléen `isDirty` dans le store, mis à `true` après chaque action mutative (`addKeyframe`, `updateKeyframe`, `removeKeyframe`, modification settings, etc.).
@@ -69,8 +69,8 @@ Réf : `DESIGN.md §3` (chip UNSAVED, boutons Save/Open). Le chip UNSAVED appara
 
 ## Critère d'acceptation
 
-- Charger un audio, ajouter 5 keyframes avec différentes courbes, sauver dans `test.spatialize.json`.
-- Quitter et relancer l'app. Ouvrir `test.spatialize.json` → tout est restauré : audio chargé, keyframes au bon endroit, settings préservés.
+- Charger un audio, ajouter 5 keyframes avec différentes courbes, sauver dans `test.sferic.json`.
+- Quitter et relancer l'app. Ouvrir `test.sferic.json` → tout est restauré : audio chargé, keyframes au bon endroit, settings préservés.
 - Si on déplace l'audio entre temps, l'app demande à le relocaliser.
 - Le titre de fenêtre se met à jour correctement.
 - Le chip UNSAVED apparaît dès la première modification, disparaît à la sauvegarde.
@@ -79,5 +79,5 @@ Réf : `DESIGN.md §3` (chip UNSAVED, boutons Save/Open). Le chip UNSAVED appara
 ## Commit
 
 ```
-feat(phase-7): sauvegarde/chargement de projets .spatialize.json
+feat(phase-7): sauvegarde/chargement de projets .sferic.json
 ```

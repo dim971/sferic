@@ -273,7 +273,7 @@ updateKeyframe: (id, partial) => {
 - Mettre un LPF à 800 Hz sur un keyframe : la portion entre ce keyframe et le suivant doit sonner sourde, et redevenir claire après.
 - Toggle Doppler n'a pas d'effet audio (stub) mais la valeur est conservée dans le projet sauvegardé/rechargé.
 - Reverb send par keyframe : passer de 0 à 80 % entre deux keyframes fait monter la queue de réverb progressivement.
-- Migration : ouvrir un projet v1 sauvegardé avant cette phase fonctionne (test en gardant un `.spatialize.json` v1 sous le coude).
+- Migration : ouvrir un projet v1 sauvegardé avant cette phase fonctionne (test en gardant un `.sferic.json` v1 sous le coude).
 - Courbe cubic avec tension 0 = quasi-step, tension 1 = lisse.
 - Inspecteur affiche correctement toutes les nouvelles sections.
 

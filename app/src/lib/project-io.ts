@@ -23,17 +23,17 @@ export function detectWavBitDepth(arrayBuffer: ArrayBuffer): number | null {
   return view.getUint16(34, true);
 }
 
-// Tauri 2 dialog filters on macOS choke on multi-part extensions (.spatialize.json)
+// Tauri 2 dialog filters on macOS choke on multi-part extensions (.sferic.json)
 // — they cause the whole filter to silently match nothing. We use only single-part
 // extensions in the filter, then dispatch by the full suffix after the user picks.
-const PROJECT_FULL_SUFFIX = '.spatialize.json';
-const PROJECT_DEFAULT_EXT = 'spatialize.json';
+const PROJECT_FULL_SUFFIX = '.sferic.json';
+const PROJECT_DEFAULT_EXT = 'sferic.json';
 const AUDIO_EXTS = ['wav', 'mp3', 'flac', 'ogg', 'm4a', 'aac'];
 
 export async function pickProjectPathToOpen(): Promise<string | null> {
   const picked = await open({
     multiple: false,
-    filters: [{ name: 'Spatialize project', extensions: ['json'] }],
+    filters: [{ name: 'Sferic project', extensions: ['json'] }],
   });
   return typeof picked === 'string' ? picked : null;
 }
@@ -54,7 +54,7 @@ export async function pickAudioPath(title = 'Open audio file'): Promise<string |
 export async function pickAnyPath(): Promise<string | null> {
   const picked = await open({
     multiple: false,
-    filters: [{ name: 'Audio or Spatialize project', extensions: [...AUDIO_EXTS, 'json'] }],
+    filters: [{ name: 'Audio or Sferic project', extensions: [...AUDIO_EXTS, 'json'] }],
   });
   return typeof picked === 'string' ? picked : null;
 }

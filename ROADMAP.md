@@ -11,7 +11,7 @@ Chaque phase est **livrable indépendamment** et a un critère d'acceptation cla
 | 4 | Timeline avec marqueurs synchronisés et édition de keyframes | `tasks/phase-4-timeline-keyframes.md` | 1.5 h |
 | 5 | Lecture temps réel avec spatialisation HRTF automatisée | `tasks/phase-5-realtime-preview.md` | 1.5 h |
 | 6 | Export offline en WAV / MP3 stéréo avec effet bakké | `tasks/phase-6-offline-render.md` | 1.5 h |
-| 7 | Sauvegarde / chargement de projets `.spatialize.json` | `tasks/phase-7-project-persistence.md` | 1 h |
+| 7 | Sauvegarde / chargement de projets `.sferic.json` | `tasks/phase-7-project-persistence.md` | 1 h |
 | 8 | Build cross-platform et CI GitHub Actions | `tasks/phase-8-distribution.md` | 1 h |
 
 **Total estimé** : ~11 heures d'agent autonome avec validation humaine entre chaque phase.

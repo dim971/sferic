@@ -4,7 +4,7 @@ Copie-colle le bloc ci-dessous dans ta session Claude Code (lancée à la racine
 
 ---
 
-> Tu es chargé de construire l'application **Spatialize** définie dans ce dépôt.
+> Tu es chargé de construire l'application **Sferic** définie dans ce dépôt.
 >
 > Lis dans cet ordre :
 > 1. `README.md`

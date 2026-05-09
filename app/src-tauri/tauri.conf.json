@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Spatialize",
+  "productName": "Sferic",
   "version": "0.1.0",
-  "identifier": "dev.spatialize.app",
+  "identifier": "dev.sferic.app",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Spatialize",
+        "title": "Sferic",
         "width": 1280,
         "height": 800,
         "minWidth": 1024,

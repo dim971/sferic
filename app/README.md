@@ -1,4 +1,4 @@
-# Spatialize
+# Sferic
 
 Outil desktop multiplateforme pour spatialiser un fichier audio dans le temps via une interface visuelle 3D et une lecture HRTF binaurale.
 

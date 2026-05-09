@@ -1,4 +1,4 @@
-# Spatialize — Kit de configuration
+# Sferic — Kit de configuration
 
 > Outil multiplateforme pour spatialiser un fichier audio dans le temps via une interface visuelle 3D, à la manière de l'effet « 8D Audio » du morceau *Billie Eilish – ilomilo (version Pentatonix)*.
 

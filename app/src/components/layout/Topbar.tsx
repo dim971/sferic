@@ -39,7 +39,7 @@ export function Topbar() {
         <div className="w-7 h-7 rounded-md bg-[var(--accent)] flex items-center justify-center">
           <AudioLines size={14} strokeWidth={2.5} className="text-white" />
         </div>
-        <span className="text-[14px] font-medium text-[var(--text-primary)]">Spatialize</span>
+        <span className="text-[14px] font-medium text-[var(--text-primary)]">Sferic</span>
         <span className="text-[11px] text-[var(--text-dim)] font-mono">1.4.2</span>
       </div>
 

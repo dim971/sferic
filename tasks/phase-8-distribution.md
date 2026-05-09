@@ -80,7 +80,7 @@ Produire des binaires natifs pour macOS, Windows et Linux et automatiser ce buil
            with:
              projectPath: app
              tagName: ${{ github.ref_name }}
-             releaseName: 'Spatialize ${{ github.ref_name }}'
+             releaseName: 'Sferic ${{ github.ref_name }}'
              releaseDraft: true
              prerelease: false
              args: ${{ matrix.args }}

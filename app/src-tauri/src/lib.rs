@@ -10,8 +10,8 @@ pub fn run() {
         .setup(|app| {
             let handle = app.handle();
 
-            let app_submenu = SubmenuBuilder::new(handle, "Spatialize")
-                .item(&PredefinedMenuItem::about(handle, Some("About Spatialize"), None)?)
+            let app_submenu = SubmenuBuilder::new(handle, "Sferic")
+                .item(&PredefinedMenuItem::about(handle, Some("About Sferic"), None)?)
                 .separator()
                 .item(&PredefinedMenuItem::services(handle, None)?)
                 .separator()

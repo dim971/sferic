@@ -1,4 +1,4 @@
-# DESIGN — Système visuel de Spatialize
+# DESIGN — Système visuel de Sferic
 
 > **Source de vérité visuelle** : `design/Screenshot 2026-05-09 at 08.53.47.png`
 > Cette image définit le rendu cible. Toute divergence doit être justifiée et discutée.
@@ -24,7 +24,7 @@ L'application reprend les codes d'un DAW pro : **fond très sombre, accent orang
 | `--text-primary` | `#E8E8EA` | Valeurs, titres |
 | `--text-secondary` | `#9CA0AB` | Labels, menus de la barre du haut |
 | `--text-dim` | `#5A5F6B` | Texte désactivé, units, hint |
-| `--accent` | `#F87328` | Couleur d'accent principale (orange Spatialize) |
+| `--accent` | `#F87328` | Couleur d'accent principale (orange Sferic) |
 | `--accent-hot` | `#FF8A3D` | Hover/active sur l'accent |
 | `--accent-soft` | `#3A1E12` | Fond des chips orange (UNSAVED, sélection) |
 | `--listener` | `#4F8EF7` | Le point bleu de l'auditeur (et seul usage du bleu) |
@@ -44,7 +44,7 @@ L'application reprend les codes d'un DAW pro : **fond très sombre, accent orang
   - `text-[12px]` — valeurs numériques, menus de la barre du haut.
   - `text-[13px]` — titres de keyframe (`Keyframe 05`).
   - `text-[14px]` — boutons principaux (Save, Open, Render).
-  - `text-[16px]` — logo `Spatialize`.
+  - `text-[16px]` — logo `Sferic`.
 
 ### 1.3 Espacement / rayons / ombres
 
@@ -78,7 +78,7 @@ Une seule ligne, alignée verticalement au centre, fond `--bg-base`, séparée d
 
 **De gauche à droite** :
 
-1. **Logo** : pastille orange pleine 8px + texte `Spatialize` en `text-[16px]` blanc, `font-medium`.
+1. **Logo** : pastille orange pleine 8px + texte `Sferic` en `text-[16px]` blanc, `font-medium`.
 2. **Menus** : `File / Edit / Project / Render / View / Help` en `text-[--text-secondary] text-[12px]`, gap `gap-3`. Hover → `text-[--text-primary]`. Cliquer ouvre un menu natif (phase 7+).
 3. **Métadonnées du fichier source** (au centre) : `<source-name>` en `--accent`, puis sample rate (`44.1k`), puis nom du fichier audio chargé en `text-[--text-secondary]`.
 4. **Indicateur de save** : chip `UNSAVED` (fond `--accent-soft`, texte `--accent`, `text-[10px] tracking-widest uppercase`, `px-2 py-0.5 rounded-md`). N'apparaît que si `isDirty === true`.

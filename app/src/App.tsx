@@ -125,7 +125,7 @@ export default function App() {
         <div className="fixed inset-0 z-50 pointer-events-none flex items-center justify-center">
           <div className="absolute inset-2 rounded-lg border-2 border-dashed border-[var(--accent)] bg-[var(--accent-soft)]/20" />
           <div className="relative px-6 py-3 rounded-md bg-[var(--bg-panel)] border border-[var(--accent)] text-[var(--accent)] text-[14px] font-medium">
-            Drop to load · audio or .spatialize.json
+            Drop to load · audio or .sferic.json
           </div>
         </div>
       )}

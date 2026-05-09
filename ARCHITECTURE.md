@@ -80,7 +80,7 @@ interface Project {
 }
 ```
 
-Format de sauvegarde : `.spatialize.json` (texte lisible, versionné).
+Format de sauvegarde : `.sferic.json` (texte lisible, versionné).
 
 ## 3. Graphe audio (temps réel)
 

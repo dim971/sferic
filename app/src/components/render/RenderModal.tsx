@@ -66,7 +66,7 @@ export function RenderModal({ onClose }: RenderModalProps) {
       setStage('saving');
       const ext = format;
       const path = await save({
-        defaultPath: `${project.meta.name || 'spatialize-render'}.${ext}`,
+        defaultPath: `${project.meta.name || 'sferic-render'}.${ext}`,
         filters: [
           format === 'wav'
             ? { name: 'WAV', extensions: ['wav'] }

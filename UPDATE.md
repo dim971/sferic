@@ -1,6 +1,6 @@
 # UPDATE — Addendum design v1.4
 
-Cet addendum complète le kit initial pour couvrir les fonctionnalités du design retenu (référence : maquette Spatialize 1.4.2). Décompresse cette archive **dans le même dossier que le kit principal** : les fichiers s'ajoutent à côté et ne remplacent rien physiquement, mais ils **changent l'ordre d'exécution** du roadmap.
+Cet addendum complète le kit initial pour couvrir les fonctionnalités du design retenu (référence : maquette Sferic 1.4.2). Décompresse cette archive **dans le même dossier que le kit principal** : les fichiers s'ajoutent à côté et ne remplacent rien physiquement, mais ils **changent l'ordre d'exécution** du roadmap.
 
 ## Comment intégrer ce changement
 

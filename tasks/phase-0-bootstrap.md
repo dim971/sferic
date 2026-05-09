@@ -12,7 +12,7 @@ Créer le squelette Tauri 2 + React + TypeScript + Tailwind dans un sous-dossier
    ```
    Réponses :
    - Project name : `app`
-   - Identifier : `dev.spatialize.app`
+   - Identifier : `dev.sferic.app`
    - Language for Frontend : **TypeScript / JavaScript**
    - Package manager : **pnpm**
    - UI template : **React**
@@ -55,7 +55,7 @@ Créer le squelette Tauri 2 + React + TypeScript + Tailwind dans un sous-dossier
    {
      "$schema": "../gen/schemas/desktop-schema.json",
      "identifier": "default",
-     "description": "Default capabilities for Spatialize",
+     "description": "Default capabilities for Sferic",
      "windows": ["main"],
      "permissions": [
        "core:default",
@@ -76,16 +76,16 @@ Créer le squelette Tauri 2 + React + TypeScript + Tailwind dans un sous-dossier
     export default function App() {
       return (
         <div className="h-screen w-screen flex items-center justify-center bg-[--bg-base] text-[--text-primary]">
-          <h1 className="text-3xl font-light tracking-tight">Spatialize</h1>
+          <h1 className="text-3xl font-light tracking-tight">Sferic</h1>
         </div>
       );
     }
     ```
 
 11. **Mettre à jour `tauri.conf.json`** :
-    - `productName` : `Spatialize`
+    - `productName` : `Sferic`
     - `version` : `0.1.0`
-    - Window : `width: 1280, height: 800, minWidth: 1024, minHeight: 700, title: "Spatialize"`
+    - Window : `width: 1280, height: 800, minWidth: 1024, minHeight: 700, title: "Sferic"`
 
 12. **Créer la structure de dossiers cible** dans `app/src/` :
     ```
@@ -116,7 +116,7 @@ Le placeholder n'a presque rien à montrer, mais la **palette doit être en plac
 
 ## Critère d'acceptation
 
-- `pnpm tauri dev` démarre une fenêtre native avec le titre "Spatialize" et le placeholder centré.
+- `pnpm tauri dev` démarre une fenêtre native avec le titre "Sferic" et le placeholder centré.
 - Le fond est `--bg-base` (≈ `#07080A`) et le texte `--text-primary` — pas de gris Tailwind par défaut.
 - Pas d'erreur dans la console (browser ni Rust).
 - `pnpm tsc --noEmit` passe.
