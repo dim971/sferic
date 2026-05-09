@@ -1,5 +1,5 @@
 import type { CurveType, ProjectSettings, SpatialKeyframe } from '@/types/project';
-import { airAbsorptionCutoff } from '@/lib/math3d';
+import { airAbsorptionCutoff, applyCurve } from '@/lib/math3d';
 
 function gainFromDb(db: number): number {
   return Math.pow(10, db / 20);
@@ -51,27 +51,64 @@ function dopplerFactor(kf: SpatialKeyframe, sortedAll: SpatialKeyframe[]): numbe
   return Math.max(0.5, Math.min(2, factor));
 }
 
-function schedule(
-  p: AudioParam,
-  value: number,
-  time: number,
-  curve: CurveType,
-  tension: number,
-): void {
-  switch (curve) {
-    case 'hold':
-      p.setValueAtTime(value, time);
+interface Segment {
+  start: number;
+  dur: number;
+  from: number;
+  to: number;
+  curve: CurveType;
+  tension: number;
+  startRawT: number; // 0 for full segments; >0 if the playhead is mid-segment
+}
+
+const CURVE_SAMPLE_HZ = 120; // 120 samples/sec is plenty for spatial smoothing
+const CURVE_MAX_SAMPLES = 4096;
+
+function sampleSegment(s: Segment): Float32Array {
+  const n = Math.max(2, Math.min(CURVE_MAX_SAMPLES, Math.ceil(s.dur * CURVE_SAMPLE_HZ)));
+  const arr = new Float32Array(n);
+  const span = 1 - s.startRawT;
+  const delta = s.to - s.from;
+  for (let i = 0; i < n; i++) {
+    const local = i / (n - 1);
+    const fullT = s.startRawT + local * span;
+    arr[i] = s.from + delta * applyCurve(fullT, s.curve, s.tension);
+  }
+  return arr;
+}
+
+function scheduleSegment(p: AudioParam, s: Segment, isFirst: boolean): void {
+  if (s.dur <= 0) {
+    p.setValueAtTime(s.to, s.start);
+    return;
+  }
+  const endTime = s.start + s.dur;
+  switch (s.curve) {
+    case 'hold': {
+      // The "current" value during a hold is always s.from (until snap at endTime).
+      if (isFirst) p.setValueAtTime(s.from, s.start);
+      p.setValueAtTime(s.to, endTime);
       return;
-    case 'linear':
-      p.linearRampToValueAtTime(value, time);
+    }
+    case 'linear': {
+      // Linear ramps need a previous event as anchor. For the very first segment,
+      // we provide it explicitly; otherwise the previous segment's endpoint anchors.
+      if (isFirst) {
+        const startVal = s.from + (s.to - s.from) * s.startRawT; // applyCurve('linear', t) = t
+        p.setValueAtTime(startVal, s.start);
+      }
+      p.linearRampToValueAtTime(s.to, endTime);
       return;
+    }
     case 'ease-out':
-      p.setTargetAtTime(value, time, 0.18);
+    case 'cubic': {
+      // Sampled curve: arr[0] is the value at s.start (interpolated mid-segment
+      // when startRawT > 0), arr[N-1] is s.to. setValueCurveAtTime drives the
+      // param continuously across the whole segment.
+      const arr = sampleSegment(s);
+      p.setValueCurveAtTime(arr, s.start, s.dur);
       return;
-    case 'cubic':
-      // Hermite-like easing approximated via setTargetAtTime tau dependent on tension.
-      p.setTargetAtTime(value, time, 0.04 + tension * 0.4);
-      return;
+    }
   }
 }
 
@@ -401,49 +438,127 @@ class AudioEngineImpl {
     if (keyframes.length === 0) return;
 
     const sorted = [...keyframes].sort((a, b) => a.time - b.time);
-    const initial = sorted[0];
-    const initialDist = distanceOf(initial.position);
-    const initialDoppler = dopplerFactor(initial, sorted);
+    const reverbEnabled = this.settings?.reverb.enabled ?? false;
+    const reverbDefaultWet = this.settings?.reverb.wet ?? 0;
 
-    this.panner.positionX.setValueAtTime(initial.position.x, t0);
-    this.panner.positionY.setValueAtTime(initial.position.y, t0);
-    this.panner.positionZ.setValueAtTime(initial.position.z, t0);
-    this.kfGain.gain.setValueAtTime(gainFromDb(initial.gain), t0);
-    this.hpf.frequency.setValueAtTime(initial.hpf ?? 0, t0);
-    this.lpf.frequency.setValueAtTime(initial.lpf ?? 22050, t0);
-    this.airLpf.frequency.setValueAtTime(airAbsorptionCutoff(initialDist, initial.airAbsorption), t0);
-    const initialWet = initial.reverbSend ?? this.settings?.reverb.wet ?? 0;
-    this.wet.gain.setValueAtTime(this.settings?.reverb.enabled ? initialWet : 0, t0);
-    if (this.source) this.source.playbackRate.setValueAtTime(initialDoppler, t0);
+    const specs: Array<{ param: AudioParam; read: (kf: SpatialKeyframe) => number }> = [
+      { param: this.panner.positionX, read: (kf) => kf.position.x },
+      { param: this.panner.positionY, read: (kf) => kf.position.y },
+      { param: this.panner.positionZ, read: (kf) => kf.position.z },
+      { param: this.kfGain.gain, read: (kf) => gainFromDb(kf.gain) },
+      { param: this.hpf.frequency, read: (kf) => kf.hpf ?? 0 },
+      { param: this.lpf.frequency, read: (kf) => kf.lpf ?? 22050 },
+      {
+        param: this.airLpf.frequency,
+        read: (kf) => airAbsorptionCutoff(distanceOf(kf.position), kf.airAbsorption),
+      },
+      {
+        param: this.wet.gain,
+        read: (kf) => (reverbEnabled ? (kf.reverbSend ?? reverbDefaultWet) : 0),
+      },
+    ];
+    if (this.source) {
+      specs.push({
+        param: this.source.playbackRate,
+        read: (kf) => dopplerFactor(kf, sorted),
+      });
+    }
 
-    for (const kf of sorted) {
-      if (kf.time < offsetSec) continue;
-      const audioTime = t0 + (kf.time - offsetSec);
-      const dist = distanceOf(kf.position);
-      schedule(this.panner.positionX, kf.position.x, audioTime, kf.curve, kf.tension);
-      schedule(this.panner.positionY, kf.position.y, audioTime, kf.curve, kf.tension);
-      schedule(this.panner.positionZ, kf.position.z, audioTime, kf.curve, kf.tension);
-      schedule(this.kfGain.gain, gainFromDb(kf.gain), audioTime, kf.curve, kf.tension);
-      schedule(this.hpf.frequency, kf.hpf ?? 0, audioTime, kf.curve, kf.tension);
-      schedule(this.lpf.frequency, kf.lpf ?? 22050, audioTime, kf.curve, kf.tension);
-      schedule(
-        this.airLpf.frequency,
-        airAbsorptionCutoff(dist, kf.airAbsorption),
-        audioTime,
-        kf.curve,
-        kf.tension,
-      );
-      const wetTarget = kf.reverbSend ?? this.settings?.reverb.wet ?? 0;
-      schedule(
-        this.wet.gain,
-        this.settings?.reverb.enabled ? wetTarget : 0,
-        audioTime,
-        kf.curve,
-        kf.tension,
-      );
-      if (this.source) {
-        schedule(this.source.playbackRate, dopplerFactor(kf, sorted), audioTime, kf.curve, kf.tension);
+    for (const spec of specs) {
+      this.scheduleParam(spec.param, spec.read, sorted, offsetSec, t0);
+    }
+  }
+
+  private scheduleParam(
+    p: AudioParam,
+    read: (kf: SpatialKeyframe) => number,
+    sorted: SpatialKeyframe[],
+    offsetSec: number,
+    t0: number,
+  ): void {
+    if (sorted.length === 0) return;
+
+    // Locate prev (last keyframe with time <= offsetSec) and next (first after).
+    let prevIdx = -1;
+    for (let i = 0; i < sorted.length; i++) {
+      if (sorted[i].time <= offsetSec) prevIdx = i;
+      else break;
+    }
+    const nextIdx = prevIdx + 1;
+
+    const segments: Segment[] = [];
+
+    if (prevIdx < 0) {
+      // Playhead is before the first keyframe — hold the first keyframe's
+      // value until it arrives, then play full segments.
+      const first = sorted[0];
+      const holdDur = first.time - offsetSec;
+      if (holdDur > 0) {
+        segments.push({
+          start: t0,
+          dur: holdDur,
+          from: read(first),
+          to: read(first),
+          curve: 'hold',
+          tension: 0,
+          startRawT: 0,
+        });
       }
+      for (let i = 1; i < sorted.length; i++) {
+        const a = sorted[i - 1];
+        const b = sorted[i];
+        segments.push({
+          start: t0 + (a.time - offsetSec),
+          dur: b.time - a.time,
+          from: read(a),
+          to: read(b),
+          curve: b.curve,
+          tension: b.tension,
+          startRawT: 0,
+        });
+      }
+    } else if (nextIdx >= sorted.length) {
+      // Past the last keyframe — just hold its value, no more segments.
+      p.setValueAtTime(read(sorted[prevIdx]), t0);
+      return;
+    } else {
+      // Mid-segment: schedule a partial first segment plus full remaining ones.
+      const prev = sorted[prevIdx];
+      const next = sorted[nextIdx];
+      const segDur = next.time - prev.time;
+      const startRawT =
+        segDur > 0 ? Math.max(0, Math.min(1, (offsetSec - prev.time) / segDur)) : 1;
+      const remainingDur = next.time - offsetSec;
+      if (remainingDur > 0) {
+        segments.push({
+          start: t0,
+          dur: remainingDur,
+          from: read(prev),
+          to: read(next),
+          curve: next.curve,
+          tension: next.tension,
+          startRawT,
+        });
+      } else {
+        p.setValueAtTime(read(next), t0);
+      }
+      for (let i = nextIdx; i < sorted.length - 1; i++) {
+        const a = sorted[i];
+        const b = sorted[i + 1];
+        segments.push({
+          start: t0 + (a.time - offsetSec),
+          dur: b.time - a.time,
+          from: read(a),
+          to: read(b),
+          curve: b.curve,
+          tension: b.tension,
+          startRawT: 0,
+        });
+      }
+    }
+
+    for (let i = 0; i < segments.length; i++) {
+      scheduleSegment(p, segments[i], i === 0);
     }
   }
 
