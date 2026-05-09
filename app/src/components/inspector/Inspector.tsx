@@ -85,45 +85,72 @@ function ProjectPanel({
   const updateSettings = useProjectStore((s) => s.updateSettings);
   const s = project.settings;
   return (
-    <div className="space-y-4">
-      <SectionHeader>Project</SectionHeader>
-      <Field label="Panning">
-        <div className="flex gap-1">
-          {(['HRTF', 'equalpower'] as const).map((m) => (
-            <Chip key={m} active={s.panningModel === m} onClick={() => updateSettings({ panningModel: m })}>
-              {m}
-            </Chip>
-          ))}
-        </div>
-      </Field>
-      <Field label="Distance">
-        <div className="flex gap-1">
-          {(['linear', 'inverse', 'exponential'] as const).map((m) => (
-            <Chip key={m} active={s.distanceModel === m} onClick={() => updateSettings({ distanceModel: m })}>
-              {m}
-            </Chip>
-          ))}
-        </div>
-      </Field>
-      <Field label="Ref dist.">
-        <NumInput value={s.refDistance} step={0.1} onChange={(v) => updateSettings({ refDistance: v })} />
-      </Field>
-      <Field label="Rolloff">
-        <NumInput value={s.rolloffFactor} step={0.1} onChange={(v) => updateSettings({ rolloffFactor: v })} />
-      </Field>
-      <Field label="Reverb">
-        <Toggle checked={s.reverb.enabled} onChange={(v) => updateSettings({ reverb: { ...s.reverb, enabled: v } })} />
-      </Field>
-      <Field label="Wet">
-        <NumInput
-          value={s.reverb.wet}
-          step={0.05}
-          onChange={(v) => updateSettings({ reverb: { ...s.reverb, wet: Math.max(0, Math.min(1, v)) } })}
-        />
-      </Field>
-      <Field label="Snap">
-        <Toggle checked={s.snapToSphere} onChange={(v) => updateSettings({ snapToSphere: v })} />
-      </Field>
+    <div className="space-y-5">
+      <p className="text-[11px] text-[--text-dim] leading-snug -mt-2">
+        No keyframe selected. Click in a scene or use{' '}
+        <kbd className="font-mono text-[--text-secondary]">⌘K</kbd> to insert one at the
+        current time.
+      </p>
+
+      <section className="space-y-2">
+        <SectionHeader>Routing</SectionHeader>
+        <Field label="Panning">
+          <div className="flex gap-1">
+            {(['HRTF', 'equalpower'] as const).map((m) => (
+              <Chip
+                key={m}
+                active={s.panningModel === m}
+                onClick={() => updateSettings({ panningModel: m })}
+              >
+                {m}
+              </Chip>
+            ))}
+          </div>
+        </Field>
+        <Field label="Distance">
+          <div className="flex gap-1">
+            {(['linear', 'inverse', 'exponential'] as const).map((m) => (
+              <Chip
+                key={m}
+                active={s.distanceModel === m}
+                onClick={() => updateSettings({ distanceModel: m })}
+              >
+                {m}
+              </Chip>
+            ))}
+          </div>
+        </Field>
+        <Field label="Ref dist.">
+          <NumInput value={s.refDistance} step={0.1} onChange={(v) => updateSettings({ refDistance: v })} />
+        </Field>
+        <Field label="Rolloff">
+          <NumInput value={s.rolloffFactor} step={0.1} onChange={(v) => updateSettings({ rolloffFactor: v })} />
+        </Field>
+      </section>
+
+      <section className="space-y-2">
+        <SectionHeader>Reverb</SectionHeader>
+        <Field label="Enabled">
+          <Toggle checked={s.reverb.enabled} onChange={(v) => updateSettings({ reverb: { ...s.reverb, enabled: v } })} />
+        </Field>
+        <Field label="Wet">
+          <SliderInput
+            value={s.reverb.wet}
+            min={0}
+            max={1}
+            step={0.01}
+            disabled={!s.reverb.enabled}
+            onChange={(v) => updateSettings({ reverb: { ...s.reverb, wet: Math.max(0, Math.min(1, v)) } })}
+          />
+        </Field>
+      </section>
+
+      <section className="space-y-2">
+        <SectionHeader>Defaults</SectionHeader>
+        <Field label="Snap to ⊙">
+          <Toggle checked={s.snapToSphere} onChange={(v) => updateSettings({ snapToSphere: v })} />
+        </Field>
+      </section>
     </div>
   );
 }
@@ -279,9 +306,11 @@ function KeyframePanel({ keyframe: kf, index, total, prevId, nextId, allKeyframe
           <Readout>{dur !== null ? `+${dur.toFixed(3)} s → k${(index + 2).toString().padStart(2, '0')}` : '— (last)'}</Readout>
         </Field>
         <Field label="Tension">
-          <NumInput
+          <SliderInput
             value={kf.tension}
-            step={0.05}
+            min={0}
+            max={1}
+            step={0.01}
             disabled={kf.curve !== 'cubic'}
             onChange={(v) => updateKeyframe(kf.id, { tension: Math.max(0, Math.min(1, v)) })}
           />
@@ -428,7 +457,7 @@ interface NumInputProps {
 
 function NumInput({ value, step = 0.01, onChange, suffix, disabled }: NumInputProps) {
   return (
-    <div className="relative">
+    <div className="relative group">
       <input
         type="number"
         value={Number.isFinite(value) ? value : 0}
@@ -438,13 +467,44 @@ function NumInput({ value, step = 0.01, onChange, suffix, disabled }: NumInputPr
           const n = parseFloat(e.currentTarget.value);
           if (Number.isFinite(n)) onChange(n);
         }}
-        className="bg-[--bg-input] text-[12px] font-mono tabular-nums px-2 py-1 rounded-md border border-transparent focus:border-[--accent] focus:outline-none w-full disabled:opacity-40"
+        className="bg-transparent text-[12px] font-mono tabular-nums px-1.5 py-0.5 rounded outline-none w-full text-right text-[--text-primary] hover:bg-[--bg-input]/40 focus:bg-[--bg-input] focus:outline focus:outline-1 focus:outline-[--accent] disabled:opacity-40"
+        style={{ MozAppearance: 'textfield' }}
       />
       {suffix && (
-        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-[--text-dim] pointer-events-none">
+        <span className="absolute right-1 top-1/2 -translate-y-1/2 text-[10px] text-[--text-dim] pointer-events-none pl-1">
           {suffix}
         </span>
       )}
+    </div>
+  );
+}
+
+interface SliderInputProps {
+  value: number;
+  min?: number;
+  max?: number;
+  step?: number;
+  onChange: (v: number) => void;
+  disabled?: boolean;
+}
+
+function SliderInput({ value, min = 0, max = 1, step = 0.01, onChange, disabled }: SliderInputProps) {
+  return (
+    <div className="flex items-center gap-2">
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        disabled={disabled}
+        onChange={(e) => onChange(parseFloat(e.currentTarget.value))}
+        style={{ accentColor: '#F87328' }}
+        className="flex-1 disabled:opacity-40"
+      />
+      <span className="font-mono text-[11px] text-[--text-secondary] tabular-nums w-10 text-right">
+        {value.toFixed(2)}
+      </span>
     </div>
   );
 }
