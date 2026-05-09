@@ -149,19 +149,19 @@ function KeyframePanel({ keyframe: kf, index, total, prevId, nextId, allKeyframe
   return (
     <div className="space-y-5">
       <div className="space-y-1.5">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
-            <Diamond size={10} className="text-[--accent]" fill="currentColor" />
-            <span className="text-[13px] text-[--text-primary] font-medium">
-              k{(index + 1).toString().padStart(2, '0')}
+            <span className="w-6 h-6 flex items-center justify-center rounded-md bg-[--accent-soft]">
+              <Diamond size={11} className="text-[--accent]" fill="currentColor" />
             </span>
-            <input
-              type="text"
-              value={kf.label ?? ''}
-              placeholder="label"
-              onChange={(e) => updateKeyframe(kf.id, { label: e.currentTarget.value })}
-              className="bg-transparent text-[12px] text-[--text-secondary] focus:text-[--text-primary] outline-none w-24"
-            />
+            <div className="flex flex-col">
+              <span className="text-[13px] text-[--text-primary] font-medium leading-tight">
+                Keyframe {(index + 1).toString().padStart(2, '0')}
+              </span>
+              <span className="font-mono text-[11px] text-[--text-dim] tabular-nums leading-tight">
+                {formatTime(kf.time)}
+              </span>
+            </div>
           </div>
           <Paginator
             index={index}
@@ -170,7 +170,13 @@ function KeyframePanel({ keyframe: kf, index, total, prevId, nextId, allKeyframe
             onNext={nextId ? () => selectKeyframe(nextId) : null}
           />
         </div>
-        <div className="font-mono text-[12px] text-[--text-secondary] tabular-nums">{formatTime(kf.time)}</div>
+        <input
+          type="text"
+          value={kf.label ?? ''}
+          placeholder="label"
+          onChange={(e) => updateKeyframe(kf.id, { label: e.currentTarget.value })}
+          className="w-full bg-[--bg-input] text-[12px] text-[--text-secondary] focus:text-[--text-primary] focus:outline-none rounded-md px-2 py-1"
+        />
       </div>
 
       <section className="space-y-2">

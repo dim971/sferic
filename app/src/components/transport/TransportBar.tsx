@@ -1,5 +1,6 @@
-import { Play, Pause, Plus, Square } from 'lucide-react';
+import { Play, Pause, Plus, Repeat, Square, SkipBack } from 'lucide-react';
 import { useProjectStore } from '@/store/project-store';
+import { useState } from 'react';
 
 function formatTime(sec: number): string {
   if (!isFinite(sec) || sec < 0) sec = 0;
@@ -16,13 +17,25 @@ export function TransportBar() {
   const play = useProjectStore((s) => s.play);
   const pause = useProjectStore((s) => s.pause);
   const stop = useProjectStore((s) => s.stop);
+  const seek = useProjectStore((s) => s.seek);
   const setMasterGain = useProjectStore((s) => s.setMasterGain);
   const insertKeyframe = useProjectStore((s) => s.insertKeyframeAtCurrent);
+  const [loop, setLoop] = useState(false);
 
   const disabled = !audioBuffer;
+  const skipToStart = () => seek(0);
 
   return (
-    <div className="flex items-center gap-2 h-8">
+    <div className="flex items-center gap-1 h-8">
+      <button
+        type="button"
+        onClick={skipToStart}
+        disabled={disabled}
+        aria-label="Skip to start"
+        className="w-7 h-7 flex items-center justify-center rounded-md text-[--accent] hover:bg-[--accent-soft] disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        <SkipBack size={14} fill="currentColor" strokeWidth={0} />
+      </button>
       <button
         type="button"
         onClick={isPlaying ? pause : play}
@@ -44,7 +57,18 @@ export function TransportBar() {
         aria-label="Stop"
         className="w-7 h-7 flex items-center justify-center rounded-md text-[--accent] hover:bg-[--accent-soft] disabled:opacity-40 disabled:cursor-not-allowed"
       >
-        <Square size={16} fill="currentColor" strokeWidth={0} />
+        <Square size={14} fill="currentColor" strokeWidth={0} />
+      </button>
+      <button
+        type="button"
+        onClick={() => setLoop(!loop)}
+        disabled={disabled}
+        aria-label={loop ? 'Loop on' : 'Loop off'}
+        className={`w-7 h-7 flex items-center justify-center rounded-md disabled:opacity-40 disabled:cursor-not-allowed ${
+          loop ? 'bg-[--accent-soft] text-[--accent]' : 'text-[--text-dim] hover:text-[--text-primary]'
+        }`}
+      >
+        <Repeat size={14} strokeWidth={1.75} />
       </button>
       <span className="font-mono text-[14px] text-[--text-primary] tabular-nums min-w-[44px] pl-1">
         {formatTime(currentTime)}

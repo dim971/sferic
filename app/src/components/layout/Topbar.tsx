@@ -36,6 +36,17 @@ export function Topbar() {
         <span className="text-[10px] tracking-widest text-[--text-dim] font-mono">v1.4</span>
       </div>
 
+      <nav className="flex items-center gap-3" aria-hidden>
+        {(['File', 'Edit', 'Project', 'Render', 'View', 'Help'] as const).map((m) => (
+          <span
+            key={m}
+            className="text-[12px] text-[--text-secondary] hover:text-[--text-primary] cursor-default select-none"
+          >
+            {m}
+          </span>
+        ))}
+      </nav>
+
       <div className="flex-1 min-w-0 flex items-center justify-center gap-2 text-[12px]">
         {project ? (
           <>
