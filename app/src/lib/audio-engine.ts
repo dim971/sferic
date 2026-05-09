@@ -9,6 +9,48 @@ function distanceOf(p: { x: number; y: number; z: number }): number {
   return Math.hypot(p.x, p.y, p.z);
 }
 
+const SOUND_SPEED = 343; // m/s, our world units ≈ metres
+
+function dopplerFactor(kf: SpatialKeyframe, sortedAll: SpatialKeyframe[]): number {
+  if (!kf.doppler) return 1;
+  const idx = sortedAll.findIndex((k) => k.id === kf.id);
+  if (idx < 0) return 1;
+  const prev = sortedAll[idx - 1];
+  const next = sortedAll[idx + 1];
+  let vx = 0;
+  let vy = 0;
+  let vz = 0;
+  if (prev && next && next.time > prev.time) {
+    const dt = next.time - prev.time;
+    vx = (next.position.x - prev.position.x) / dt;
+    vy = (next.position.y - prev.position.y) / dt;
+    vz = (next.position.z - prev.position.z) / dt;
+  } else if (prev && kf.time > prev.time) {
+    const dt = kf.time - prev.time;
+    vx = (kf.position.x - prev.position.x) / dt;
+    vy = (kf.position.y - prev.position.y) / dt;
+    vz = (kf.position.z - prev.position.z) / dt;
+  } else if (next && next.time > kf.time) {
+    const dt = next.time - kf.time;
+    vx = (next.position.x - kf.position.x) / dt;
+    vy = (next.position.y - kf.position.y) / dt;
+    vz = (next.position.z - kf.position.z) / dt;
+  } else {
+    return 1;
+  }
+  const r = Math.hypot(kf.position.x, kf.position.y, kf.position.z);
+  if (r < 1e-3) return 1;
+  const dx = kf.position.x / r;
+  const dy = kf.position.y / r;
+  const dz = kf.position.z / r;
+  // Radial velocity: positive = source moving away from listener
+  const vRadial = vx * dx + vy * dy + vz * dz;
+  // Standard Doppler for moving source: f' = f * c / (c + v_r). Source receding ↓pitch.
+  const factor = SOUND_SPEED / (SOUND_SPEED + vRadial);
+  // Clamp to safe playbackRate range to avoid weird artefacts.
+  return Math.max(0.5, Math.min(2, factor));
+}
+
 function schedule(
   p: AudioParam,
   value: number,
@@ -320,12 +362,14 @@ class AudioEngineImpl {
       this.wet.gain,
     ];
     for (const p of params) p.cancelScheduledValues(t0);
+    if (this.source) this.source.playbackRate.cancelScheduledValues(t0);
 
     if (keyframes.length === 0) return;
 
     const sorted = [...keyframes].sort((a, b) => a.time - b.time);
     const initial = sorted[0];
     const initialDist = distanceOf(initial.position);
+    const initialDoppler = dopplerFactor(initial, sorted);
 
     this.panner.positionX.setValueAtTime(initial.position.x, t0);
     this.panner.positionY.setValueAtTime(initial.position.y, t0);
@@ -336,6 +380,7 @@ class AudioEngineImpl {
     this.airLpf.frequency.setValueAtTime(airAbsorptionCutoff(initialDist, initial.airAbsorption), t0);
     const initialWet = initial.reverbSend ?? this.settings?.reverb.wet ?? 0;
     this.wet.gain.setValueAtTime(this.settings?.reverb.enabled ? initialWet : 0, t0);
+    if (this.source) this.source.playbackRate.setValueAtTime(initialDoppler, t0);
 
     for (const kf of sorted) {
       if (kf.time < offsetSec) continue;
@@ -362,6 +407,9 @@ class AudioEngineImpl {
         kf.curve,
         kf.tension,
       );
+      if (this.source) {
+        schedule(this.source.playbackRate, dopplerFactor(kf, sorted), audioTime, kf.curve, kf.tension);
+      }
     }
   }
 
