@@ -33,9 +33,9 @@ export function Waveform({ audioBuffer }: WaveformProps) {
       barWidth: 1,
       barGap: 1,
       barRadius: 0,
-      height: isStereo ? 46 : 96,
+      height: 'auto',
       interact: false,
-      normalize: false,
+      normalize: true,
       splitChannels: isStereo
         ? [
             { waveColor: '#F87328', progressColor: '#FF8A3D' },
