@@ -51,14 +51,10 @@ export function Topbar() {
             <span className="text-[10px] tracking-widest uppercase px-2 py-0.5 rounded-md bg-[--accent-soft] text-[--accent] flex-shrink-0">
               {project.settings.panningModel}
             </span>
-            <span className="text-[--text-secondary] truncate max-w-[220px]">
-              {project.meta.name}
-            </span>
+            <span className="text-[--text-secondary] truncate max-w-[420px]">{fileName}</span>
             <span className="font-mono text-[--text-dim] flex-shrink-0">{sampleRateK}</span>
             <span className="text-[--text-dim] flex-shrink-0">/</span>
             <span className="font-mono text-[--text-dim] flex-shrink-0">float32</span>
-            <span className="text-[--text-dim] flex-shrink-0">·</span>
-            <span className="text-[--text-secondary] truncate max-w-[260px]">{fileName}</span>
             {isDirty && (
               <span
                 className="ml-1 text-[10px] tracking-widest uppercase px-2 py-0.5 rounded-md text-[--accent] border border-[--accent] flex-shrink-0"

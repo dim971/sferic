@@ -21,10 +21,6 @@ function formatTime(sec: number): string {
   return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${ms}`;
 }
 
-function formatHz(hz: number | null): string {
-  if (hz === null) return 'bypass';
-  return hz >= 1000 ? `${(hz / 1000).toFixed(1)} kHz` : `${Math.round(hz)} Hz`;
-}
 
 export function Inspector() {
   const project = useProjectStore((s) => s.project);
@@ -185,6 +181,9 @@ function KeyframePanel({ keyframe: kf, index, total, prevId, nextId, allKeyframe
             <div className="flex flex-col">
               <span className="text-[13px] text-[--text-primary] font-medium leading-tight">
                 Keyframe {(index + 1).toString().padStart(2, '0')}
+                {kf.label && (
+                  <span className="ml-2 text-[--text-secondary] font-normal">— {kf.label}</span>
+                )}
               </span>
               <span className="font-mono text-[11px] text-[--text-dim] tabular-nums leading-tight">
                 {formatTime(kf.time)}
@@ -198,13 +197,6 @@ function KeyframePanel({ keyframe: kf, index, total, prevId, nextId, allKeyframe
             onNext={nextId ? () => selectKeyframe(nextId) : null}
           />
         </div>
-        <input
-          type="text"
-          value={kf.label ?? ''}
-          placeholder="label"
-          onChange={(e) => updateKeyframe(kf.id, { label: e.currentTarget.value })}
-          className="w-full bg-[--bg-input] text-[12px] text-[--text-secondary] focus:text-[--text-primary] focus:outline-none rounded-md px-2 py-1"
-        />
       </div>
 
       <section className="space-y-2">
@@ -257,7 +249,7 @@ function KeyframePanel({ keyframe: kf, index, total, prevId, nextId, allKeyframe
             <Readout>{`${sph.az >= 0 ? '+' : ''}${sph.az.toFixed(1)}°`}</Readout>
             <Label>El</Label>
             <Readout>{`${sph.el >= 0 ? '+' : ''}${sph.el.toFixed(1)}°`}</Readout>
-            <Label>R</Label>
+            <Label>Dist</Label>
             <Readout>{sph.r.toFixed(2)}</Readout>
           </div>
         ) : (
@@ -282,7 +274,7 @@ function KeyframePanel({ keyframe: kf, index, total, prevId, nextId, allKeyframe
                 })
               }
             />
-            <Label>R</Label>
+            <Label>Dist</Label>
             <NumInput
               value={sph.r}
               step={0.05}
@@ -306,19 +298,10 @@ function KeyframePanel({ keyframe: kf, index, total, prevId, nextId, allKeyframe
             ))}
           </div>
         </Field>
-        <Field label="Time">
-          <NumInput
-            value={kf.time}
-            step={0.01}
-            precision={3}
-            suffix="s"
-            onChange={(v) => updateKeyframe(kf.id, { time: Math.max(0, v) })}
-          />
-        </Field>
         <Field label="Duration">
           <Readout>
             {dur !== null
-              ? `+${dur.toFixed(3)} s → k${(index + 2).toString().padStart(2, '0')}`
+              ? `+${dur.toFixed(3)} s`
               : '— (last)'}
           </Readout>
         </Field>
@@ -391,10 +374,11 @@ function KeyframePanel({ keyframe: kf, index, total, prevId, nextId, allKeyframe
             </button>
           </div>
         </Field>
-        <Field label="Air abs.">
+        <Field label="Air absorb">
           <NumInput
             value={kf.airAbsorption}
             step={0.01}
+            precision={2}
             onChange={(v) => updateKeyframe(kf.id, { airAbsorption: Math.max(0, Math.min(1, v)) })}
           />
         </Field>
@@ -403,9 +387,9 @@ function KeyframePanel({ keyframe: kf, index, total, prevId, nextId, allKeyframe
       <button
         type="button"
         onClick={() => removeKeyframe(kf.id)}
-        className="mt-2 flex items-center gap-1.5 self-start text-[12px] text-[--vu-red] hover:text-white hover:bg-[--vu-red] px-2 py-1 rounded-md border border-[--border-strong] hover:border-[--vu-red] transition-colors"
+        className="mt-2 flex items-center gap-1.5 self-start text-[11px] text-[--text-dim] hover:text-[--vu-red] px-2 py-1 rounded-md transition-colors"
       >
-        <Trash2 size={12} strokeWidth={1.75} />
+        <Trash2 size={11} strokeWidth={1.75} />
         Delete keyframe
       </button>
     </div>
@@ -424,19 +408,33 @@ function FilterField({ label, value, step, fallback, onChange }: FilterFieldProp
   const enabled = value !== null;
   return (
     <Field label={label}>
-      <div className="flex items-center gap-2">
-        <Toggle checked={enabled} onChange={(on) => onChange(on ? fallback : null)} />
-        {enabled ? (
+      {enabled ? (
+        <div className="flex items-center justify-end gap-2 group">
+          <button
+            type="button"
+            onClick={() => onChange(null)}
+            title="Bypass"
+            className="text-[10px] text-[--text-dim] hover:text-[--text-secondary] uppercase tracking-widest opacity-0 group-hover:opacity-100"
+          >
+            bypass
+          </button>
           <NumInput
             value={value as number}
             step={step}
-            suffix="Hz"
+            precision={value && value >= 1000 ? 1 : 0}
+            suffix={value && value >= 1000 ? 'kHz' : 'Hz'}
             onChange={(v) => onChange(Math.max(20, Math.min(22050, v)))}
           />
-        ) : (
-          <Readout>{formatHz(value)}</Readout>
-        )}
-      </div>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => onChange(fallback)}
+          className="text-[12px] text-[--text-dim] hover:text-[--text-primary] w-full text-right pr-1.5"
+        >
+          bypass
+        </button>
+      )}
     </Field>
   );
 }
