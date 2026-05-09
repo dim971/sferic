@@ -23,34 +23,39 @@ export function detectWavBitDepth(arrayBuffer: ArrayBuffer): number | null {
   return view.getUint16(34, true);
 }
 
-// Tauri 2 dialog filters on macOS have several edge cases (multi-part
-// extensions, AllowedFileTypes interactions, plugin version mismatches) that
-// can silently cause file selection to be blocked. The only fully reliable
-// behaviour is to pass NO filter at all. Type detection happens after the
-// user has picked.
+// Tauri 2 dialog filters on macOS choke on multi-part extensions (.spatialize.json)
+// — they cause the whole filter to silently match nothing. We use only single-part
+// extensions in the filter, then dispatch by the full suffix after the user picks.
 const PROJECT_FULL_SUFFIX = '.spatialize.json';
 const PROJECT_DEFAULT_EXT = 'spatialize.json';
 const AUDIO_EXTS = ['wav', 'mp3', 'flac', 'ogg', 'm4a', 'aac'];
 
 export async function pickProjectPathToOpen(): Promise<string | null> {
-  const picked = await open({ multiple: false });
+  const picked = await open({
+    multiple: false,
+    filters: [{ name: 'Spatialize project', extensions: ['json'] }],
+  });
   return typeof picked === 'string' ? picked : null;
 }
 
 export async function pickProjectPathToSave(defaultName: string): Promise<string | null> {
-  // Save dialog needs a default extension hint so the user gets the right
-  // suffix appended. Filter kept here because save filters don't gray
-  // anything out on macOS (the user types the name).
   return save({ defaultPath: `${defaultName}.${PROJECT_DEFAULT_EXT}` });
 }
 
-export async function pickAudioPath(title = 'Locate audio file'): Promise<string | null> {
-  const picked = await open({ title, multiple: false });
+export async function pickAudioPath(title = 'Open audio file'): Promise<string | null> {
+  const picked = await open({
+    title,
+    multiple: false,
+    filters: [{ name: 'Audio', extensions: AUDIO_EXTS }],
+  });
   return typeof picked === 'string' ? picked : null;
 }
 
 export async function pickAnyPath(): Promise<string | null> {
-  const picked = await open({ multiple: false });
+  const picked = await open({
+    multiple: false,
+    filters: [{ name: 'Audio or Spatialize project', extensions: [...AUDIO_EXTS, 'json'] }],
+  });
   return typeof picked === 'string' ? picked : null;
 }
 

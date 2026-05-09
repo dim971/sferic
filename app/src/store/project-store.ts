@@ -89,6 +89,10 @@ interface ProjectStore {
   shortcutsOpen: boolean;
   setRenderModalOpen: (open: boolean) => void;
   setShortcutsOpen: (open: boolean) => void;
+
+  toast: { kind: 'error' | 'success' | 'info'; message: string } | null;
+  showToast: (kind: 'error' | 'success' | 'info', message: string) => void;
+  dismissToast: () => void;
 }
 
 function inferName(path: string): string {
@@ -148,6 +152,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
   waveformZoom: 50,
   renderModalOpen: false,
   shortcutsOpen: false,
+  toast: null,
 
   loadAudioFile: async (path, arrayBuffer) => {
     const buffer = await AudioEngine.decode(arrayBuffer);
@@ -432,52 +437,77 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       console.error('Open project failed:', path, msg);
-      // eslint-disable-next-line no-alert
-      alert(`Couldn't open this project file:\n${msg}`);
+      get().showToast('error', `Couldn't open this project file:\n${msg}`);
       throw e;
     }
   },
 
   loadAudioFromDialog: async () => {
-    const path = await pickAudioPath('Open audio file');
+    let path: string | null = null;
+    try {
+      path = await pickAudioPath('Open audio file');
+    } catch (e) {
+      console.error('[OpenAudio] pickAudioPath threw:', e);
+      get().showToast('error', `Dialog failed: ${e instanceof Error ? e.message : String(e)}`);
+      return false;
+    }
     if (!path) return false;
+    console.log('[OpenAudio] picked:', path);
     try {
       const arrayBuffer = await readAudioBytes(path);
+      console.log('[OpenAudio] read', arrayBuffer.byteLength, 'bytes');
       await get().loadAudioFile(path, arrayBuffer);
+      const name = path.split(/[/\\]/).pop() ?? 'audio';
+      get().showToast('success', `Loaded · ${name}`);
       return true;
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      console.error('Open audio failed:', path, msg);
-      // eslint-disable-next-line no-alert
-      alert(`Couldn't open this audio file:\n${msg}`);
-      throw e;
+      console.error('[OpenAudio] failed:', path, msg);
+      get().showToast('error', `Couldn't open this audio file:\n${msg}`);
+      return false;
     }
   },
 
   openAnyFromDialog: async () => {
-    const path = await pickAnyPath();
-    if (!path) return false;
+    let path: string | null = null;
+    try {
+      path = await pickAnyPath();
+    } catch (e) {
+      console.error('[Open] pickAnyPath threw:', e);
+      get().showToast('error', `Dialog failed: ${e instanceof Error ? e.message : String(e)}`);
+      return false;
+    }
+    if (!path) {
+      console.log('[Open] cancelled by user');
+      return false;
+    }
+    console.log('[Open] picked:', path);
     try {
       if (isProjectPath(path)) {
+        console.log('[Open] loading as project');
         const { project, audioBuffer } = await loadProjectFile(path);
         get().setLoadedProject(project, path, audioBuffer);
+        get().showToast('success', `Loaded project · ${project.meta.name}`);
       } else {
-        // Anything that's not a .json / .spatialize.json gets treated as audio.
-        // decodeAudioData will throw a meaningful error if the file isn't
-        // actually decodable, which we surface below.
+        console.log('[Open] loading as audio');
         const arrayBuffer = await readAudioBytes(path);
+        console.log('[Open] read', arrayBuffer.byteLength, 'bytes');
         await get().loadAudioFile(path, arrayBuffer);
+        const name = path.split(/[/\\]/).pop() ?? 'audio';
+        get().showToast('success', `Loaded · ${name}`);
       }
       return true;
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      console.error('Open failed:', path, msg);
-      // eslint-disable-next-line no-alert
-      alert(`Couldn't open this file:\n${msg}`);
-      throw e;
+      console.error('[Open] failed:', path, msg);
+      get().showToast('error', `Couldn't open this file:\n${msg}`);
+      return false;
     }
   },
 
   setRenderModalOpen: (open) => set({ renderModalOpen: open }),
   setShortcutsOpen: (open) => set({ shortcutsOpen: open }),
+
+  showToast: (kind, message) => set({ toast: { kind, message } }),
+  dismissToast: () => set({ toast: null }),
 }));

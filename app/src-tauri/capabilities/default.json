@@ -5,12 +5,35 @@
   "windows": ["main"],
   "permissions": [
     "core:default",
+    "dialog:default",
     "dialog:allow-open",
     "dialog:allow-save",
+    "fs:default",
     "fs:allow-read-text-file",
     "fs:allow-write-text-file",
     "fs:allow-read-file",
     "fs:allow-write-file",
-    "fs:allow-exists"
+    "fs:allow-exists",
+    {
+      "identifier": "fs:scope",
+      "allow": [
+        { "path": "**" },
+        { "path": "/**" },
+        { "path": "$HOME" },
+        { "path": "$HOME/**" },
+        { "path": "$DESKTOP" },
+        { "path": "$DESKTOP/**" },
+        { "path": "$DOCUMENT" },
+        { "path": "$DOCUMENT/**" },
+        { "path": "$DOWNLOAD" },
+        { "path": "$DOWNLOAD/**" },
+        { "path": "$AUDIO" },
+        { "path": "$AUDIO/**" },
+        { "path": "$MUSIC" },
+        { "path": "$MUSIC/**" },
+        { "path": "/Volumes/**" },
+        { "path": "/tmp/**" }
+      ]
+    }
   ]
 }

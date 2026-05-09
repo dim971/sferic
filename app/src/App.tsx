@@ -1,6 +1,7 @@
 import { Plus, Minus } from 'lucide-react';
 import { Topbar } from '@/components/layout/Topbar';
 import { StatusBar } from '@/components/layout/StatusBar';
+import { Toast } from '@/components/layout/Toast';
 import { TransportBar, InsertKeyframeButton } from '@/components/transport/TransportBar';
 import { BpmDisplay } from '@/components/transport/BpmDisplay';
 import { BarBeatDisplay } from '@/components/transport/BarBeatDisplay';
@@ -128,6 +129,8 @@ export default function App() {
           </div>
         </div>
       )}
+
+      <Toast />
     </div>
   );
 }
