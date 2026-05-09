@@ -52,7 +52,7 @@ export function useKeyboardShortcuts(): void {
 
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'o') {
         e.preventDefault();
-        void state.openProjectFromDialog();
+        void state.openAnyFromDialog();
         return;
       }
 

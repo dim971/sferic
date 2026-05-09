@@ -13,7 +13,7 @@ const SHORTCUTS: { label: string; keys: string }[] = [
   { label: 'Deselect', keys: 'Esc' },
   { label: 'Save project', keys: '⌘S' },
   { label: 'Save project as…', keys: '⌘⇧S' },
-  { label: 'Open project', keys: '⌘O' },
+  { label: 'Open audio or project', keys: '⌘O' },
   { label: 'Open audio file', keys: '⌘I' },
   { label: 'Render…', keys: '⌘R' },
   { label: 'Toggle BINAURAL / STEREO', keys: '⌘M' },

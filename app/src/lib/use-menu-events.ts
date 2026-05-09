@@ -19,7 +19,7 @@ export function useMenuEvents(): void {
           void state.loadAudioFromDialog();
           return;
         case 'open_project':
-          void state.openProjectFromDialog();
+          void state.openAnyFromDialog();
           return;
         case 'save':
           void state.saveCurrentProject();

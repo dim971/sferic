@@ -26,7 +26,7 @@ export function MenuBar() {
   const monitoring = useProjectStore((s) => s.monitoring);
 
   const loadAudioFromDialog = useProjectStore((s) => s.loadAudioFromDialog);
-  const openProjectFromDialog = useProjectStore((s) => s.openProjectFromDialog);
+  const openAnyFromDialog = useProjectStore((s) => s.openAnyFromDialog);
   const saveCurrentProject = useProjectStore((s) => s.saveCurrentProject);
   const saveCurrentProjectAs = useProjectStore((s) => s.saveCurrentProjectAs);
   const setRenderModalOpen = useProjectStore((s) => s.setRenderModalOpen);
@@ -73,8 +73,8 @@ export function MenuBar() {
       {
         label: 'File',
         items: [
+          { kind: 'item', label: 'Open…', accel: '⌘O', onClick: fire(openAnyFromDialog) },
           { kind: 'item', label: 'Open audio…', accel: '⌘I', onClick: fire(loadAudioFromDialog) },
-          { kind: 'item', label: 'Open project…', accel: '⌘O', onClick: fire(openProjectFromDialog) },
           { kind: 'separator' },
           { kind: 'item', label: 'Save', accel: '⌘S', disabled: !project, onClick: fire(saveCurrentProject) },
           { kind: 'item', label: 'Save as…', accel: '⇧⌘S', disabled: !project, onClick: fire(saveCurrentProjectAs) },
@@ -231,7 +231,7 @@ export function MenuBar() {
     loopEnabled,
     monitoring,
     loadAudioFromDialog,
-    openProjectFromDialog,
+    openAnyFromDialog,
     saveCurrentProject,
     saveCurrentProjectAs,
     setRenderModalOpen,

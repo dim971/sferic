@@ -29,7 +29,7 @@ pub fn run() {
                         .build(handle)?,
                 )
                 .item(
-                    &MenuItemBuilder::with_id("open_project", "Open project…")
+                    &MenuItemBuilder::with_id("open_project", "Open…")
                         .accelerator("CmdOrCtrl+O")
                         .build(handle)?,
                 )
