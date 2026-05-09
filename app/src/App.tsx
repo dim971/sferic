@@ -32,7 +32,7 @@ export default function App() {
   const duration = audioBuffer?.duration ?? 0;
 
   return (
-    <div className="h-screen w-screen grid grid-rows-[44px_1fr_180px_22px] grid-cols-[1fr_1fr_320px] bg-[--bg-base] text-[--text-primary]">
+    <div className="h-screen w-screen grid grid-rows-[44px_1fr_220px_22px] grid-cols-[1fr_1fr_320px] bg-[--bg-base] text-[--text-primary]">
       <div className="col-span-3 border-b border-[--border-subtle]">
         <Topbar />
       </div>
@@ -54,52 +54,58 @@ export default function App() {
         <Inspector />
       </div>
 
-      <div className="col-span-3 bg-[--bg-panel] border-t border-[--border-subtle] grid grid-cols-[auto_1fr_auto] gap-3 px-3 py-2 items-stretch">
-        <div className="flex flex-col gap-1.5 justify-between min-w-[260px]">
+      <div className="col-span-3 bg-[--bg-panel] border-t border-[--border-subtle] flex flex-col gap-2 px-3 py-2 min-h-0">
+        {/* Top control row — all on one horizontal line per design */}
+        <div className="flex items-center gap-4 flex-wrap">
           <TransportBar />
+          <span className="w-px h-6 bg-[--border-subtle]" aria-hidden />
           {project && <Readouts />}
-          <div className="flex items-center gap-3 flex-wrap">
-            <BpmDisplay />
-            <BarBeatDisplay />
-            <MonitoringToggle />
-            <InsertKeyframeButton />
-          </div>
+          <span className="w-px h-6 bg-[--border-subtle]" aria-hidden />
+          <BpmDisplay />
+          <BarBeatDisplay />
+          <span className="w-px h-6 bg-[--border-subtle]" aria-hidden />
+          <MonitoringToggle />
+          <InsertKeyframeButton />
         </div>
-        <div className="flex flex-col gap-1 min-w-0">
-          <div className="flex-1 min-h-0">
-            <Waveform audioBuffer={audioBuffer} />
-          </div>
-          <Ruler duration={duration} />
-        </div>
-        <div className="flex flex-col items-end justify-between gap-1.5 min-w-[110px]">
-          <div className="flex flex-col gap-0.5">
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] tracking-widest uppercase font-mono text-[--text-dim]">L</span>
-              <MeterBar analyser={AudioEngine.getAnalyserL()} />
+
+        {/* Waveform area */}
+        <div className="flex-1 flex gap-2 min-h-0">
+          <div className="flex-1 flex flex-col gap-1 min-w-0 min-h-0">
+            <div className="flex-1 min-h-0">
+              <Waveform audioBuffer={audioBuffer} />
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] tracking-widest uppercase font-mono text-[--text-dim]">R</span>
-              <MeterBar analyser={AudioEngine.getAnalyserR()} />
-            </div>
+            <Ruler duration={duration} />
           </div>
-          <div className="flex items-center gap-1 text-[--text-dim]">
-            <button
-              type="button"
-              className="w-5 h-5 flex items-center justify-center rounded-md hover:bg-[--bg-panel-elev]"
-              aria-label="Zoom out"
-            >
-              <Minus size={12} />
-            </button>
-            <button
-              type="button"
-              className="w-5 h-5 flex items-center justify-center rounded-md hover:bg-[--bg-panel-elev]"
-              aria-label="Zoom in"
-            >
-              <Plus size={12} />
-            </button>
-            <span className="font-mono text-[10px] text-[--text-dim] tabular-nums ml-1">
-              {project ? `${project.keyframes.length} kf` : ''}
-            </span>
+          <div className="flex flex-col items-end justify-between gap-1.5 min-w-[110px]">
+            <div className="flex flex-col gap-0.5">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] tracking-widest uppercase font-mono text-[--text-dim]">L</span>
+                <MeterBar analyser={AudioEngine.getAnalyserL()} />
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] tracking-widest uppercase font-mono text-[--text-dim]">R</span>
+                <MeterBar analyser={AudioEngine.getAnalyserR()} />
+              </div>
+            </div>
+            <div className="flex items-center gap-1 text-[--text-dim]">
+              <button
+                type="button"
+                className="w-5 h-5 flex items-center justify-center rounded-md hover:bg-[--bg-panel-elev]"
+                aria-label="Zoom out"
+              >
+                <Minus size={12} />
+              </button>
+              <button
+                type="button"
+                className="w-5 h-5 flex items-center justify-center rounded-md hover:bg-[--bg-panel-elev]"
+                aria-label="Zoom in"
+              >
+                <Plus size={12} />
+              </button>
+              <span className="font-mono text-[10px] text-[--text-dim] tabular-nums ml-1">
+                {project ? `${project.keyframes.length} kf` : '0 kf'}
+              </span>
+            </div>
           </div>
         </div>
       </div>

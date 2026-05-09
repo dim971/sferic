@@ -1,7 +1,7 @@
 import { useProjectStore } from '@/store/project-store';
 import { interpolatePosition, cartesianToSpherical } from '@/lib/math3d';
 
-function fmt(v: number, digits = 1): string {
+function fmt(v: number, digits = 2): string {
   return v >= 0 ? `+${v.toFixed(digits)}` : v.toFixed(digits);
 }
 
@@ -21,15 +21,11 @@ export function Readouts() {
   ];
 
   return (
-    <div className="grid grid-cols-5 gap-x-2 gap-y-0.5 text-[10px] font-mono tabular-nums leading-tight">
+    <div className="flex items-center gap-3 text-[11px] font-mono tabular-nums">
       {cells.map((c) => (
-        <span key={c.label} className="text-[--text-dim]">
-          {c.label}
-        </span>
-      ))}
-      {cells.map((c) => (
-        <span key={c.label + 'v'} className="text-[--text-secondary]">
-          {c.value}
+        <span key={c.label} className="flex items-baseline gap-1">
+          <span className="text-[--text-dim] tracking-widest uppercase text-[10px]">{c.label}</span>
+          <span className="text-[--text-secondary]">{c.value}</span>
         </span>
       ))}
     </div>
