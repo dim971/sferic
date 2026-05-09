@@ -20,11 +20,13 @@ import { useProjectStore } from '@/store/project-store';
 import { useTransportSync } from '@/lib/use-transport-sync';
 import { useKeyboardShortcuts } from '@/lib/use-keyboard-shortcuts';
 import { useMenuEvents } from '@/lib/use-menu-events';
+import { useFileDrop } from '@/lib/use-file-drop';
 
 export default function App() {
   useTransportSync();
   useKeyboardShortcuts();
   useMenuEvents();
+  const { dragOver } = useFileDrop();
   const audioBuffer = useProjectStore((s) => s.audioBuffer);
   const project = useProjectStore((s) => s.project);
   const renderModalOpen = useProjectStore((s) => s.renderModalOpen);
@@ -117,6 +119,15 @@ export default function App() {
         <RenderModal onClose={() => setRenderModalOpen(false)} />
       )}
       {shortcutsOpen && <ShortcutsHelp onClose={() => setShortcutsOpen(false)} />}
+
+      {dragOver && (
+        <div className="fixed inset-0 z-50 pointer-events-none flex items-center justify-center">
+          <div className="absolute inset-2 rounded-lg border-2 border-dashed border-[--accent] bg-[--accent-soft]/20" />
+          <div className="relative px-6 py-3 rounded-md bg-[--bg-panel] border border-[--accent] text-[--accent] text-[14px] font-medium">
+            Drop to load · audio or .spatialize.json
+          </div>
+        </div>
+      )}
     </div>
   );
 }

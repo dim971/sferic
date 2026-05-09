@@ -66,6 +66,11 @@ export function isProjectPath(path: string): boolean {
   return path.endsWith(`.${PROJECT_EXT}`) || path.endsWith('.json');
 }
 
+export function isAudioPath(path: string): boolean {
+  const lower = path.toLowerCase();
+  return AUDIO_EXTS.some((ext) => lower.endsWith(`.${ext}`));
+}
+
 export async function saveProjectFile(path: string, project: Project): Promise<Project> {
   const stamped: Project = {
     ...project,
