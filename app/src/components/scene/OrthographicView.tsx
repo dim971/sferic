@@ -208,15 +208,16 @@ export function OrthographicView({ projection }: OrthographicViewProps) {
               cy={0}
               r={r}
               fill="none"
-              stroke="#2a2e38"
-              strokeWidth={r === 1 ? 0.006 : 0.003}
-              strokeDasharray={r === 1 ? undefined : '0.02 0.02'}
+              stroke="#2f333d"
+              strokeWidth={r === 1 ? 0.007 : 0.004}
+              strokeDasharray={r === 1 ? undefined : '0.025 0.018'}
+              opacity={r === 1 ? 0.85 : 0.55}
             />
           ))}
 
           {/* Axes */}
-          <line x1={-half} y1={0} x2={half} y2={0} stroke="#1f222a" strokeWidth={0.003} />
-          <line x1={0} y1={-half} x2={0} y2={half} stroke="#1f222a" strokeWidth={0.003} />
+          <line x1={-half} y1={0} x2={half} y2={0} stroke="#1f222a" strokeWidth={0.0035} />
+          <line x1={0} y1={-half} x2={0} y2={half} stroke="#1f222a" strokeWidth={0.0035} />
 
           {/* Axis labels */}
           <text
@@ -257,7 +258,7 @@ export function OrthographicView({ projection }: OrthographicViewProps) {
             {meta.bottomAxis}
           </text>
 
-          {/* Path */}
+          {/* Path connecting keyframes in time order — solid orange polygon */}
           {sortedKfs.length > 1 && (
             <path
               d={sortedKfs
@@ -268,9 +269,9 @@ export function OrthographicView({ projection }: OrthographicViewProps) {
                 .join(' ')}
               fill="none"
               stroke="#F87328"
-              strokeOpacity={0.5}
+              strokeOpacity={0.6}
               strokeWidth={0.008}
-              strokeDasharray="0.025 0.02"
+              strokeLinejoin="round"
             />
           )}
 
