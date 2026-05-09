@@ -4,7 +4,7 @@ import { save } from '@tauri-apps/plugin-dialog';
 import { writeFile } from '@tauri-apps/plugin-fs';
 import { useProjectStore } from '@/store/project-store';
 import { renderProject } from '@/lib/render-offline';
-import { encodeWav16 } from '@/lib/wav-encoder';
+import { encodeWav, type WavBitDepth } from '@/lib/wav-encoder';
 import { encodeMp3, type Mp3Bitrate } from '@/lib/mp3-encoder';
 
 interface RenderModalProps {
@@ -13,7 +13,20 @@ interface RenderModalProps {
 
 type Stage = 'idle' | 'rendering' | 'encoding' | 'saving' | 'done' | 'error';
 type Format = 'wav' | 'mp3';
+type Range = 'full' | 'custom';
 const BITRATES: Mp3Bitrate[] = [192, 256, 320];
+const BIT_DEPTHS: WavBitDepth[] = [16, 24, 32];
+
+function bitDepthLabel(b: WavBitDepth): string {
+  return b === 32 ? '32f' : String(b);
+}
+
+function formatTime(sec: number): string {
+  if (!isFinite(sec) || sec < 0) sec = 0;
+  const m = Math.floor(sec / 60);
+  const s = (sec % 60).toFixed(2).padStart(5, '0');
+  return `${m}:${s}`;
+}
 
 export function RenderModal({ onClose }: RenderModalProps) {
   const project = useProjectStore((s) => s.project);
@@ -22,19 +35,34 @@ export function RenderModal({ onClose }: RenderModalProps) {
   const [error, setError] = useState<string | null>(null);
   const [format, setFormat] = useState<Format>('wav');
   const [bitrate, setBitrate] = useState<Mp3Bitrate>(320);
+  const [bitDepth, setBitDepth] = useState<WavBitDepth>(24);
+  const [dither, setDither] = useState(true);
+  const [range, setRange] = useState<Range>('full');
+  const duration = audioBuffer?.duration ?? 0;
+  const [start, setStart] = useState(0);
+  const [end, setEnd] = useState(duration);
 
   if (!project || !audioBuffer) {
     return null;
   }
 
+  const effectiveStart = range === 'full' ? 0 : Math.max(0, Math.min(start, duration));
+  const effectiveEnd = range === 'full' ? duration : Math.max(effectiveStart + 0.01, Math.min(end, duration));
+
   const handleRender = async () => {
     setError(null);
     setStage('rendering');
     try {
-      const rendered = await renderProject(project, audioBuffer);
+      const rendered = await renderProject(
+        project,
+        audioBuffer,
+        range === 'custom' ? { startSec: effectiveStart, endSec: effectiveEnd } : undefined,
+      );
       setStage('encoding');
       const bytes =
-        format === 'wav' ? encodeWav16(rendered) : encodeMp3(rendered, bitrate);
+        format === 'wav'
+          ? encodeWav(rendered, { bitDepth, dither: bitDepth === 16 ? dither : false })
+          : encodeMp3(rendered, bitrate);
       setStage('saving');
       const ext = format;
       const path = await save({
@@ -62,7 +90,7 @@ export function RenderModal({ onClose }: RenderModalProps) {
   const stageLabel: Record<Stage, string> = {
     idle: '',
     rendering: 'Rendu offline en cours…',
-    encoding: format === 'wav' ? 'Encodage WAV…' : 'Encodage MP3…',
+    encoding: format === 'wav' ? `Encodage WAV ${bitDepthLabel(bitDepth)}-bit…` : 'Encodage MP3…',
     saving: 'Sauvegarde…',
     done: 'Exporté ✓',
     error: 'Erreur',
@@ -76,7 +104,7 @@ export function RenderModal({ onClose }: RenderModalProps) {
       }}
     >
       <div
-        className="bg-[--bg-panel] border border-[--border-strong] rounded-lg w-[440px] p-4 shadow-xl"
+        className="bg-[--bg-panel] border border-[--border-strong] rounded-lg w-[480px] p-4 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
@@ -96,11 +124,6 @@ export function RenderModal({ onClose }: RenderModalProps) {
           <Row label="Project">
             <span className="text-[--text-secondary]">{project.meta.name}</span>
           </Row>
-          <Row label="Duration">
-            <span className="font-mono tabular-nums text-[--text-secondary]">
-              {audioBuffer.duration.toFixed(2)} s
-            </span>
-          </Row>
           <Row label="Format">
             <div className="flex gap-1">
               {(['wav', 'mp3'] as const).map((f) => (
@@ -110,16 +133,36 @@ export function RenderModal({ onClose }: RenderModalProps) {
               ))}
             </div>
           </Row>
+          {format === 'wav' && (
+            <>
+              <Row label="Bit depth">
+                <div className="flex gap-1">
+                  {BIT_DEPTHS.map((b) => (
+                    <Chip
+                      key={b}
+                      active={bitDepth === b}
+                      onClick={() => setBitDepth(b)}
+                      disabled={busy}
+                    >
+                      {bitDepthLabel(b)}
+                    </Chip>
+                  ))}
+                  <span className="self-center text-[10px] text-[--text-dim] ml-1">bit</span>
+                </div>
+              </Row>
+              {bitDepth === 16 && (
+                <Row label="Dither">
+                  <Toggle checked={dither} onChange={setDither} disabled={busy} />
+                  <span className="ml-2 text-[10px] text-[--text-dim]">TPDF, 1 LSB</span>
+                </Row>
+              )}
+            </>
+          )}
           {format === 'mp3' && (
             <Row label="Bitrate">
               <div className="flex gap-1">
                 {BITRATES.map((b) => (
-                  <Chip
-                    key={b}
-                    active={bitrate === b}
-                    onClick={() => setBitrate(b)}
-                    disabled={busy}
-                  >
+                  <Chip key={b} active={bitrate === b} onClick={() => setBitrate(b)} disabled={busy}>
                     {b}
                   </Chip>
                 ))}
@@ -127,6 +170,48 @@ export function RenderModal({ onClose }: RenderModalProps) {
               </div>
             </Row>
           )}
+
+          <Row label="Range">
+            <div className="flex flex-col gap-2">
+              <div className="flex gap-1">
+                {(['full', 'custom'] as const).map((r) => (
+                  <Chip key={r} active={range === r} onClick={() => setRange(r)} disabled={busy}>
+                    {r === 'full' ? 'full track' : 'custom'}
+                  </Chip>
+                ))}
+              </div>
+              {range === 'custom' && (
+                <div className="flex items-center gap-2 text-[11px] text-[--text-dim]">
+                  <span>start</span>
+                  <input
+                    type="number"
+                    step={0.01}
+                    min={0}
+                    max={duration}
+                    value={start}
+                    onChange={(e) => setStart(Math.max(0, parseFloat(e.currentTarget.value) || 0))}
+                    disabled={busy}
+                    className="bg-[--bg-input] text-[--text-primary] font-mono px-2 py-1 rounded-md w-24"
+                  />
+                  <span>end</span>
+                  <input
+                    type="number"
+                    step={0.01}
+                    min={0}
+                    max={duration}
+                    value={end || duration}
+                    onChange={(e) => setEnd(parseFloat(e.currentTarget.value) || duration)}
+                    disabled={busy}
+                    className="bg-[--bg-input] text-[--text-primary] font-mono px-2 py-1 rounded-md w-24"
+                  />
+                  <span className="ml-auto text-[--text-secondary] font-mono">
+                    {formatTime(effectiveEnd - effectiveStart)}
+                  </span>
+                </div>
+              )}
+            </div>
+          </Row>
+
           <Row label="Sample rate">
             <span className="font-mono text-[--text-secondary]">{audioBuffer.sampleRate} Hz</span>
           </Row>
@@ -172,10 +257,6 @@ export function RenderModal({ onClose }: RenderModalProps) {
             </button>
           </div>
         </div>
-
-        <p className="mt-3 text-[10px] text-[--text-dim]">
-          24/32-bit float, dithering, sélection de plage, FLAC : différés à v1.5.
-        </p>
       </div>
     </div>
   );
@@ -185,7 +266,7 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
   return (
     <div className="grid grid-cols-[100px_1fr] gap-2 items-center">
       <span className="text-[11px] text-[--text-dim]">{label}</span>
-      <div>{children}</div>
+      <div className="flex items-center">{children}</div>
     </div>
   );
 }
@@ -210,6 +291,33 @@ function Chip({ active, onClick, disabled, children }: ChipProps) {
       }`}
     >
       {children}
+    </button>
+  );
+}
+
+interface ToggleProps {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  disabled?: boolean;
+}
+
+function Toggle({ checked, onChange, disabled }: ToggleProps) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      disabled={disabled}
+      onClick={() => onChange(!checked)}
+      className={`relative inline-flex h-3 w-6 rounded-full transition-colors disabled:opacity-40 ${
+        checked ? 'bg-[--accent]' : 'bg-[--bg-input]'
+      }`}
+    >
+      <span
+        className={`absolute top-0.5 h-2 w-2 rounded-full bg-white transition-transform ${
+          checked ? 'translate-x-3.5' : 'translate-x-0.5'
+        }`}
+      />
     </button>
   );
 }
