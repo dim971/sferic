@@ -87,24 +87,46 @@ export function Waveform({ audioBuffer }: WaveformProps) {
     );
   }
 
-  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+  const wavePointerRef = useRef<{ origin: number; start: number } | null>(null);
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return;
     const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const t = Math.max(0, Math.min((x / rect.width) * duration, duration));
+    const t = Math.max(0, Math.min(((e.clientX - rect.left) / rect.width) * duration, duration));
+
     if (e.shiftKey) {
       const pos = interpolatePosition(keyframes, t);
       addKeyframe(pos, t);
-    } else if (e.altKey) {
-      // Alt+click sets loop end (or start if before current loop start)
-      if (loopRegion) {
-        if (t > loopRegion.start) setLoopRegion({ start: loopRegion.start, end: t });
-        else setLoopRegion({ start: t, end: loopRegion.end });
-      } else {
-        setLoopRegion({ start: 0, end: t });
-      }
-    } else {
-      seek(t);
+      return;
     }
+
+    if (e.altKey) {
+      // Alt+drag defines a loop region (drag from start to end).
+      const containerRect = rect;
+      wavePointerRef.current = { origin: t, start: t };
+      setLoopRegion({ start: t, end: Math.min(duration, t + 0.001) });
+      const onMove = (ev: PointerEvent) => {
+        const tt = Math.max(
+          0,
+          Math.min(((ev.clientX - containerRect.left) / containerRect.width) * duration, duration),
+        );
+        const ref = wavePointerRef.current;
+        if (!ref) return;
+        const start = Math.min(ref.origin, tt);
+        const end = Math.max(ref.origin, tt);
+        setLoopRegion({ start, end });
+      };
+      const onUp = () => {
+        wavePointerRef.current = null;
+        document.removeEventListener('pointermove', onMove);
+        document.removeEventListener('pointerup', onUp);
+      };
+      document.addEventListener('pointermove', onMove);
+      document.addEventListener('pointerup', onUp);
+      return;
+    }
+
+    seek(t);
   };
 
   return (
@@ -118,7 +140,7 @@ export function Waveform({ audioBuffer }: WaveformProps) {
       />
       <div
         className="relative bg-[--waveform-bg] rounded-md cursor-crosshair flex-1 min-h-0 overflow-hidden"
-        onClick={handleClick}
+        onPointerDown={handlePointerDown}
       >
         <div ref={containerRef} className="h-full" />
         <div className="absolute inset-0 pointer-events-none">
@@ -207,45 +229,94 @@ function KeyframeDiamondRow({
   onRemove,
 }: KeyframeDiamondRowProps) {
   return (
-    <div className="relative h-3 mb-1">
-      {keyframes.map((kf) => {
-        const left = duration > 0 ? (kf.time / duration) * 100 : 0;
-        const isSel = kf.id === selectedId;
-        return (
-          <div
-            key={kf.id}
-            className="absolute top-0 -translate-x-1/2 group"
-            style={{ left: `${left}%` }}
-          >
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onSelect(kf.id);
-              }}
-              aria-label={`Keyframe at ${kf.time.toFixed(2)}s`}
-              className={`block w-2.5 h-2.5 rotate-45 transition-colors ${
-                isSel
-                  ? 'bg-[--accent] outline outline-1 outline-offset-1 outline-[--accent]'
-                  : 'bg-[--accent] opacity-70 hover:opacity-100'
-              }`}
-            />
-            {isSel && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onRemove(kf.id);
-                }}
-                aria-label="Remove keyframe"
-                className="absolute -top-4 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-[--bg-panel-elev] text-[--vu-red] flex items-center justify-center opacity-0 group-hover:opacity-100"
-              >
-                <X size={10} strokeWidth={2.5} />
-              </button>
-            )}
-          </div>
-        );
-      })}
+    <div className="relative h-3 mb-1" data-row-keyframes>
+      {keyframes.map((kf) => (
+        <KeyframeDiamond
+          key={kf.id}
+          keyframe={kf}
+          duration={duration}
+          selected={kf.id === selectedId}
+          onSelect={onSelect}
+          onRemove={onRemove}
+        />
+      ))}
+    </div>
+  );
+}
+
+function KeyframeDiamond({
+  keyframe,
+  duration,
+  selected,
+  onSelect,
+  onRemove,
+}: {
+  keyframe: { id: string; time: number };
+  duration: number;
+  selected: boolean;
+  onSelect: (id: string) => void;
+  onRemove: (id: string) => void;
+}) {
+  const updateKeyframe = useProjectStore((s) => s.updateKeyframe);
+  const left = duration > 0 ? (keyframe.time / duration) * 100 : 0;
+
+  const handleDown = (e: React.PointerEvent<HTMLButtonElement>) => {
+    if (e.button !== 0) return;
+    e.stopPropagation();
+    onSelect(keyframe.id);
+    if (duration <= 0) return;
+
+    const rowEl =
+      (e.currentTarget.closest('[data-row-keyframes]') as HTMLElement | null) ?? null;
+    if (!rowEl) return;
+    const rect = rowEl.getBoundingClientRect();
+    let moved = false;
+
+    const onMove = (ev: PointerEvent) => {
+      moved = true;
+      const t = Math.max(0, Math.min(((ev.clientX - rect.left) / rect.width) * duration, duration));
+      updateKeyframe(keyframe.id, { time: t });
+    };
+    const onUp = (ev: PointerEvent) => {
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      // If never moved AND it was a click meant for delete (X button), the X has its own handler.
+      void ev;
+      void moved;
+    };
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
+  };
+
+  return (
+    <div
+      className="absolute top-0 -translate-x-1/2 group"
+      style={{ left: `${left}%` }}
+    >
+      <button
+        type="button"
+        onPointerDown={handleDown}
+        aria-label={`Keyframe at ${keyframe.time.toFixed(2)}s — drag to move in time`}
+        title={`${keyframe.time.toFixed(2)}s — drag to move`}
+        className={`block w-2.5 h-2.5 rotate-45 transition-colors cursor-grab active:cursor-grabbing ${
+          selected
+            ? 'bg-[--accent] outline outline-1 outline-offset-1 outline-[--accent]'
+            : 'bg-[--accent] opacity-70 hover:opacity-100'
+        }`}
+      />
+      {selected && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemove(keyframe.id);
+          }}
+          aria-label="Remove keyframe"
+          className="absolute -top-4 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-[--bg-panel-elev] text-[--vu-red] flex items-center justify-center opacity-0 group-hover:opacity-100"
+        >
+          <X size={10} strokeWidth={2.5} />
+        </button>
+      )}
     </div>
   );
 }
