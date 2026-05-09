@@ -10,6 +10,8 @@ import { Readouts } from '@/components/timeline/Readouts';
 import { Waveform } from '@/components/timeline/Waveform';
 import { Ruler } from '@/components/timeline/Ruler';
 import { OrthographicView } from '@/components/scene/OrthographicView';
+import { PerspectiveScene } from '@/components/scene/PerspectiveScene';
+import { Box, Square } from 'lucide-react';
 import { Inspector } from '@/components/inspector/Inspector';
 import { RenderModal } from '@/components/render/RenderModal';
 import { ShortcutsHelp } from '@/components/help/ShortcutsHelp';
@@ -29,6 +31,8 @@ export default function App() {
   const shortcutsOpen = useProjectStore((s) => s.shortcutsOpen);
   const setRenderModalOpen = useProjectStore((s) => s.setRenderModalOpen);
   const setShortcutsOpen = useProjectStore((s) => s.setShortcutsOpen);
+  const viewMode = useProjectStore((s) => s.viewMode);
+  const setViewMode = useProjectStore((s) => s.setViewMode);
   const duration = audioBuffer?.duration ?? 0;
 
   return (
@@ -38,12 +42,22 @@ export default function App() {
       </div>
 
       {audioBuffer ? (
-        <>
-          <OrthographicView projection="top" />
-          <div className="border-l border-[--border-subtle] min-h-0 min-w-0">
-            <OrthographicView projection="side" />
+        viewMode === '2d' ? (
+          <>
+            <div className="relative">
+              <OrthographicView projection="top" />
+              <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
+            </div>
+            <div className="border-l border-[--border-subtle] min-h-0 min-w-0">
+              <OrthographicView projection="side" />
+            </div>
+          </>
+        ) : (
+          <div className="col-span-2 relative min-h-0 min-w-0">
+            <PerspectiveScene />
+            <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
           </div>
-        </>
+        )
       ) : (
         <div className="col-span-2 bg-[--bg-panel] border-r border-[--border-subtle] flex items-center justify-center text-[--text-dim] text-[12px]">
           Open an audio file to begin — File ▸ Open audio…  (⌘I)
@@ -118,6 +132,43 @@ export default function App() {
         <RenderModal onClose={() => setRenderModalOpen(false)} />
       )}
       {shortcutsOpen && <ShortcutsHelp onClose={() => setShortcutsOpen(false)} />}
+    </div>
+  );
+}
+
+function ViewModeToggle({
+  viewMode,
+  setViewMode,
+}: {
+  viewMode: '2d' | '3d';
+  setViewMode: (mode: '2d' | '3d') => void;
+}) {
+  return (
+    <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 flex items-center gap-0.5 rounded-md border border-[--border-strong] bg-[--bg-panel-elev]/90 backdrop-blur p-0.5 text-[10px] tracking-widest uppercase font-mono">
+      <button
+        type="button"
+        onClick={() => setViewMode('2d')}
+        className={`flex items-center gap-1 px-2 py-0.5 rounded transition-colors ${
+          viewMode === '2d'
+            ? 'bg-[--accent] text-white'
+            : 'text-[--text-dim] hover:text-[--text-secondary]'
+        }`}
+      >
+        <Square size={10} strokeWidth={2} />
+        2D
+      </button>
+      <button
+        type="button"
+        onClick={() => setViewMode('3d')}
+        className={`flex items-center gap-1 px-2 py-0.5 rounded transition-colors ${
+          viewMode === '3d'
+            ? 'bg-[--accent] text-white'
+            : 'text-[--text-dim] hover:text-[--text-secondary]'
+        }`}
+      >
+        <Box size={10} strokeWidth={2} />
+        3D
+      </button>
     </div>
   );
 }

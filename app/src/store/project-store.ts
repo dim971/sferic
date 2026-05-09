@@ -4,6 +4,7 @@ import type {
   Project,
   Projection,
   SpatialKeyframe,
+  ViewMode,
   ViewState,
   AudioMeta,
 } from '@/types/project';
@@ -37,6 +38,7 @@ interface ProjectStore {
   orbitEnabled: boolean;
   viewStates: Record<Projection, ViewState>;
   snapAngleDeg: number;
+  viewMode: ViewMode;
 
   loadAudioFile: (path: string, arrayBuffer: ArrayBuffer) => Promise<void>;
   setLoadedProject: (project: Project, path: string | null, audioBuffer: AudioBuffer) => void;
@@ -60,6 +62,7 @@ interface ProjectStore {
   setOrbitEnabled: (enabled: boolean) => void;
   setViewState: (which: Projection, partial: Partial<ViewState>) => void;
   setSnapAngle: (deg: number) => void;
+  setViewMode: (mode: ViewMode) => void;
   addKeyframeAtProjection: (proj: Projection, u: number, v: number) => void;
   moveKeyframe: (id: string, proj: Projection, u: number, v: number) => void;
 
@@ -128,6 +131,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
   orbitEnabled: true,
   viewStates: DEFAULT_VIEW_STATES,
   snapAngleDeg: 0,
+  viewMode: '2d',
   renderModalOpen: false,
   shortcutsOpen: false,
 
@@ -321,6 +325,8 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     })),
 
   setSnapAngle: (deg) => set({ snapAngleDeg: deg }),
+
+  setViewMode: (mode) => set({ viewMode: mode }),
 
   addKeyframeAtProjection: (proj, u, v) => {
     const state = get();

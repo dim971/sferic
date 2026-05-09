@@ -49,6 +49,8 @@ export interface Project {
 
 export type Projection = 'top' | 'side';
 
+export type ViewMode = '2d' | '3d';
+
 export interface ViewState {
   zoom: number;
   locked: boolean;
