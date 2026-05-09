@@ -20,6 +20,8 @@ export function Topbar() {
 
   const sampleRateK = audioBuffer ? Math.round(audioBuffer.sampleRate / 1000) : 0;
   const fileName = project?.audioFile.originalPath.split(/[/\\]/).pop() ?? '';
+  const bitDepth = project?.audioFile.sourceBitDepth;
+  const bitDepthLabel = bitDepth != null ? `${bitDepth}-bit` : '32-bit float';
   const renderDisabled = !audioBuffer;
   const { cpu, bufferSize } = useCpuMonitor();
 
@@ -73,7 +75,7 @@ export function Topbar() {
             <span className="text-[--text-dim] flex-shrink-0">·</span>
             <span className="font-mono text-[--text-dim] flex-shrink-0">{sampleRateK}kHz</span>
             <span className="text-[--text-dim] flex-shrink-0">·</span>
-            <span className="font-mono text-[--text-dim] flex-shrink-0">24-bit</span>
+            <span className="font-mono text-[--text-dim] flex-shrink-0">{bitDepthLabel}</span>
             {isDirty && (
               <span className="ml-1 flex items-center gap-1.5 text-[10px] tracking-widest uppercase px-2 py-0.5 rounded-md text-[--accent] border border-[--border-strong] flex-shrink-0">
                 <span className="w-1.5 h-1.5 rounded-full bg-[--accent]" aria-hidden />

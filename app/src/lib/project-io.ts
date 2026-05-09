@@ -9,6 +9,20 @@ export async function readAudioBytes(path: string): Promise<ArrayBuffer> {
   return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
 }
 
+/**
+ * Best-effort source bit-depth detection. Reads the WAV `fmt ` chunk if present.
+ * Returns null for non-WAV files (we have no header parser for MP3/FLAC/etc).
+ */
+export function detectWavBitDepth(arrayBuffer: ArrayBuffer): number | null {
+  if (arrayBuffer.byteLength < 44) return null;
+  const view = new DataView(arrayBuffer);
+  // RIFF .... WAVE
+  if (view.getUint32(0, false) !== 0x52494646) return null;
+  if (view.getUint32(8, false) !== 0x57415645) return null;
+  // bit depth at offset 34, little-endian uint16 (per WAV spec)
+  return view.getUint16(34, true);
+}
+
 const PROJECT_EXT = 'spatialize.json';
 const AUDIO_EXTS = ['wav', 'mp3', 'flac', 'ogg', 'm4a', 'aac'];
 

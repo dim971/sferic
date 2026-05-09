@@ -12,6 +12,7 @@ import { DEFAULT_KF_AUDIO, DEFAULT_SETTINGS, DEFAULT_VIEW_STATES } from '@/types
 import { AudioEngine } from '@/lib/audio-engine';
 import { detectBpm } from '@/lib/audio-analysis';
 import {
+  detectWavBitDepth,
   isProjectPath,
   loadProjectFile,
   pickAnyPath,
@@ -154,6 +155,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     AudioEngine.setMasterGain(get().masterGain);
     AudioEngine.setKeyframes([]);
     AudioEngine.setSettings(DEFAULT_SETTINGS);
+    const sourceBitDepth = detectWavBitDepth(arrayBuffer);
     const now = new Date().toISOString();
     const project: Project = {
       version: 2,
@@ -162,6 +164,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
         embeddedSampleRate: buffer.sampleRate,
         durationSec: buffer.duration,
         channels: buffer.numberOfChannels,
+        sourceBitDepth,
       },
       keyframes: [],
       settings: DEFAULT_SETTINGS,

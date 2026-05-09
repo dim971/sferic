@@ -31,6 +31,7 @@ export interface AudioFileMeta {
   embeddedSampleRate: number;
   durationSec: number;
   channels: number;
+  sourceBitDepth?: number | null;
 }
 
 export interface AudioMeta {
