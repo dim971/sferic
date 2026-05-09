@@ -47,7 +47,7 @@ export function BpmDisplay() {
           type="button"
           onClick={() => setEditing(true)}
           className={`hover:text-[var(--text-primary)] ${detecting ? 'text-[var(--text-dim)] italic' : 'text-[var(--text-secondary)]'}`}
-          title={detecting ? 'Détection BPM en cours… clic pour saisir manuellement' : 'Clic pour modifier'}
+          title={detecting ? 'Detecting BPM… click to enter manually' : 'Click to edit'}
         >
           {bpm !== null ? bpm : '…'}
         </button>

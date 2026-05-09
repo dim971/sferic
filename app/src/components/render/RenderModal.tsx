@@ -89,11 +89,11 @@ export function RenderModal({ onClose }: RenderModalProps) {
   const busy = stage === 'rendering' || stage === 'encoding' || stage === 'saving';
   const stageLabel: Record<Stage, string> = {
     idle: '',
-    rendering: 'Rendu offline en cours…',
-    encoding: format === 'wav' ? `Encodage WAV ${bitDepthLabel(bitDepth)}-bit…` : 'Encodage MP3…',
-    saving: 'Sauvegarde…',
-    done: 'Exporté ✓',
-    error: 'Erreur',
+    rendering: 'Offline render in progress…',
+    encoding: format === 'wav' ? `Encoding WAV ${bitDepthLabel(bitDepth)}-bit…` : 'Encoding MP3…',
+    saving: 'Saving…',
+    done: 'Exported ✓',
+    error: 'Error',
   };
 
   return (
@@ -216,7 +216,7 @@ export function RenderModal({ onClose }: RenderModalProps) {
             <span className="font-mono text-[var(--text-secondary)]">{audioBuffer.sampleRate} Hz</span>
           </Row>
           <Row label="Channels">
-            <span className="text-[var(--text-secondary)]">2 (stéréo HRTF)</span>
+            <span className="text-[var(--text-secondary)]">2 (stereo HRTF)</span>
           </Row>
           <Row label="Keyframes">
             <span className="font-mono text-[var(--text-secondary)]">

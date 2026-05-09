@@ -93,8 +93,8 @@ export async function loadProjectFile(
     audioOk = false;
   }
   if (!audioOk) {
-    const picked = await pickAudioPath('Localiser le fichier audio');
-    if (!picked) throw new Error('Fichier audio introuvable');
+    const picked = await pickAudioPath('Locate audio file');
+    if (!picked) throw new Error('Audio file not found');
     audioPath = picked;
     project.audioFile.originalPath = audioPath;
   }

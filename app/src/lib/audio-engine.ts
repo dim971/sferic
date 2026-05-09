@@ -648,7 +648,7 @@ class AudioEngineImpl {
       try {
         this.source.stop();
       } catch {
-        /* déjà arrêté */
+        /* already stopped */
       }
       this.source.disconnect();
       this.source = null;
