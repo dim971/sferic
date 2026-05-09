@@ -129,7 +129,7 @@ Pour les très gros fichiers (>1h), on peut déléguer l'encodage WAV à Rust vi
                                        waveform + ruler ; pleine largeur
 ```
 
-> La `<TransportBar />` historique est **fusionnée** dans `<Timeline />` (bloc gauche), comme dans le screenshot de référence (`design/Screen Shot 2026-05-08 at 22.03.51.png`). Voir `DESIGN.md §6` pour la grille interne de la timeline.
+> La `<TransportBar />` historique est **fusionnée** dans `<Timeline />` (bloc gauche), comme dans le screenshot de référence (`design/Screenshot 2026-05-09 at 08.53.47.png`). Voir `DESIGN.md §6` pour la grille interne de la timeline.
 
 Les deux scènes partagent le store : sélectionner ou drag un keyframe dans l'une se reflète dans l'autre. La vue Top reste fixe (caméra non-controllable) ; la vue Perspective accepte rotate/zoom via `OrbitControls`.
 

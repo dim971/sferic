@@ -112,7 +112,7 @@ Créer le squelette Tauri 2 + React + TypeScript + Tailwind dans un sous-dossier
 
 ## Design
 
-Le placeholder n'a presque rien à montrer, mais la **palette doit être en place dès cette phase** : tous les tokens de `DESIGN.md §1.1` sont déclarés dans `src/index.css`, et `App.tsx` utilise `bg-[--bg-base]` + `text-[--text-primary]`. Ouvrir `design/Screen Shot 2026-05-08 at 22.03.51.png` une fois pour calibrer l'œil sur le ton de noir attendu (très sombre, légèrement bleuté).
+Le placeholder n'a presque rien à montrer, mais la **palette doit être en place dès cette phase** : tous les tokens de `DESIGN.md §1.1` sont déclarés dans `src/index.css`, et `App.tsx` utilise `bg-[--bg-base]` + `text-[--text-primary]`. Ouvrir `design/Screenshot 2026-05-09 at 08.53.47.png` une fois pour calibrer l'œil sur le ton de noir attendu (très sombre, légèrement bleuté).
 
 ## Critère d'acceptation
 

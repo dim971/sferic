@@ -121,7 +121,7 @@ Produire des binaires natifs pour macOS, Windows et Linux et automatiser ce buil
 
 ## Design
 
-Avant de tagger `v0.1.0`, faire une **passe finale de QA visuel** : ouvrir `design/Screen Shot 2026-05-08 at 22.03.51.png` côte à côte avec l'app installée et lister les écarts. Tout écart non documenté dans `DESIGN.md §9` (stubs reconnus) doit être corrigé ou tracé en issue.
+Avant de tagger `v0.1.0`, faire une **passe finale de QA visuel** : ouvrir `design/Screenshot 2026-05-09 at 08.53.47.png` côte à côte avec l'app installée et lister les écarts. Tout écart non documenté dans `DESIGN.md §9` (stubs reconnus) doit être corrigé ou tracé en issue.
 
 ## Critère d'acceptation
 

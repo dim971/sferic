@@ -1,6 +1,6 @@
 # DESIGN — Système visuel de Spatialize
 
-> **Source de vérité visuelle** : `design/Screen Shot 2026-05-08 at 22.03.51.png`
+> **Source de vérité visuelle** : `design/Screenshot 2026-05-09 at 08.53.47.png`
 > Cette image définit le rendu cible. Toute divergence doit être justifiée et discutée.
 
 L'application reprend les codes d'un DAW pro : **fond très sombre, accent orange dominant, typographie compacte, lectures numériques denses**. Tous les écrans vivent dans cette même grammaire.
@@ -290,7 +290,7 @@ Marquer les stubs avec une petite mention `· stub` en `--text-dim` dans le labe
 
 ## 10. Référence visuelle
 
-L'image `design/Screen Shot 2026-05-08 at 22.03.51.png` doit servir de **carte au trésor** : à chaque phase qui touche à l'UI, l'agent ouvre cette image et compare le rendu local pixel à pixel (proportions, couleurs, hiérarchie). Tout écart visible doit être corrigé avant le commit de phase, ou explicitement noté dans le récapitulatif de phase.
+L'image `design/Screenshot 2026-05-09 at 08.53.47.png` doit servir de **carte au trésor** : à chaque phase qui touche à l'UI, l'agent ouvre cette image et compare le rendu local pixel à pixel (proportions, couleurs, hiérarchie). Tout écart visible doit être corrigé avant le commit de phase, ou explicitement noté dans le récapitulatif de phase.
 
 Ordre de priorité quand il faut trancher :
 1. **Le screenshot** (si visuellement cassant).
