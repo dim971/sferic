@@ -88,12 +88,27 @@ function generateRoomIR(ctx: AudioContext, durationSec = 1.5): AudioBuffer {
   return ir;
 }
 
+interface RenderCapacityEvent {
+  averageLoad?: number;
+  peakLoad?: number;
+}
+
+interface RenderCapacityHandle {
+  addEventListener: (type: 'update', listener: (e: RenderCapacityEvent) => void) => void;
+  start: (options?: { updateInterval?: number }) => void;
+}
+
+interface AudioContextWithCapacity extends AudioContext {
+  renderCapacity?: RenderCapacityHandle;
+}
+
 class AudioEngineImpl {
   private ctx: AudioContext | null = null;
   private buffer: AudioBuffer | null = null;
   private currentKeyframes: SpatialKeyframe[] = [];
   private settings: ProjectSettings | null = null;
   private monitoring: 'binaural' | 'stereo' = 'binaural';
+  private renderCapacityValue = -1;
 
   // Per-play
   private source: AudioBufferSourceNode | null = null;
@@ -121,7 +136,22 @@ class AudioEngineImpl {
   private masterGain = 1;
 
   getContext(): AudioContext {
-    if (!this.ctx) this.ctx = new AudioContext();
+    if (!this.ctx) {
+      this.ctx = new AudioContext();
+      const cap = (this.ctx as AudioContextWithCapacity).renderCapacity;
+      if (cap && typeof cap.addEventListener === 'function') {
+        cap.addEventListener('update', (e) => {
+          if (typeof e.averageLoad === 'number') {
+            this.renderCapacityValue = e.averageLoad * 100;
+          }
+        });
+        try {
+          cap.start({ updateInterval: 0.25 });
+        } catch {
+          /* not supported, fall through to heuristic */
+        }
+      }
+    }
     return this.ctx;
   }
 
@@ -187,6 +217,9 @@ class AudioEngineImpl {
   }
 
   getCpuApproxPercent(): number {
+    if (this.renderCapacityValue >= 0) {
+      return Math.min(99.9, this.renderCapacityValue);
+    }
     const ctx = this.ctx;
     if (!ctx) return 0;
     const lat = (ctx as AudioContext & { outputLatency?: number }).outputLatency ?? 0;
