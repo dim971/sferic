@@ -326,44 +326,54 @@ export function OrthographicView({ projection }: OrthographicViewProps) {
           <line x1={-half} y1={0} x2={half} y2={0} stroke="#1f222a" strokeWidth={0.0035} />
           <line x1={0} y1={-half} x2={0} y2={half} stroke="#1f222a" strokeWidth={0.0035} />
 
-          {/* Axis labels */}
-          <text
-            x={half - 0.04}
-            y={-0.04}
-            fontSize={0.06}
-            fill="#5a5f6b"
-            textAnchor="end"
-            fontFamily="JetBrains Mono, monospace"
-          >
-            {meta.rightAxis}
-          </text>
-          <text
-            x={-half + 0.04}
-            y={-0.04}
-            fontSize={0.06}
-            fill="#5a5f6b"
-            fontFamily="JetBrains Mono, monospace"
-          >
-            {meta.leftAxis}
-          </text>
-          <text
-            x={0.04}
-            y={-half + 0.08}
-            fontSize={0.06}
-            fill="#5a5f6b"
-            fontFamily="JetBrains Mono, monospace"
-          >
-            {meta.topAxis}
-          </text>
-          <text
-            x={0.04}
-            y={half - 0.04}
-            fontSize={0.06}
-            fill="#5a5f6b"
-            fontFamily="JetBrains Mono, monospace"
-          >
-            {meta.bottomAxis}
-          </text>
+          {/* Axis labels — keep their on-screen size constant by inverting
+              the viewBox scaling with view.zoom. */}
+          {(() => {
+            const labelSize = 0.06 / view.zoom;
+            const labelInset = 0.04 / view.zoom;
+            const labelTopGap = 0.08 / view.zoom;
+            return (
+              <>
+                <text
+                  x={half - labelInset}
+                  y={-labelInset}
+                  fontSize={labelSize}
+                  fill="#5a5f6b"
+                  textAnchor="end"
+                  fontFamily="JetBrains Mono, monospace"
+                >
+                  {meta.rightAxis}
+                </text>
+                <text
+                  x={-half + labelInset}
+                  y={-labelInset}
+                  fontSize={labelSize}
+                  fill="#5a5f6b"
+                  fontFamily="JetBrains Mono, monospace"
+                >
+                  {meta.leftAxis}
+                </text>
+                <text
+                  x={labelInset}
+                  y={-half + labelTopGap}
+                  fontSize={labelSize}
+                  fill="#5a5f6b"
+                  fontFamily="JetBrains Mono, monospace"
+                >
+                  {meta.topAxis}
+                </text>
+                <text
+                  x={labelInset}
+                  y={half - labelInset}
+                  fontSize={labelSize}
+                  fill="#5a5f6b"
+                  fontFamily="JetBrains Mono, monospace"
+                >
+                  {meta.bottomAxis}
+                </text>
+              </>
+            );
+          })()}
 
           {/* Path connecting keyframes in time order — solid orange polygon */}
           {sortedKfs.length > 1 && (
